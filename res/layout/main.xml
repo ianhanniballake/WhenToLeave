@@ -1,7 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/textview"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:text="@string/hello" />
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	<RelativeLayout
+		android:id="@+id/refreshBar"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true">
+		<TextView
+			android:id="@+id/lastRefreshed"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentLeft="true"
+			android:text="@string/lastRefreshedDefault" />
+		<Button
+			android:id="@+id/refreshButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true"
+			android:text="@string/refresh" />
+	</RelativeLayout>
+	<ListView
+		android:id="@+id/mainList"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_above="@id/refreshBar" />
+</RelativeLayout>

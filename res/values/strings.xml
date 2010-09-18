@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, MainScreen!</string>
-    <string name="app_name">WhenToLeave</string>
+	<string
+		name="app_name">WhenToLeave</string>
+	<string
+		name="refresh">Refresh</string>
+	<string
+		name="whileRefreshing">Refreshing Data...</string>
+	<string
+		name="lastRefreshedBase">Last Refreshed:</string>
+	<string
+		name="lastRefreshedDefault">Last Refreshed: Never</string>
 </resources>
