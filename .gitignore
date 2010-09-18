@@ -3,5 +3,6 @@
 # Exclude all svn files
 .svn/
 
-# Exclude all files in the bin folder
-bin/*
+# Exclude all files in the bin and the gen folders
+bin/
+gen/
