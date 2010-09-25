@@ -2,6 +2,8 @@
 <resources>
 	<string
 		name="app_name">WhenToLeave</string>
+    <string
+        name="calendarActivityTitle">Calendar List</string>
 	<string
 		name="refresh">Refresh</string>
 	<string

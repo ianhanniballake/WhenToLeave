@@ -4,7 +4,10 @@ import java.text.DateFormat;
 import java.util.Date;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -77,6 +80,7 @@ public class MainScreen extends Activity
 			"Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam",
 			"Wallis and Futuna", "Western Sahara", "Yemen", "Yugoslavia",
 			"Zambia", "Zimbabwe" };
+	private static final int MENU_VIEW_CALENDARS = 0;
 	private final DateFormat dateFormat = DateFormat
 			.getDateInstance(DateFormat.SHORT);
 	private final DateFormat timeFormat = DateFormat
@@ -110,6 +114,26 @@ public class MainScreen extends Activity
 			}
 		});
 		refreshData();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(final Menu menu)
+	{
+		menu.add(0, MENU_VIEW_CALENDARS, 0, "View Calendars");
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(final MenuItem item)
+	{
+		switch (item.getItemId())
+		{
+			case MENU_VIEW_CALENDARS:
+				final Intent i = new Intent(this, CalendarActivity.class);
+				startActivity(i);
+				return true;
+		}
+		return false;
 	}
 
 	/**
