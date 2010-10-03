@@ -11,12 +11,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class MainScreen extends Activity
 {
@@ -80,7 +80,10 @@ public class MainScreen extends Activity
 			"Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam",
 			"Wallis and Futuna", "Western Sahara", "Yemen", "Yugoslavia",
 			"Zambia", "Zimbabwe" };
+	
 	private static final int MENU_VIEW_CALENDARS = 0;
+	private static final int MENU_VIEW_MAPS = 1;
+	
 	private final DateFormat dateFormat = DateFormat
 			.getDateInstance(DateFormat.SHORT);
 	private final DateFormat timeFormat = DateFormat
@@ -120,6 +123,7 @@ public class MainScreen extends Activity
 	public boolean onCreateOptionsMenu(final Menu menu)
 	{
 		menu.add(0, MENU_VIEW_CALENDARS, 0, "View Calendars");
+		menu.add(0, MENU_VIEW_MAPS, 0, "Map");
 		return true;
 	}
 
@@ -131,6 +135,10 @@ public class MainScreen extends Activity
 			case MENU_VIEW_CALENDARS:
 				final Intent i = new Intent(this, CalendarActivity.class);
 				startActivity(i);
+				return true;
+			case MENU_VIEW_MAPS:
+				final Intent i2 = new Intent(this, MapScreen.class);
+				startActivity(i2);
 				return true;
 		}
 		return false;

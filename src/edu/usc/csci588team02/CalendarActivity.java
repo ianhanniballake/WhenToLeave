@@ -16,12 +16,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.ArrayAdapter;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 
 import com.google.api.client.apache.ApacheHttpTransport;
 import com.google.api.client.googleapis.GoogleHeaders;
@@ -179,10 +179,7 @@ public final class CalendarActivity extends ListActivity
 		{
 			final AccountManager manager = AccountManager.get(this);
 			final Account[] accounts = manager.getAccountsByType("com.google");
-			final int size = accounts.length;
-			for (int i = 0; i < size; i++)
-			{
-				final Account account = accounts[i];
+			for (final Account account : accounts)
 				if (accountName.equals(account.name))
 				{
 					if (tokenExpired)
@@ -190,7 +187,6 @@ public final class CalendarActivity extends ListActivity
 					gotAccount(manager, account);
 					return;
 				}
-			}
 		}
 		showDialog(DIALOG_ACCOUNTS);
 	}
