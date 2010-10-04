@@ -1,29 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="edu.usc.csci588team02" android:versionCode="1"
+<manifest
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	package="edu.usc.csci588team02"
+	android:versionCode="1"
 	android:versionName="1.0">
-
-	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
-	<uses-permission android:name="android.permission.USE_CREDENTIALS" />
-	<uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
-
-	<application android:icon="@drawable/icon" android:label="@string/app_name"
+	<uses-permission
+		android:name="android.permission.INTERNET" />
+	<uses-permission
+		android:name="android.permission.GET_ACCOUNTS" />
+	<uses-permission
+		android:name="android.permission.USE_CREDENTIALS" />
+	<uses-permission
+		android:name="android.permission.MANAGE_ACCOUNTS" />
+	<application
+		android:icon="@drawable/icon"
+		android:label="@string/app_name"
 		android:debuggable="true">
-
-		<activity android:name="edu.usc.csci588team02.MainScreen"
+		<activity
+			android:name="edu.usc.csci588team02.MainScreen"
+			android:label="@string/app_name">
+		</activity>
+		<activity
+			android:name="CalendarActivity"
+			android:label="@string/calendarActivityTitle"></activity>
+		<activity
+			android:name="MapScreen"
+			android:label="@string/app_name"></activity>
+		<uses-library
+			android:name="com.google.android.maps" />
+		<activity
+			android:name=".activity.Dashboard"
 			android:label="@string/app_name">
 			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
+				<action
+					android:name="android.intent.action.MAIN" />
+				<category
+					android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-
-		<activity android:name="CalendarActivity" android:label="@string/calendarActivityTitle"></activity>
-
-		<activity android:name="MapScreen" android:label="@string/app_name"></activity>
-		<uses-library android:name="com.google.android.maps" />
-
 	</application>
-	<uses-sdk android:minSdkVersion="8"></uses-sdk>
+	<uses-sdk
+		android:minSdkVersion="8"></uses-sdk>
 </manifest>
