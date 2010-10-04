@@ -2,8 +2,12 @@
 <resources>
 	<string
 		name="app_name">WhenToLeave</string>
+	<string
+	    name="agendaTitle">Agenda</string>
     <string
-        name="calendarActivityTitle">Calendar List</string>
+        name="calendarsTitle">Calendars</string>
+    <string
+        name="mapTitle">Map</string>
 	<string
 		name="refresh">Refresh</string>
 	<string

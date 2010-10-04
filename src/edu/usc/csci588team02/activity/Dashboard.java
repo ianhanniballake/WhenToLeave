@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
-import edu.usc.csci588team02.CalendarActivity;
-import edu.usc.csci588team02.MapScreen;
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.model.DashboardEntry;
 
@@ -77,9 +75,8 @@ public class Dashboard extends Activity
 	private final static ArrayList<DashboardEntry> dashboardEntries = new ArrayList<DashboardEntry>();
 	static
 	{
-		dashboardEntries.add(new DashboardEntry("Agenda",
-				CalendarActivity.class));
-		dashboardEntries.add(new DashboardEntry("Map", MapScreen.class));
+		dashboardEntries.add(new DashboardEntry("Agenda", Agenda.class));
+		dashboardEntries.add(new DashboardEntry("Map", Map.class));
 	}
 
 	private void launch(final DashboardEntry entry)

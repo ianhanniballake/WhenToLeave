@@ -23,7 +23,7 @@
 			android:text="@string/refresh" />
 	</RelativeLayout>
 	<ListView
-		android:id="@+id/mainList"
+		android:id="@+id/agendaList"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
 		android:layout_above="@id/refreshBar" />

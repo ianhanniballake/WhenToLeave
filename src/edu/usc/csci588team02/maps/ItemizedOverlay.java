@@ -16,10 +16,11 @@ import com.google.android.maps.OverlayItem;
  * 
  * @author Stephanie Trudeau
  */
-public class ItemizedOverlay extends com.google.android.maps.ItemizedOverlay
+public class ItemizedOverlay extends
+		com.google.android.maps.ItemizedOverlay<OverlayItem>
 {
 	// Holds each of the OverlayItems objects that we want on our map
-	private ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
+	private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
 
 	/**
 	 * Defines the default marker to be used on each of the {@link OverlayItem}.
@@ -29,7 +30,7 @@ public class ItemizedOverlay extends com.google.android.maps.ItemizedOverlay
 	 * @param defaultMarker
 	 *            Marker to be used for each {@link OverlayItem}
 	 */
-	public ItemizedOverlay(Drawable defaultMarker)
+	public ItemizedOverlay(final Drawable defaultMarker)
 	{
 		super(boundCenterBottom(defaultMarker));
 	}
@@ -40,7 +41,7 @@ public class ItemizedOverlay extends com.google.android.maps.ItemizedOverlay
 	 * @param overlay
 	 *            Overlay item to be added
 	 */
-	public void addOverlay(OverlayItem overlay)
+	public void addOverlay(final OverlayItem overlay)
 	{
 		mOverlays.add(overlay);
 		populate();
@@ -50,7 +51,7 @@ public class ItemizedOverlay extends com.google.android.maps.ItemizedOverlay
 	 * Redefined to read from our {@link ArrayList}.
 	 */
 	@Override
-	protected OverlayItem createItem(int i)
+	protected OverlayItem createItem(final int i)
 	{
 		return mOverlays.get(i);
 	}

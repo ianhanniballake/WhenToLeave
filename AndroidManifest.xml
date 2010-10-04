@@ -17,18 +17,6 @@
 		android:label="@string/app_name"
 		android:debuggable="true">
 		<activity
-			android:name="edu.usc.csci588team02.MainScreen"
-			android:label="@string/app_name">
-		</activity>
-		<activity
-			android:name="CalendarActivity"
-			android:label="@string/calendarActivityTitle"></activity>
-		<activity
-			android:name="MapScreen"
-			android:label="@string/app_name"></activity>
-		<uses-library
-			android:name="com.google.android.maps" />
-		<activity
 			android:name=".activity.Dashboard"
 			android:label="@string/app_name">
 			<intent-filter>
@@ -38,6 +26,17 @@
 					android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+		<activity
+			android:name=".activity.Agenda"
+			android:label="@string/agendaTitle"></activity>
+		<activity
+			android:name=".activity.Calendars"
+			android:label="@string/calendarsTitle"></activity>
+		<activity
+			android:name=".activity.Map"
+			android:label="@string/mapTitle"></activity>
+		<uses-library
+			android:name="com.google.android.maps" />
 	</application>
 	<uses-sdk
 		android:minSdkVersion="8"></uses-sdk>

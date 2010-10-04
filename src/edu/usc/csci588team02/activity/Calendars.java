@@ -1,4 +1,4 @@
-package edu.usc.csci588team02;
+package edu.usc.csci588team02.activity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,12 +16,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ArrayAdapter;
 
 import com.google.api.client.apache.ApacheHttpTransport;
 import com.google.api.client.googleapis.GoogleHeaders;
@@ -48,7 +48,7 @@ import edu.usc.csci588team02.model.Namespace;
  * 
  * @author Yaniv Inbar
  */
-public final class CalendarActivity extends ListActivity
+public final class Calendars extends ListActivity
 {
 	private static final String AUTH_TOKEN_TYPE = "cl";
 	private static final int CONTEXT_DELETE = 1;
@@ -64,7 +64,7 @@ public final class CalendarActivity extends ListActivity
 	private String authToken;
 	private final List<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
 
-	public CalendarActivity()
+	public Calendars()
 	{
 		HttpTransport.setLowLevelHttpTransport(ApacheHttpTransport.INSTANCE);
 		transport = GoogleTransport.create();
