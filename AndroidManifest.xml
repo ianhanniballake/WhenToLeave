@@ -35,6 +35,10 @@
 		<activity
 			android:name=".activity.Map"
 			android:label="@string/mapTitle"></activity>
+		<activity
+			android:name=".activity.Login"></activity>
+		<activity
+			android:name=".activity.Logout"></activity>
 		<uses-library
 			android:name="com.google.android.maps" />
 	</application>

@@ -3,13 +3,15 @@
 	<string
 		name="app_name">WhenToLeave</string>
 	<string
-	    name="agendaTitle">Agenda</string>
-    <string
-        name="calendarsTitle">Calendars</string>
-    <string
-        name="mapTitle">Map</string>
+		name="agendaTitle">Agenda</string>
+	<string
+		name="calendarsTitle">Calendars</string>
+	<string
+		name="mapTitle">Map</string>
 	<string
 		name="refresh">Refresh</string>
+	<string
+		name="loginCanceled">Login Canceled</string>
 	<string
 		name="whileRefreshing">Refreshing Data...</string>
 	<string

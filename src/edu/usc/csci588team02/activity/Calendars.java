@@ -5,12 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ListActivity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -22,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import com.google.api.client.apache.ApacheHttpTransport;
 import com.google.api.client.googleapis.GoogleHeaders;
@@ -32,6 +28,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.xml.atom.AtomParser;
 
+import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.model.CalendarEntry;
 import edu.usc.csci588team02.model.CalendarFeed;
 import edu.usc.csci588team02.model.CalendarUrl;
@@ -50,18 +47,14 @@ import edu.usc.csci588team02.model.Namespace;
  */
 public final class Calendars extends ListActivity
 {
-	private static final String AUTH_TOKEN_TYPE = "cl";
 	private static final int CONTEXT_DELETE = 1;
 	private static final int CONTEXT_EDIT = 0;
 	private static final int CONTEXT_LOGGING = 2;
-	private static final int DIALOG_ACCOUNTS = 0;
-	private static final int MENU_ACCOUNTS = 1;
 	private static final int MENU_ADD = 0;
+	private static final int MENU_LOGOUT = 1;
 	private static final String PREF = "MyPrefs";
-	private static final int REQUEST_AUTHENTICATE = 0;
-	private static final String TAG = "CalendarSample";
+	private static final String TAG = "Calendars";
 	private static HttpTransport transport;
-	private String authToken;
 	private final List<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
 
 	public Calendars()
@@ -74,18 +67,6 @@ public final class Calendars extends ListActivity
 		final AtomParser parser = new AtomParser();
 		parser.namespaceDictionary = Namespace.DICTIONARY;
 		transport.addParser(parser);
-	}
-
-	private void authenticated()
-	{
-		executeRefreshCalendars();
-	}
-
-	private void authenticatedClientLogin(final String newAuthToken)
-	{
-		authToken = newAuthToken;
-		((GoogleHeaders) transport.defaultHeaders).setGoogleLogin(authToken);
-		authenticated();
 	}
 
 	private void executeRefreshCalendars()
@@ -120,77 +101,6 @@ public final class Calendars extends ListActivity
 				android.R.layout.simple_list_item_1, calendarNames));
 	}
 
-	private void gotAccount(final AccountManager manager, final Account account)
-	{
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		final SharedPreferences.Editor editor = settings.edit();
-		editor.putString("accountName", account.name);
-		editor.commit();
-		new Thread()
-		{
-			@Override
-			public void run()
-			{
-				try
-				{
-					final Bundle bundle = manager.getAuthToken(account,
-							AUTH_TOKEN_TYPE, true, null, null).getResult();
-					runOnUiThread(new Runnable()
-					{
-						@Override
-						public void run()
-						{
-							try
-							{
-								if (bundle
-										.containsKey(AccountManager.KEY_INTENT))
-								{
-									final Intent intent = bundle
-											.getParcelable(AccountManager.KEY_INTENT);
-									int flags = intent.getFlags();
-									flags &= ~Intent.FLAG_ACTIVITY_NEW_TASK;
-									intent.setFlags(flags);
-									startActivityForResult(intent,
-											REQUEST_AUTHENTICATE);
-								}
-								else if (bundle
-										.containsKey(AccountManager.KEY_AUTHTOKEN))
-									authenticatedClientLogin(bundle
-											.getString(AccountManager.KEY_AUTHTOKEN));
-							} catch (final Exception e)
-							{
-								handleException(e);
-							}
-						}
-					});
-				} catch (final Exception e)
-				{
-					handleException(e);
-				}
-			}
-		}.start();
-	}
-
-	private void gotAccount(final boolean tokenExpired)
-	{
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		final String accountName = settings.getString("accountName", null);
-		if (accountName != null)
-		{
-			final AccountManager manager = AccountManager.get(this);
-			final Account[] accounts = manager.getAccountsByType("com.google");
-			for (final Account account : accounts)
-				if (accountName.equals(account.name))
-				{
-					if (tokenExpired)
-						manager.invalidateAuthToken("com.google", authToken);
-					gotAccount(manager, account);
-					return;
-				}
-		}
-		showDialog(DIALOG_ACCOUNTS);
-	}
-
 	private void handleException(final Exception e)
 	{
 		e.printStackTrace();
@@ -209,7 +119,8 @@ public final class Calendars extends ListActivity
 			}
 			if (statusCode == 401 || statusCode == 403)
 			{
-				gotAccount(true);
+				startActivityForResult(new Intent(this, Login.class),
+						Login.REQUEST_AUTHENTICATE);
 				return;
 			}
 			if (log)
@@ -232,11 +143,25 @@ public final class Calendars extends ListActivity
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode)
 		{
-			case REQUEST_AUTHENTICATE:
+			case Login.REQUEST_AUTHENTICATE:
 				if (resultCode == RESULT_OK)
-					gotAccount(false);
+				{
+					final SharedPreferences settings = getSharedPreferences(
+							PREF, 0);
+					((GoogleHeaders) transport.defaultHeaders)
+							.setGoogleLogin(settings.getString("authToken",
+									null));
+					executeRefreshCalendars();
+				}
 				else
-					showDialog(DIALOG_ACCOUNTS);
+				{
+					Toast.makeText(this, R.string.loginCanceled,
+							Toast.LENGTH_SHORT);
+					finish();
+				}
+				break;
+			case Logout.REQUEST_LOGOUT:
+				finish();
 				break;
 		}
 	}
@@ -279,8 +204,8 @@ public final class Calendars extends ListActivity
 		super.onCreate(savedInstanceState);
 		getListView().setTextFilterEnabled(true);
 		registerForContextMenu(getListView());
-		getIntent();
-		gotAccount(false);
+		startActivityForResult(new Intent(this, Login.class),
+				Login.REQUEST_AUTHENTICATE);
 	}
 
 	@Override
@@ -297,40 +222,10 @@ public final class Calendars extends ListActivity
 	}
 
 	@Override
-	protected Dialog onCreateDialog(final int id)
-	{
-		switch (id)
-		{
-			case DIALOG_ACCOUNTS:
-				final AlertDialog.Builder builder = new AlertDialog.Builder(
-						this);
-				builder.setTitle("Select a Google account");
-				final AccountManager manager = AccountManager.get(this);
-				final Account[] accounts = manager
-						.getAccountsByType("com.google");
-				final int size = accounts.length;
-				final String[] names = new String[size];
-				for (int i = 0; i < size; i++)
-					names[i] = accounts[i].name;
-				builder.setItems(names, new DialogInterface.OnClickListener()
-				{
-					@Override
-					public void onClick(final DialogInterface dialog,
-							final int which)
-					{
-						gotAccount(manager, accounts[which]);
-					}
-				});
-				return builder.create();
-		}
-		return null;
-	}
-
-	@Override
 	public boolean onCreateOptionsMenu(final Menu menu)
 	{
 		menu.add(0, MENU_ADD, 0, "New calendar");
-		menu.add(0, MENU_ACCOUNTS, 0, "Switch Account");
+		menu.add(0, MENU_LOGOUT, 0, "Logout");
 		return true;
 	}
 
@@ -352,8 +247,9 @@ public final class Calendars extends ListActivity
 				}
 				executeRefreshCalendars();
 				return true;
-			case MENU_ACCOUNTS:
-				showDialog(DIALOG_ACCOUNTS);
+			case MENU_LOGOUT:
+				startActivityForResult(new Intent(this, Logout.class),
+						Logout.REQUEST_LOGOUT);
 				return true;
 		}
 		return false;
