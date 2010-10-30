@@ -6,6 +6,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -17,6 +19,9 @@ import edu.usc.csci588team02.model.DashboardEntry;
 
 public class Dashboard extends Activity
 {
+	private static final int MENU_PREFERENCES = 2;
+	private static final int MENU_LOGOUT = 1;
+	
 	private class DashboardList extends BaseAdapter
 	{
 		private final Context context;
@@ -75,8 +80,8 @@ public class Dashboard extends Activity
 	private final static ArrayList<DashboardEntry> dashboardEntries = new ArrayList<DashboardEntry>();
 	static
 	{
-		dashboardEntries.add(new DashboardEntry("Agenda", Agenda.class));
-		dashboardEntries.add(new DashboardEntry("Map", Map.class));
+		//dashboardEntries.add(new DashboardEntry("Agenda", Agenda.class));
+		//dashboardEntries.add(new DashboardEntry("Map", Map.class));
 	}
 
 	private void launch(final DashboardEntry entry)
@@ -93,5 +98,30 @@ public class Dashboard extends Activity
 		setContentView(R.layout.dashboard);
 		final GridView dashboardGrid = (GridView) findViewById(R.id.dashboardGrid);
 		dashboardGrid.setAdapter(new DashboardList(this));
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(final Menu menu)
+	{
+		menu.add(0, MENU_LOGOUT, 0, "Logout");
+		menu.add(0, MENU_PREFERENCES, 0, "Preferences");
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(final MenuItem item)
+	{
+		switch (item.getItemId())
+		{
+			case MENU_LOGOUT:
+				startActivityForResult(new Intent(this, Logout.class),
+						Logout.REQUEST_LOGOUT);
+				return true;
+			case MENU_PREFERENCES:
+				final Intent i = new Intent(this, Preferences.class);
+				startActivity(i);
+				return true;
+		}
+		return false;
 	}
 }

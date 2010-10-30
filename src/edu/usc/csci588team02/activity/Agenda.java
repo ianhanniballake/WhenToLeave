@@ -42,6 +42,7 @@ import edu.usc.csci588team02.model.Namespace;
 
 public class Agenda extends Activity
 {
+	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_VIEW_CALENDARS = 0;
 	private static final String PREF = "MyPrefs";
@@ -129,6 +130,7 @@ public class Agenda extends Activity
 	{
 		menu.add(0, MENU_VIEW_CALENDARS, 0, "View Calendars");
 		menu.add(0, MENU_LOGOUT, 0, "Logout");
+		menu.add(0, MENU_PREFERENCES, 0, "Preferences");
 		return true;
 	}
 
@@ -144,6 +146,10 @@ public class Agenda extends Activity
 			case MENU_LOGOUT:
 				startActivityForResult(new Intent(this, Logout.class),
 						Logout.REQUEST_LOGOUT);
+				return true;
+			case MENU_PREFERENCES:
+				final Intent j = new Intent(this, Preferences.class);
+				startActivity(j);
 				return true;
 		}
 		return false;

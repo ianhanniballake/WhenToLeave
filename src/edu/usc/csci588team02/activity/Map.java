@@ -3,11 +3,14 @@ package edu.usc.csci588team02.activity;
 import java.util.List;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -27,6 +30,8 @@ import edu.usc.csci588team02.maps.ItemizedOverlay;
  */
 public class Map extends MapActivity
 {
+	private static final int MENU_PREFERENCES = 2;
+	private static final int MENU_LOGOUT = 1;
 	// The marker on the map
 	Drawable drawable;
 	//
@@ -84,6 +89,31 @@ public class Map extends MapActivity
             0, 
             0, 
             locationListener);  
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(final Menu menu)
+	{
+		menu.add(0, MENU_LOGOUT, 0, "Logout");
+		menu.add(0, MENU_PREFERENCES, 0, "Preferences");
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(final MenuItem item)
+	{
+		switch (item.getItemId())
+		{
+			case MENU_LOGOUT:
+				startActivityForResult(new Intent(this, Logout.class),
+						Logout.REQUEST_LOGOUT);
+				return true;
+			case MENU_PREFERENCES:
+				final Intent i = new Intent(this, Preferences.class);
+				startActivity(i);
+				return true;
+		}
+		return false;
 	}
 	
 	

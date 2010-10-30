@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+android:layout_width="fill_parent"
+android:layout_height="fill_parent"
+android:orientation="vertical"
+xmlns:android="http://schemas.android.com/apk/res/android">
+	<Button
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="Button">
+	</Button>
+	<Spinner
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content">
+	</Spinner>
+	<CheckBox
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="CheckBox">
+	</CheckBox>
+	<CheckBox
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="CheckBox">
+	</CheckBox>
+	<RadioGroup
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:orientation="vertical"
+	android:layout_x="88px"
+	android:layout_y="307px">
+		<RadioButton
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="RadioButton">
+		</RadioButton>
+		<RadioButton
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="RadioButton">
+		</RadioButton>
+	</RadioGroup>
+</LinearLayout>

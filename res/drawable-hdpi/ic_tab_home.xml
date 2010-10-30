@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- When selected, use grey -->
+    <item android:drawable="@drawable/home72"
+          android:state_selected="true" /> <!-- Temporarily the same icon -->
+    <!-- When not selected, use white-->
+    <item android:drawable="@drawable/home72" /> <!-- Temporarily the same icon -->
+</selector>

@@ -9,6 +9,8 @@
 	<string
 		name="mapTitle">Map</string>
 	<string
+		name="preferencesTitle">Preferences</string>
+	<string
 		name="refresh">Refresh</string>
 	<string
 		name="loginCanceled">Login Canceled</string>
