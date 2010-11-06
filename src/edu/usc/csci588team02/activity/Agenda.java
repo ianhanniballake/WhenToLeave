@@ -42,8 +42,8 @@ import edu.usc.csci588team02.model.Namespace;
 
 public class Agenda extends Activity
 {
-	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_LOGOUT = 1;
+	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
 	private static final String PREF = "MyPrefs";
 	private static HttpTransport transport;
@@ -76,9 +76,10 @@ public class Agenda extends Activity
 				{
 					final SharedPreferences settings = getSharedPreferences(
 							PREF, 0);
+					final String authToken = settings.getString("authToken",
+							null);
 					((GoogleHeaders) transport.defaultHeaders)
-							.setGoogleLogin(settings.getString("authToken",
-									null));
+							.setGoogleLogin(authToken);
 					refreshData();
 				}
 				else
@@ -103,7 +104,7 @@ public class Agenda extends Activity
 		final ListView agendaList = (ListView) findViewById(R.id.agendaList);
 		agendaList.setOnItemClickListener(new OnItemClickListener()
 		{
-			//@Override
+			@Override
 			public void onItemClick(final AdapterView<?> parent,
 					final View view, final int position, final long id)
 			{
@@ -115,7 +116,7 @@ public class Agenda extends Activity
 		final Button refreshButton = (Button) findViewById(R.id.refreshButton);
 		refreshButton.setOnClickListener(new OnClickListener()
 		{
-			//@Override
+			@Override
 			public void onClick(final View view)
 			{
 				refreshData();
@@ -186,7 +187,7 @@ public class Agenda extends Activity
 			final TreeSet<EventEntry> events = new TreeSet<EventEntry>(
 					new Comparator<EventEntry>()
 					{
-						//@Override
+						@Override
 						public int compare(final EventEntry event1,
 								final EventEntry event2)
 						{
@@ -233,8 +234,11 @@ public class Agenda extends Activity
 			{
 				calendarEvents[h++] = event.title;
 				if (event.when != null && event.when.startTime != null)
-					calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
+					calendarEvents[h - 1] = calendarEvents[h - 1] + " on "
 							+ event.when.startTime.toString();
+				if (event.where != null && event.where.valueString != null)
+					calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
+							+ event.where.valueString;
 			}
 		} catch (final IOException e)
 		{

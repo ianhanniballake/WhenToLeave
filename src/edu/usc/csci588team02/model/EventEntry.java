@@ -27,6 +27,8 @@ public class EventEntry extends Entry
 {
 	@Key("gd:when")
 	public When when;
+	@Key("gd:where")
+	public Where where;
 
 	@Override
 	public EventEntry clone()
