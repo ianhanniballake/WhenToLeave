@@ -10,11 +10,11 @@ import edu.usc.csci588team02.R;
 public class Preferences extends Activity
 {
 	private static final int BACK = 0;
-	
+
 	public Preferences()
 	{
 	}
-	
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(final Bundle savedInstanceState)

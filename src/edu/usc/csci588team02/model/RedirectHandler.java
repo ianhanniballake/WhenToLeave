@@ -43,7 +43,7 @@ public class RedirectHandler
 			gsessionid = (String) locationUrl.getFirst("gsessionid");
 		}
 
-		//@Override
+		@Override
 		public void intercept(final HttpRequest request)
 		{
 			request.url.set("gsessionid", gsessionid);

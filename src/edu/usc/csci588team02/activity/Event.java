@@ -13,37 +13,40 @@ import edu.usc.csci588team02.R;
 
 public class Event extends Activity
 {
-	public enum EventActionType { 
-		MAP_LAUNCHER, 
-		NAV_LAUNCHER, 
-		EVENT_DETAIL,
-		EVENT_RIGHT, 
-		EVENT_LEFT
+	public enum EventActionType {
+		EVENT_DETAIL, EVENT_LEFT, EVENT_RIGHT, MAP_LAUNCHER, NAV_LAUNCHER
 	}
-	private static final int MENU_PREFERENCES = 2;
+
 	private static final int MENU_LOGOUT = 1;
-	
+	private static final int MENU_PREFERENCES = 2;
+
 	private void launch(final EventActionType action)
 	{
-		//Gives user a choice between Browser and Maps
-		/*Intent intent = new Intent(android.content.Intent.ACTION_VIEW, 
-				Uri.parse("http://maps.google.com/maps?saddr=20.344,34.34&daddr=20.5666,45.345"));
-				startActivity(intent);*/
-
-		switch(action)
+		// Gives user a choice between Browser and Maps
+		/*
+		 * Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+		 * Uri.parse
+		 * ("http://maps.google.com/maps?saddr=20.344,34.34&daddr=20.5666,45.345"
+		 * )); startActivity(intent);
+		 */
+		switch (action)
 		{
-		case MAP_LAUNCHER:
-		    Intent map = new Intent(Intent.ACTION_VIEW,
-		    	    Uri.parse("geo:0,0?q=" + getResources().getString(R.string.eventLocation)));
-		    	    startActivity(map);
-			break;
-		case NAV_LAUNCHER:
-		    Intent nav = new Intent(Intent.ACTION_VIEW,
-		    	    Uri.parse("google.navigation:q=" + getResources().getString(R.string.eventLocation)));
-		    	    startActivity(nav);
-			break;
-		default:
-			break;
+			case MAP_LAUNCHER:
+				final Intent map = new Intent(Intent.ACTION_VIEW,
+						Uri.parse("geo:0,0?q="
+								+ getResources().getString(
+										R.string.eventLocation)));
+				startActivity(map);
+				break;
+			case NAV_LAUNCHER:
+				final Intent nav = new Intent(Intent.ACTION_VIEW,
+						Uri.parse("google.navigation:q="
+								+ getResources().getString(
+										R.string.eventLocation)));
+				startActivity(nav);
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -53,29 +56,27 @@ public class Event extends Activity
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.event);
-
-		//Setup Listeners for the ActionBar Buttons		
-		Button mapButton = (Button)this.findViewById(R.id.mapButton);
-		Button navButton = (Button)this.findViewById(R.id.navButton);
-		
-	    mapButton.setOnClickListener(new OnClickListener()
+		// Setup Listeners for the ActionBar Buttons
+		final Button mapButton = (Button) findViewById(R.id.mapButton);
+		final Button navButton = (Button) findViewById(R.id.navButton);
+		mapButton.setOnClickListener(new OnClickListener()
 		{
-			//@Override
+			@Override
 			public void onClick(final View view)
 			{
 				launch(EventActionType.MAP_LAUNCHER);
 			}
 		});
-	    navButton.setOnClickListener(new OnClickListener()
+		navButton.setOnClickListener(new OnClickListener()
 		{
-			//@Override
+			@Override
 			public void onClick(final View view)
 			{
-				launch(EventActionType.NAV_LAUNCHER);	
+				launch(EventActionType.NAV_LAUNCHER);
 			}
 		});
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(final Menu menu)
 	{
