@@ -34,7 +34,37 @@ public class Login extends Activity
 	private static final String PREF = "MyPrefs";
 	public static final int REQUEST_AUTHENTICATE = 99;
 	private static final String TAG = "Login";
-	private String authToken;
+
+	private String getAuthToken(final AccountManager manager,
+			final Account account)
+	{
+		String authToken = null;
+		try
+		{
+			final Bundle bundle = manager.getAuthToken(account,
+					AUTH_TOKEN_TYPE, true, null, null).getResult();
+			try
+			{
+				if (bundle.containsKey(AccountManager.KEY_INTENT))
+				{
+					final Intent intent = bundle
+							.getParcelable(AccountManager.KEY_INTENT);
+					int flags = intent.getFlags();
+					flags &= ~Intent.FLAG_ACTIVITY_NEW_TASK;
+					intent.setFlags(flags);
+					startActivityForResult(intent, REQUEST_AUTHENTICATE);
+				}
+				authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
+			} catch (final Exception e)
+			{
+				handleException(e);
+			}
+		} catch (final Exception e)
+		{
+			handleException(e);
+		}
+		return authToken;
+	}
 
 	private void gotAccount(final AccountManager manager, final Account account)
 	{
@@ -47,48 +77,11 @@ public class Login extends Activity
 			@Override
 			public void run()
 			{
-				try
-				{
-					final Bundle bundle = manager.getAuthToken(account,
-							AUTH_TOKEN_TYPE, true, null, null).getResult();
-					runOnUiThread(new Runnable()
-					{
-						@Override
-						public void run()
-						{
-							try
-							{
-								if (bundle
-										.containsKey(AccountManager.KEY_INTENT))
-								{
-									final Intent intent = bundle
-											.getParcelable(AccountManager.KEY_INTENT);
-									int flags = intent.getFlags();
-									flags &= ~Intent.FLAG_ACTIVITY_NEW_TASK;
-									intent.setFlags(flags);
-									startActivityForResult(intent,
-											REQUEST_AUTHENTICATE);
-								}
-								else if (bundle
-										.containsKey(AccountManager.KEY_AUTHTOKEN))
-								{
-									editor.putString(
-											"authToken",
-											bundle.getString(AccountManager.KEY_AUTHTOKEN));
-									editor.commit();
-									setResult(RESULT_OK);
-									finish();
-								}
-							} catch (final Exception e)
-							{
-								handleException(e);
-							}
-						}
-					});
-				} catch (final Exception e)
-				{
-					handleException(e);
-				}
+				final String authToken = getAuthToken(manager, account);
+				editor.putString("authToken", authToken);
+				editor.commit();
+				setResult(RESULT_OK);
+				finish();
 			}
 		}.start();
 	}
@@ -97,6 +90,7 @@ public class Login extends Activity
 	{
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
 		final String accountName = settings.getString("accountName", null);
+		final String authToken = settings.getString("authToken", null);
 		if (accountName != null)
 		{
 			final AccountManager manager = AccountManager.get(this);
