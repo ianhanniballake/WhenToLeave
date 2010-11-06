@@ -6,6 +6,8 @@ import android.graphics.drawable.Drawable;
 
 import com.google.android.maps.OverlayItem;
 
+import edu.usc.csci588team02.R;
+
 /**
  * Manages a set of {@link OverlayItem}s, which can be added to a map. <br>
  * <br>
@@ -44,6 +46,20 @@ public class ItemizedOverlay extends
 	public void addOverlay(final OverlayItem overlay)
 	{
 		mOverlays.add(overlay);
+		populate();
+	}
+	
+	/**
+	 * Sets the Drawable marker for an {@link OverlayItem} i.
+	 * 
+	 * @param i
+	 *            Overlay item index
+	 * @param marker
+	 * 			  new marker drawable
+	 */
+	public void setMarker(final int i, final Drawable marker)
+	{
+		mOverlays.get(i).setMarker(marker);
 		populate();
 	}
 

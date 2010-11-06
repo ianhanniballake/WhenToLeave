@@ -103,7 +103,7 @@ public class Agenda extends Activity
 		final ListView agendaList = (ListView) findViewById(R.id.agendaList);
 		agendaList.setOnItemClickListener(new OnItemClickListener()
 		{
-			@Override
+			//@Override
 			public void onItemClick(final AdapterView<?> parent,
 					final View view, final int position, final long id)
 			{
@@ -115,7 +115,7 @@ public class Agenda extends Activity
 		final Button refreshButton = (Button) findViewById(R.id.refreshButton);
 		refreshButton.setOnClickListener(new OnClickListener()
 		{
-			@Override
+			//@Override
 			public void onClick(final View view)
 			{
 				refreshData();
@@ -186,7 +186,7 @@ public class Agenda extends Activity
 			final TreeSet<EventEntry> events = new TreeSet<EventEntry>(
 					new Comparator<EventEntry>()
 					{
-						@Override
+						//@Override
 						public int compare(final EventEntry event1,
 								final EventEntry event2)
 						{

@@ -20,12 +20,13 @@
 		android:label="@string/app_name"
 		android:debuggable="true">
 		<activity
-			android:label="@string/app_name" android:name=".activity.TabbedInterface">
+			android:name=".activity.TabbedInterface">
 			<intent-filter>
 				<action
 					android:name="android.intent.action.MAIN" />
 				
 			
+<category android:name="android.intent.category.LAUNCHER"></category>
 </intent-filter>
 		</activity>
 		<activity
@@ -38,12 +39,17 @@
 			android:name=".activity.Map"
 			android:label="@string/mapTitle"></activity>
 		<activity
+			android:name=".activity.MapRouteActivity"
+			android:label="@string/mapTitle"></activity>
+		<activity
 			android:name=".activity.Login"></activity>
 		<activity
 			android:name=".activity.Logout"></activity>
-		<activity android:name=".activity.Dashboard" android:label="@string/app_name"></activity><activity android:name=".activity.Preferences" android:label="@string/preferencesTitle"></activity><uses-library
+		<activity android:name=".activity.Dashboard" android:label="@string/app_name"></activity><activity android:name=".activity.Preferences" android:label="@string/preferencesTitle"></activity><activity android:name=".activity.Event"></activity><uses-library
 			android:name="com.google.android.maps" />
 	
+
+
 
 </application>
 	<uses-sdk

@@ -20,4 +20,6 @@
 		name="lastRefreshedBase">Last Refreshed:</string>
 	<string
 		name="lastRefreshedDefault">Last Refreshed: Never</string>
+	<string
+		name="eventLocation">35+Corporate+Dr+Burlington+MA</string>
 </resources>

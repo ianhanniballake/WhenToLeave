@@ -1,14 +1,11 @@
 package edu.usc.csci588team02.activity;
 
-import java.io.IOException;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.model.Namespace;
 
 public class Preferences extends Activity
 {

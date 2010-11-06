@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AbsoluteLayout
+android:layout_width="fill_parent"
+android:layout_height="fill_parent"
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:background="@drawable/background">
+	<ImageButton
+		android:id="@+id/leftArrow"
+		android:layout_width="56px"
+		android:layout_height="140px"
+		android:layout_gravity="center_horizontal"
+		android:background="@drawable/custom_left_arrow"
+		android:layout_x="0px"
+		android:layout_y="0px">
+	</ImageButton>
+	<TextView
+		android:id="@+id/eventName"
+		android:layout_width="330px"
+		android:layout_height="wrap_content"
+		android:text="Event Name"
+		android:typeface="sans"
+		android:textColor="@color/white"
+		android:textStyle="bold"
+		android:gravity="left"
+		android:layout_gravity="left"
+		android:textSize="42sp"
+		android:layout_x="70px"
+		android:layout_y="0px"	>
+	</TextView>
+	<TextView
+		android:id="@+id/eventLocation"
+		android:layout_width="330px"
+		android:layout_height="wrap_content"
+		android:text="Event Location"
+		android:typeface="sans"
+		android:textColor="@color/blue"
+		android:textStyle="bold"
+		android:gravity="left"
+		android:layout_gravity="left"
+		android:textSize="32sp"
+		android:layout_x="70px"
+		android:layout_y="60px"	>
+	</TextView>
+	<ImageButton
+		android:id="@+id/rightArrow"
+		android:layout_width="56px"
+		android:layout_height="140px"
+		android:layout_gravity="center_horizontal"
+		android:background="@drawable/custom_right_arrow"
+		android:layout_x="405px"
+		android:layout_y="0px">
+	</ImageButton>
+	<Button
+		android:id="@+id/mapButton"
+		android:layout_width="205px"
+		android:layout_height="80px"
+		android:textSize="32sp"
+		android:textStyle="bold"
+		android:textColor="@color/white"
+		android:background="@drawable/custom_launcher_button"
+		android:text="Map"
+		android:typeface="sans"
+		android:layout_x="15px"
+		android:layout_y="550px">
+	</Button>
+		<Button
+		android:id="@+id/navButton"
+		android:layout_width="205px"
+		android:layout_height="80px"
+		android:textSize="32sp"
+		android:textStyle="bold"
+		android:textColor="@color/white"
+		android:background="@drawable/custom_launcher_button"
+		android:text="Navigate"
+		android:typeface="sans"
+		android:layout_x="240px"
+		android:layout_y="550px">
+	</Button>
+</AbsoluteLayout>
+
+
+

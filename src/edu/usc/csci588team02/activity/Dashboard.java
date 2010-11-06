@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,25 +32,25 @@ public class Dashboard extends Activity
 			this.context = context;
 		}
 
-		@Override
+		//@Override
 		public int getCount()
 		{
 			return dashboardEntries.size();
 		}
 
-		@Override
+		//@Override
 		public Object getItem(final int position)
 		{
 			return null;
 		}
 
-		@Override
+		//@Override
 		public long getItemId(final int position)
 		{
 			return 0;
 		}
 
-		@Override
+		//@Override
 		public View getView(final int position, final View convertView,
 				final ViewGroup parent)
 		{
@@ -58,12 +59,16 @@ public class Dashboard extends Activity
 			if (convertView == null)
 			{
 				dashboardButton = new Button(context);
-				dashboardButton.setLayoutParams(new GridView.LayoutParams(150,
-						150));
+				dashboardButton.setLayoutParams(new GridView.LayoutParams(225,
+						80));
 				dashboardButton.setPadding(10, 10, 10, 10);
+				dashboardButton.setTextSize((float) 28.0);
+				dashboardButton.setTextColor(getResources().getColor(R.color.white));
+				dashboardButton.setBackgroundDrawable(getResources().getDrawable(
+						R.drawable.custom_launcher_button));
 				dashboardButton.setOnClickListener(new OnClickListener()
 				{
-					@Override
+					//@Override
 					public void onClick(final View v)
 					{
 						launch(currentEntry);
@@ -81,13 +86,39 @@ public class Dashboard extends Activity
 	static
 	{
 		//dashboardEntries.add(new DashboardEntry("Agenda", Agenda.class));
-		//dashboardEntries.add(new DashboardEntry("Map", Map.class));
+		dashboardEntries.add(new DashboardEntry("Route", MapRouteActivity.class, DashboardEntry.DashboardEntryType.MAP_LAUNCHER));
+		dashboardEntries.add(new DashboardEntry("Map", DashboardEntry.DashboardEntryType.MAP_LAUNCHER));
+		dashboardEntries.add(new DashboardEntry("Navigate", DashboardEntry.DashboardEntryType.NAV_LAUNCHER));
 	}
 
 	private void launch(final DashboardEntry entry)
 	{
-		final Intent i = new Intent(this, entry.getClassName());
-		startActivity(i);
+		//Gives user a choice between Browser and Maps
+		/*Intent intent = new Intent(android.content.Intent.ACTION_VIEW, 
+				Uri.parse("http://maps.google.com/maps?saddr=20.344,34.34&daddr=20.5666,45.345"));
+				startActivity(intent);*/
+
+		switch(entry.getType())
+		{
+		case MAP_LAUNCHER:
+		   // Intent map = new Intent(Intent.ACTION_VIEW,
+		    	  //  Uri.parse("geo:0,0?q=" + getResources().getString(R.string.eventLocation)));
+		    Intent map = new Intent(this, entry.getClassName());
+		    	    startActivity(map);
+			break;
+		case NAV_LAUNCHER:
+		    Intent nav = new Intent(Intent.ACTION_VIEW,
+		    	    Uri.parse("google.navigation:q=" + getResources().getString(R.string.eventLocation)));
+		    	    startActivity(nav);
+			break;
+		default:
+			if (entry.getClass() != null)
+			{
+				final Intent i = new Intent(this, entry.getClassName());
+				startActivity(i);
+			}
+			break;
+		}
 	}
 
 	/** Called when the activity is first created. */

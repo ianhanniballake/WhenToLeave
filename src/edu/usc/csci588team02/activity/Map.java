@@ -34,6 +34,8 @@ public class Map extends MapActivity
 	private static final int MENU_LOGOUT = 1;
 	// The marker on the map
 	Drawable drawable;
+	Drawable drawable1;
+	Drawable drawable2;
 	//
 	ItemizedOverlay itemizedOverlay;
 	LinearLayout linearLayout;
@@ -60,23 +62,30 @@ public class Map extends MapActivity
 		mapView.setBuiltInZoomControls(true);
 		// Initialize overlay variables
 		mapOverlays = mapView.getOverlays();
-		drawable = getResources().getDrawable(R.drawable.icon);
+		drawable = getResources().getDrawable(R.drawable.ic_grey_square);
+		drawable1 = getResources().getDrawable(R.drawable.ic_red_square_1);
+		drawable1.setBounds(0,0,36,36);
+		drawable2 = getResources().getDrawable(R.drawable.ic_grey_square_2);
+		drawable2.setBounds(0,0,36,36);
 		itemizedOverlay = new ItemizedOverlay(drawable);
 		// Create Mexico City, Mexico
 		final GeoPoint point = new GeoPoint(19240000, -99120000);
-		final OverlayItem overlayitem = new OverlayItem(point, "", "");
+		final OverlayItem overlayitem = new OverlayItem(point, "1", "Appointment 1");
+		overlayitem.setMarker(drawable1);
 		// Create Tokyo, Japan
 		final GeoPoint point2 = new GeoPoint(35410000, 139460000);
-		final OverlayItem overlayitem2 = new OverlayItem(point2, "", "");
+		final OverlayItem overlayitem2 = new OverlayItem(point2, "2", "Appointment 2");
+		//overlayitem2.setMarker(drawable2);
 		// Add the points to the map
 		itemizedOverlay.addOverlay(overlayitem);
 		itemizedOverlay.addOverlay(overlayitem2);
 		mapOverlays.add(itemizedOverlay);
 		
-		//seattle
+		//Seattle
 		final GeoPoint point3 = new GeoPoint(47607428, -122327271);
 		final OverlayItem overlayitem3 = new OverlayItem(point3, "3", "3");
 		itemizedOverlay.addOverlay(overlayitem3);
+		overlayitem3.setMarker(drawable2);
 		
         //---use the LocationManager class to obtain GPS locations---
         lm = (LocationManager) 

@@ -3,7 +3,7 @@
 	<color name="green2">#a1cf26</color>
 	<color name="blue">#48b4fe</color>
 	<color name="blue2">#4096ee</color>
-	<color name="blue1">#79bbff</color>
+	<color name="blue1">#7abcff</color>
 	<color name="orange">#ffa12c</color>
 	<color name="orange1">#ffaf4b</color>
 	<color name="orange2">#ff920a</color>
@@ -11,5 +11,7 @@
 	<color name="red1">#ff422d</color>
 	<color name="red2">#eb1700</color>
 	<color name="grey05">#d7d7d7</color>
-
+	<color name="white">#ffffff</color>
+	<color name="green3">#c2de54</color> <!-- Bright green border -->
+	<color name="green4">#567011</color> <!-- Dark green border -->
 </resources>

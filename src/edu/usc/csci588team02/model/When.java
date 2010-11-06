@@ -27,4 +27,6 @@ public class When
 	public DateTime endTime;
 	@Key("@startTime")
 	public DateTime startTime;
+	@Key("@currentTimeUntil")
+	public DateTime currentTimeUntil;
 }
