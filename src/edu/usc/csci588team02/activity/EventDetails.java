@@ -1,8 +1,6 @@
 package edu.usc.csci588team02.activity;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -16,9 +14,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.api.client.http.HttpTransport;
-
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.manager.EventManager;
 import edu.usc.csci588team02.model.EventEntry;
@@ -28,12 +23,6 @@ public class EventDetails extends Activity
 	private static EventManager eventManager = new EventManager();
 	private static final int MENU_LOGOUT = 1;
 	private static final String PREF = "MyPrefs";
-
-	public EventDetails()
-	{
-		final Logger logger = Logger.getLogger(HttpTransport.class.getName());
-		logger.setLevel(Level.ALL);
-	}
 
 	private void loadData()
 	{

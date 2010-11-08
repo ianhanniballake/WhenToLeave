@@ -1,6 +1,7 @@
 package edu.usc.csci588team02.manager;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -49,5 +50,35 @@ public class EventManager extends Manager
 			throws IOException
 	{
 		return getEvents(new Date(), end);
+	}
+
+	/**
+	 * Finds the next event (chronologically) that has a location. Searches in
+	 * an exponentially larger date range until it finds an event (first 1 day,
+	 * then 2, then 4, etc)
+	 * 
+	 * @return the next event that has a location, null if no events with a
+	 *         location are found
+	 * @throws IOException
+	 *             on error
+	 */
+	public EventEntry getNextEventWithLocation() throws IOException
+	{
+		Calendar queryFrom = Calendar.getInstance();
+		final Calendar queryTo = Calendar.getInstance();
+		queryTo.add(Calendar.DATE, 1);
+		int daysToAdd = 2;
+		while (daysToAdd < 2048)
+		{
+			final Set<EventEntry> events = getEvents(queryFrom.getTime(),
+					queryTo.getTime());
+			for (final EventEntry event : events)
+				if (event.where != null && event.where.valueString != null)
+					return event;
+			queryFrom = queryTo;
+			queryTo.add(Calendar.DATE, daysToAdd);
+			daysToAdd *= 2;
+		}
+		return null;
 	}
 }
