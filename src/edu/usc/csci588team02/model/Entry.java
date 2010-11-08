@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.api.client.googleapis.xml.atom.AtomPatchRelativeToOriginalContent;
+import com.google.api.client.googleapis.xml.atom.GData;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.DataUtil;
@@ -30,6 +31,15 @@ import com.google.api.client.xml.atom.AtomContent;
  */
 public class Entry implements Cloneable
 {
+	static Entry executeGet(final HttpTransport transport, final EventUrl url,
+			final Class<? extends Entry> entryClass) throws IOException
+	{
+		url.fields = GData.getFieldsFor(entryClass);
+		final HttpRequest request = transport.buildGetRequest();
+		request.url = url;
+		return RedirectHandler.execute(request).parseAs(entryClass);
+	}
+
 	@Key("link")
 	public List<Link> links;
 	@Key
@@ -80,5 +90,10 @@ public class Entry implements Cloneable
 	private String getEditLink()
 	{
 		return Link.find(links, "edit");
+	}
+
+	public String getSelfLink()
+	{
+		return Link.find(links, "self");
 	}
 }

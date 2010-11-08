@@ -25,6 +25,12 @@ import com.google.api.client.util.Key;
  */
 public class EventEntry extends Entry
 {
+	public static EventEntry executeGet(final HttpTransport transport,
+			final EventUrl url) throws IOException
+	{
+		return (EventEntry) Entry.executeGet(transport, url, EventEntry.class);
+	}
+
 	@Key("gd:when")
 	public When when;
 	@Key("gd:where")

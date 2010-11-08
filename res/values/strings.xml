@@ -8,6 +8,8 @@
 		name="calendarsTitle">Calendars</string>
 	<string
 		name="mapTitle">Map</string>
+    <string
+        name="eventDetailsTitle">Event Details</string>
 	<string
 		name="preferencesTitle">Preferences</string>
 	<string

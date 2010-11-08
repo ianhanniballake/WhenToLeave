@@ -12,9 +12,8 @@
 		android:name="android.permission.USE_CREDENTIALS" />
 	<uses-permission
 		android:name="android.permission.MANAGE_ACCOUNTS" />
-	<uses-permission 
-        android:name="android.permission.ACCESS_FINE_LOCATION" />
-		
+	<uses-permission
+		android:name="android.permission.ACCESS_FINE_LOCATION" />
 	<application
 		android:icon="@drawable/icon"
 		android:label="@string/app_name"
@@ -24,10 +23,9 @@
 			<intent-filter>
 				<action
 					android:name="android.intent.action.MAIN" />
-				
-			
-<category android:name="android.intent.category.LAUNCHER"></category>
-</intent-filter>
+				<category
+					android:name="android.intent.category.LAUNCHER"></category>
+			</intent-filter>
 		</activity>
 		<activity
 			android:name=".activity.Agenda"
@@ -45,13 +43,20 @@
 			android:name=".activity.Login"></activity>
 		<activity
 			android:name=".activity.Logout"></activity>
-		<activity android:name=".activity.Dashboard" android:label="@string/app_name"></activity><activity android:name=".activity.Preferences" android:label="@string/preferencesTitle"></activity><activity android:name=".activity.Event"></activity><uses-library
+		<activity
+			android:name=".activity.Dashboard"
+			android:label="@string/app_name"></activity>
+        <activity
+            android:name=".activity.EventDetails"
+            android:label="@string/eventDetailsTitle"></activity>
+		<activity
+			android:name=".activity.Preferences"
+			android:label="@string/preferencesTitle"></activity>
+		<activity
+			android:name=".activity.Event"></activity>
+		<uses-library
 			android:name="com.google.android.maps" />
-	
-
-
-
-</application>
+	</application>
 	<uses-sdk
 		android:minSdkVersion="8"></uses-sdk>
 </manifest>

@@ -13,9 +13,17 @@ import edu.usc.csci588team02.model.CalendarUrl;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.model.EventEntryComparator;
 import edu.usc.csci588team02.model.EventFeed;
+import edu.usc.csci588team02.model.EventUrl;
 
 public class EventManager extends Manager
 {
+	public EventEntry getEvent(final String eventUrl) throws IOException
+	{
+		final EventEntry event = EventEntry.executeGet(getTransport(),
+				new EventUrl(eventUrl));
+		return event;
+	}
+
 	public Set<EventEntry> getEvents(final Date start, final Date end)
 			throws IOException
 	{

@@ -2,6 +2,7 @@ package edu.usc.csci588team02.activity;
 
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
@@ -32,6 +33,7 @@ public class Agenda extends Activity
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
 	private static final String PREF = "MyPrefs";
+	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
 
 	@Override
 	protected void onActivityResult(final int requestCode,
@@ -76,9 +78,11 @@ public class Agenda extends Activity
 			public void onItemClick(final AdapterView<?> parent,
 					final View view, final int position, final long id)
 			{
-				// Make a popup (Toast) until we have a details view activity
-				Toast.makeText(getApplicationContext(),
-						((TextView) view).getText(), Toast.LENGTH_SHORT).show();
+				final Intent detailsIntent = new Intent(Agenda.this,
+						EventDetails.class);
+				detailsIntent.putExtra("eventUrl", eventList.get(position)
+						.getSelfLink());
+				startActivity(detailsIntent);
 			}
 		});
 		final Button refreshButton = (Button) findViewById(R.id.refreshButton);
@@ -154,6 +158,8 @@ public class Agenda extends Activity
 					calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
 							+ event.where.valueString;
 			}
+			eventList.clear();
+			eventList.addAll(events);
 		} catch (final IOException e)
 		{
 			e.printStackTrace();
