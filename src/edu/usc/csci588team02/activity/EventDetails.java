@@ -14,8 +14,12 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.maps.GeoPoint;
+
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.manager.EventManager;
+import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.model.EventEntry;
 
 public class EventDetails extends Activity
@@ -38,9 +42,7 @@ public class EventDetails extends Activity
 			final Button eventDetailsMapButton = (Button) findViewById(R.id.eventDetailsMapButton);
 			final Button eventDetailsNavButton = (Button) findViewById(R.id.eventDetailsNavButton);
 			if (event.summary != null)
-			{
 				eventDetailsDescription.setText(event.summary);
-			}
 			if (event.where != null && event.where.valueString != null)
 			{
 				eventDetailsLocation.setText(event.where.valueString);
@@ -49,8 +51,17 @@ public class EventDetails extends Activity
 					@Override
 					public void onClick(final View v)
 					{
-						final Intent map = new Intent(Intent.ACTION_VIEW, Uri
-								.parse("geo:0,0?q=" + event.where.valueString.replace(' ', '+')));
+						final GeoPoint geoPoint = RouteInformation
+								.getLocation(event.where.valueString);
+						final String latLng = geoPoint.getLatitudeE6() / 1E6
+								+ "," + geoPoint.getLongitudeE6() / 1E6;
+						final Intent map = new Intent(
+								Intent.ACTION_VIEW,
+								Uri.parse("geo:"
+										+ latLng
+										+ "?z=16&q="
+										+ RouteInformation
+												.formatAddress(event.where.valueString)));
 						startActivity(map);
 					}
 				});
@@ -61,9 +72,11 @@ public class EventDetails extends Activity
 					@Override
 					public void onClick(final View v)
 					{
-						final Intent map = new Intent(Intent.ACTION_VIEW, Uri
-								.parse("google.navigation:q="
-										+  event.where.valueString.replace(' ', '+')));  
+						final Intent map = new Intent(
+								Intent.ACTION_VIEW,
+								Uri.parse("google.navigation:q="
+										+ RouteInformation
+												.formatAddress(event.where.valueString)));
 						startActivity(map);
 					}
 				});

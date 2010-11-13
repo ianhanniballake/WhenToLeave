@@ -12,90 +12,23 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-public class RouteInformation {
+import com.google.android.maps.GeoPoint;
 
-	public enum TravelType { DRIVING, WALKING, BICYCLING}
-	
-	public static String getUrlFromString(String from, String to, TravelType travelType)
-	{// connect to map web service
-		
-		//remove spaces
-		while(from.indexOf("  ") != -1){
-			from = from.replace("  "," ");
-		}
-		while(to.indexOf("  ") != -1){
-			to = to.replace("  "," ");
-		}
-		from = from.replace(" ","+");
-		to = to.replace(" ","+");
-		
-		final StringBuffer urlString = new StringBuffer();
-		urlString.append("http://maps.googleapis.com/maps/api/directions/json");
-		urlString.append("?origin=");// from
-		urlString.append(from);
-		urlString.append("&destination=");// to
-		urlString.append(to);
-		urlString.append("&sensor=false");
-		if(travelType == TravelType.BICYCLING){
-			urlString.append("&mode=bicycling");
-		}
-		else if(travelType == TravelType.WALKING){
-			urlString.append("&mode=walking");
-		}
-		else
-		{
-			urlString.append("&mode=driving");
-		}
-		System.out.println("URL: " + urlString.toString());
-		return urlString.toString();
+public class RouteInformation
+{
+	public enum TravelType {
+		BICYCLING, DRIVING, WALKING
 	}
-	
-	public static int getDuration(final String from, final String to, TravelType travelType)
-    {
-	    int durationSec = 0;
-        try
-        {
-        	String url = getUrlFromString(from,to,travelType);
-            InputStream is = getConnection(url);
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-            while ((line = br.readLine()) != null) {
-            	sb.append(line + "\n");
-            }
-            br.close();
-            	
-            String jsontext = new String(sb.toString());
-            //System.out.println(jsontext);
-            JSONObject googleMapJSONEntireObject = (JSONObject) new JSONTokener(jsontext).nextValue();
-            JSONArray googleMapJSONRoutes = googleMapJSONEntireObject.getJSONArray("routes");
-            JSONObject googleMapJSONRoute;
-            if(googleMapJSONRoutes.length() <= 0){
-            	return 0;
-            }
-            else
-            {
-            	//use the first route
-            	googleMapJSONRoute = googleMapJSONRoutes.getJSONObject(0);
-            }
-            JSONArray googleMapJSONLegs = googleMapJSONRoute.getJSONArray("legs");
-            for(int i = 0; i < googleMapJSONLegs.length();i++){
-            	JSONObject googleMapJSONLegObject = googleMapJSONLegs.getJSONObject(i);
-            	JSONObject googleMapJSONDurationObject = googleMapJSONLegObject.getJSONObject("duration");
-            	durationSec += Integer.parseInt(googleMapJSONDurationObject.getString("value"));
-            }
-            
 
-
-        }
-        catch (Exception je)
-        {
-            System.out.println("Error w/file: " + je.getMessage());
-            je.printStackTrace();
-        }
-        
-        return durationSec/60; 
-    }
+	public static String formatAddress(final String address)
+	{
+		String formattedAddress = address;
+		// remove spaces
+		while (formattedAddress.indexOf("  ") != -1)
+			formattedAddress = formattedAddress.replace("  ", " ");
+		formattedAddress = formattedAddress.replace(" ", "+");
+		return formattedAddress;
+	}
 
 	static private InputStream getConnection(final String url)
 	{
@@ -112,8 +45,105 @@ public class RouteInformation {
 			e.printStackTrace();
 		}
 		return is;
-		
 	}
-	
 
+	public static int getDuration(final String fromAddress,
+			final String toAddress, final TravelType travelType)
+	{
+		int durationSec = 0;
+		try
+		{
+			final String from = formatAddress(fromAddress);
+			final String to = formatAddress(toAddress);
+			final StringBuffer urlString = new StringBuffer();
+			urlString
+					.append("http://maps.googleapis.com/maps/api/directions/json");
+			urlString.append("?origin=");// from
+			urlString.append(from);
+			urlString.append("&destination=");// to
+			urlString.append(to);
+			urlString.append("&sensor=false");
+			if (travelType == TravelType.BICYCLING)
+				urlString.append("&mode=bicycling");
+			else if (travelType == TravelType.WALKING)
+				urlString.append("&mode=walking");
+			else
+				urlString.append("&mode=driving");
+			final String url = urlString.toString();
+			System.out.println("URL: " + url);
+			final InputStream is = getConnection(url);
+			final BufferedReader br = new BufferedReader(new InputStreamReader(
+					is));
+			final StringBuilder sb = new StringBuilder();
+			String line = null;
+			while ((line = br.readLine()) != null)
+				sb.append(line + "\n");
+			br.close();
+			final String jsontext = new String(sb.toString());
+			// System.out.println(jsontext);
+			final JSONObject googleMapJSONEntireObject = (JSONObject) new JSONTokener(
+					jsontext).nextValue();
+			final JSONArray googleMapJSONRoutes = googleMapJSONEntireObject
+					.getJSONArray("routes");
+			if (googleMapJSONRoutes.length() <= 0)
+				return 0;
+			// use the first route
+			final JSONObject googleMapJSONRoute = googleMapJSONRoutes
+					.getJSONObject(0);
+			final JSONArray googleMapJSONLegs = googleMapJSONRoute
+					.getJSONArray("legs");
+			for (int i = 0; i < googleMapJSONLegs.length(); i++)
+			{
+				final JSONObject googleMapJSONLegObject = googleMapJSONLegs
+						.getJSONObject(i);
+				final JSONObject googleMapJSONDurationObject = googleMapJSONLegObject
+						.getJSONObject("duration");
+				durationSec += Integer.parseInt(googleMapJSONDurationObject
+						.getString("value"));
+			}
+		} catch (final Exception je)
+		{
+			System.out.println("Error w/file: " + je.getMessage());
+			je.printStackTrace();
+		}
+		return durationSec / 60;
+	}
+
+	public static GeoPoint getLocation(final String address)
+	{
+		try
+		{
+			final String formattedAddress = formatAddress(address);
+			final StringBuffer urlString = new StringBuffer();
+			urlString
+					.append("http://maps.googleapis.com/maps/api/geocode/json");
+			urlString.append("?address=");
+			urlString.append(formattedAddress);
+			urlString.append("&sensor=false");
+			System.out.println("URL: " + urlString.toString());
+			final String url = urlString.toString();
+			final InputStream is = getConnection(url);
+			final BufferedReader br = new BufferedReader(new InputStreamReader(
+					is));
+			final StringBuilder sb = new StringBuilder();
+			String line = null;
+			while ((line = br.readLine()) != null)
+				sb.append(line + "\n");
+			br.close();
+			final String jsontext = new String(sb.toString());
+			final JSONObject googleMapJSONEntireObject = (JSONObject) new JSONTokener(
+					jsontext).nextValue();
+			final JSONObject googleMapJSONLocation = ((JSONArray) googleMapJSONEntireObject
+					.get("results")).getJSONObject(0).getJSONObject("geometry")
+					.getJSONObject("location");
+			final double lat = googleMapJSONLocation.getDouble("lat");
+			final double lng = googleMapJSONLocation.getDouble("lng");
+			return new GeoPoint((int) (lat * 1E6), (int) (lng * 1E6));
+		} catch (final Exception e)
+		{
+			System.out.println("Error w/file: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return new GeoPoint(0, 0);
+	}
 }
