@@ -34,8 +34,13 @@ public class EventDetails extends Activity
 			final EventEntry event = eventManager.getEvent(eventUrl);
 			eventDetailsName.setText(event.title);
 			final TextView eventDetailsLocation = (TextView) findViewById(R.id.eventDetailsLocation);
+			final TextView eventDetailsDescription = (TextView) findViewById(R.id.eventDetailsDescription);
 			final Button eventDetailsMapButton = (Button) findViewById(R.id.eventDetailsMapButton);
 			final Button eventDetailsNavButton = (Button) findViewById(R.id.eventDetailsNavButton);
+			if (event.summary != null)
+			{
+				eventDetailsDescription.setText(event.summary);
+			}
 			if (event.where != null && event.where.valueString != null)
 			{
 				eventDetailsLocation.setText(event.where.valueString);
@@ -45,7 +50,7 @@ public class EventDetails extends Activity
 					public void onClick(final View v)
 					{
 						final Intent map = new Intent(Intent.ACTION_VIEW, Uri
-								.parse("geo:0,0?q=" + event.where.valueString));
+								.parse("geo:0,0?q=" + event.where.valueString.replace(' ', '+')));
 						startActivity(map);
 					}
 				});
@@ -57,8 +62,8 @@ public class EventDetails extends Activity
 					public void onClick(final View v)
 					{
 						final Intent map = new Intent(Intent.ACTION_VIEW, Uri
-								.parse("google.navigation:?q="
-										+ event.where.valueString));
+								.parse("google.navigation:q="
+										+  event.where.valueString.replace(' ', '+')));  
 						startActivity(map);
 					}
 				});

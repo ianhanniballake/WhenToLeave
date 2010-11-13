@@ -5,52 +5,41 @@ android:layout_height="fill_parent"
 xmlns:android="http://schemas.android.com/apk/res/android">
 	<ImageButton
 		android:id="@+id/refreshButton"
-		android:layout_width="100px"
-		android:layout_height="55px"
-		android:layout_marginBottom="5px"
-		android:text="--"
-		android:textSize="32sp"
-		android:typeface="sans"
-		android:textColor="@color/white"
-		android:textStyle="bold"
-		android:gravity="center"
+		android:layout_width="66dp"
+		android:layout_height="37dp"
+		android:layout_marginBottom="3dp"
 		android:layout_gravity="center_horizontal"
-		android:src="@drawable/refresh72"
+		android:src="@drawable/refresh3_white37"
         android:background="@drawable/action_bar_side_button_green"
-		android:layout_x="0px"
-		android:layout_y="0px">
+		android:layout_x="0dp"
+		android:layout_y="0dp">
 	</ImageButton>
 	<Button
 		android:id="@+id/actionBar"
-		android:layout_width="280px"
-		android:layout_height="55px"
-		android:layout_marginBottom="5px"
+		android:layout_width="188dp"
+		android:layout_height="37dp"
+		android:layout_marginBottom="3px"
 		android:text="Leave In 3:04h"
-		android:textSize="32sp"
+		android:textSize="21sp"
 		android:typeface="sans"
 		android:textColor="@color/white"
 		android:textStyle="bold"
 		android:gravity="center"
 		android:layout_gravity="center_horizontal"
 		android:background="@drawable/custom_action_bar_green"
-		android:layout_x="100px"
+		android:layout_x="66dp"
 		android:layout_y="0px">
 	</Button>
 	<ImageButton
 		android:id="@+id/transportModeButton"
-		android:layout_width="100px"
-		android:layout_height="55px"
-		android:layout_marginBottom="5px"
-		android:text="++"
-		android:textSize="32sp"
-		android:typeface="sans"
-		android:textColor="@color/white"
-		android:textStyle="bold"
+		android:layout_width="66dp"
+		android:layout_height="37dp"
+		android:layout_marginBottom="3dp"
 		android:gravity="center"
 		android:layout_gravity="center_horizontal"
-		android:src="@drawable/car_white55"
+		android:src="@drawable/car_white37"
 		android:background="@drawable/action_bar_side_button_green"
-		android:layout_x="380px"
+		android:layout_x="254dp"
 		android:layout_y="0px">
 	</ImageButton>
 	<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
@@ -58,24 +47,28 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 	    android:layout_width="fill_parent"
 	    android:layout_height="fill_parent"
 	    android:padding="0px"
-	    android:layout_marginLeft="0px"
-	    android:layout_marginRight="0px"
+	    android:layout_marginLeft="0dp"
+	    android:layout_marginRight="0dp"
 	    android:layout_x="0px"
-		android:layout_y="55px">
+		android:layout_y="38dp">
 	    <LinearLayout
 	        android:orientation="vertical"
 	        android:layout_width="fill_parent"
 	        android:layout_height="fill_parent"
-	        android:padding="5dp">
+	        android:padding="0dp">
 	        <TabWidget
 	            android:id="@android:id/tabs"
 	            android:layout_width="fill_parent"
-	            android:layout_height="wrap_content" />
+	            android:layout_height="45dp"
+	            android:layout_margin="0dp" />
 	        <FrameLayout
 	            android:id="@android:id/tabcontent"
 	            android:layout_width="fill_parent"
-	            android:layout_height="fill_parent"
-	            android:padding="5dp" />
+	            android:layout_height="690px"
+	            android:padding="0dp"
+	            android:layout_margin="0dp"  />
+	            <!-- FrameLayout gets confused by the TabHost's Y offset, so I had to resort
+	            to making the height a static value (SB) -->
 	    </LinearLayout>
 	</TabHost>
 </AbsoluteLayout>

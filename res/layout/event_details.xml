@@ -1,61 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<AbsoluteLayout
+<LinearLayout
 android:layout_width="fill_parent"
-android:layout_height="fill_parent"
+android:layout_height="wrap_content"
 xmlns:android="http://schemas.android.com/apk/res/android"
-android:background="@drawable/background">
+android:orientation="vertical"
+android:padding="5dp">
     <TextView
-        android:id="@+id/eventDetailsName"
-        android:layout_width="330px"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:typeface="sans"
-        android:textColor="@color/white"
-        android:textStyle="bold"
-        android:gravity="left"
-        android:layout_gravity="left"
-        android:textSize="42sp"
-        android:layout_x="70px"
-        android:layout_y="0px"  >
-    </TextView>
-    <TextView
-        android:id="@+id/eventDetailsLocation"
-        android:layout_width="330px"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:typeface="sans"
-        android:textColor="@color/blue"
-        android:textStyle="bold"
-        android:gravity="left"
-        android:layout_gravity="left"
-        android:textSize="32sp"
-        android:layout_x="70px"
-        android:layout_y="60px" >
-    </TextView>
-    <Button
-        android:id="@+id/eventDetailsMapButton"
-        android:layout_width="205px"
-        android:layout_height="80px"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:textColor="@color/white"
-        android:background="@drawable/custom_launcher_button"
-        android:text="Map"
-        android:typeface="sans"
-        android:layout_x="15px"
-        android:layout_y="550px">
-    </Button>
-        <Button
-        android:id="@+id/eventDetailsNavButton"
-        android:layout_width="205px"
-        android:layout_height="80px"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:textColor="@color/white"
-        android:background="@drawable/custom_launcher_button"
-        android:text="Navigate"
-        android:typeface="sans"
-        android:layout_x="240px"
-        android:layout_y="550px">
-    </Button>
-</AbsoluteLayout>
+	        android:id="@+id/eventDetailsName"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"		    
+		    android:typeface="sans"
+		    android:textColor="@color/white"
+		    android:textStyle="bold"
+		    android:gravity="left"
+		    android:layout_gravity="left"
+		    android:textSize="24sp"
+		    android:layout_margin="2dp" >
+	    </TextView>
+	    <TextView
+	        android:id="@+id/eventDetailsLocation"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:typeface="sans"
+		    android:textColor="@color/blue"
+		    android:textStyle="bold"
+		    android:gravity="left"
+		    android:layout_gravity="left"
+		    android:textSize="17sp"
+		    android:layout_margin="2dp">
+	    </TextView>
+	    <TextView
+	        android:id="@+id/eventDetailsDescription"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:typeface="serif"
+		    android:textColor="@color/grey3"
+		    android:gravity="left"
+		    android:layout_gravity="left"
+		    android:textSize="12sp"
+		    android:layout_margin="2dp"
+		    android:background="@drawable/gradient_box_grey">
+	    </TextView>
+	    <TextView
+	        android:id="@+id/eventDetailsParticipants"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:typeface="serif"
+		    android:textColor="@color/grey3"
+		    android:gravity="left"
+		    android:layout_gravity="left"
+		    android:textSize="12sp"
+		    android:layout_margin="2dp"
+		    android:background="@drawable/gradient_box_grey"
+		    android:text="Participant 1\nParticipant 2">
+	    </TextView>
+    <LinearLayout
+       android:orientation="horizontal"
+       android:layout_width="fill_parent"
+       android:layout_height="fill_parent"
+       android:padding="5dp"
+       android:layout_marginTop="10dp"
+       android:gravity="bottom"
+       android:layout_gravity="bottom">
+	    <Button
+	        android:id="@+id/eventDetailsMapButton"
+	        android:layout_width="130dp"
+	        android:layout_height="53dp"
+	        android:layout_marginLeft="0dp"
+	        android:layout_marginRight="5dp"
+	        android:textSize="21sp"
+	        android:textStyle="bold"
+	        android:textColor="@color/white"
+	        android:background="@drawable/custom_launcher_button"
+	        android:text="Map"
+	        android:typeface="sans">
+	    </Button>
+	        <Button
+	        android:id="@+id/eventDetailsNavButton"
+	        android:layout_width="130dp"
+	        android:layout_height="53dp"
+	        android:layout_marginLeft="5dp"
+	        android:layout_marginRight="0dp"
+	        android:textSize="21sp"
+	        android:textStyle="bold"
+	        android:textColor="@color/white"
+	        android:background="@drawable/custom_launcher_button"
+	        android:text="Navigate"
+	        android:typeface="sans">
+	    </Button>
+	 </LinearLayout>
+</LinearLayout>

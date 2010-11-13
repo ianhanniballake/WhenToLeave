@@ -8,17 +8,23 @@ import java.util.Date;
 import java.util.Set;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +38,7 @@ public class Agenda extends Activity
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
+	private static final int DIALOG_EVENT_DETAILS = 99;
 	private static final String PREF = "MyPrefs";
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
 
@@ -78,6 +85,7 @@ public class Agenda extends Activity
 			public void onItemClick(final AdapterView<?> parent,
 					final View view, final int position, final long id)
 			{
+				//Uncomment this to go back to 1screen/Intent based system
 				final Intent detailsIntent = new Intent(Agenda.this,
 						EventDetails.class);
 				detailsIntent.putExtra("eventUrl", eventList.get(position)

@@ -17,7 +17,8 @@
 	<application
 		android:icon="@drawable/icon"
 		android:label="@string/app_name"
-		android:debuggable="true">
+		android:debuggable="true"
+		android:theme="@android:style/Theme.NoTitleBar">
 		<activity
 			android:name=".activity.TabbedInterface">
 			<intent-filter>
@@ -48,15 +49,17 @@
 			android:label="@string/app_name"></activity>
         <activity
             android:name=".activity.EventDetails"
-            android:label="@string/eventDetailsTitle"></activity>
+            android:label="@string/eventDetailsTitle" android:theme="@style/Theme.EventDetails"></activity>
 		<activity
 			android:name=".activity.Preferences"
 			android:label="@string/preferencesTitle"></activity>
 		<activity
-			android:name=".activity.Event"></activity>
+			android:name=".activity.Home"></activity>
 		<uses-library
 			android:name="com.google.android.maps" />
-	</application>
+	
+
+</application>
 	<uses-sdk
 		android:minSdkVersion="8"></uses-sdk>
 </manifest>

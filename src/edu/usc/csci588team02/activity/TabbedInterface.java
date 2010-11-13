@@ -38,7 +38,7 @@ public class TabbedInterface extends TabActivity
 		 * tabHost.addTab(spec);
 		 */
 		// Event tab
-		intent = new Intent().setClass(this, Event.class);
+		intent = new Intent().setClass(this, Home.class);
 		spec = tabHost.newTabSpec("event")
 				.setIndicator("", res.getDrawable(R.drawable.ic_tab_home))
 				.setContent(intent);
@@ -55,6 +55,15 @@ public class TabbedInterface extends TabActivity
 				.setIndicator("", res.getDrawable(R.drawable.ic_tab_map))
 				.setContent(intent);
 		tabHost.addTab(spec);
+		
+		//TODO: needs a little work before it becomes it's own tab - crashes currently.
+		// Event Detail tab
+		/*intent = new Intent().setClass(this, EventDetails.class);
+		spec = tabHost.newTabSpec("eventdetail")
+				.setIndicator("", res.getDrawable(R.drawable.ic_tab_event))
+				.setContent(intent);
+		tabHost.addTab(spec);*/
+		
 		// Set default starting tab to Event/Home
 		tabHost.setCurrentTab(0);
 		// Setup Listeners for the ActionBar Buttons
