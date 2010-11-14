@@ -2,38 +2,28 @@ package edu.usc.csci588team02.model;
 
 public class DashboardEntry
 {
-	public enum DashboardEntryType { 
-		MAP_LAUNCHER, 
-		NAV_LAUNCHER, 
-		EVENT_DETAIL,
-		EVENT_RIGHT, 
-		EVENT_LEFT
+	public enum DashboardEntryType {
+		EVENT_DETAIL, EVENT_LEFT, EVENT_RIGHT, MAP_LAUNCHER, NAV_LAUNCHER
 	}
-	private DashboardEntryType entryType;
+
 	private Class<?> className;
+	private DashboardEntryType entryType;
 	private String label;
-	
-	public DashboardEntry(final String label, final Class<?> className, final DashboardEntryType type)
+
+	public DashboardEntry(final String label, final Class<?> className,
+			final DashboardEntryType type)
 	{
 		setLabel(label);
 		setClassName(className);
 		setType(type);
 	}
-	
+
 	public DashboardEntry(final String label, final DashboardEntryType type)
 	{
 		setLabel(label);
 		setType(type);
 	}
 
-	/**
-	 * @return the type of dashboard entry
-	 */
-	public DashboardEntryType getType()
-	{
-		return entryType;
-	}
-	
 	/**
 	 * @return the className
 	 */
@@ -49,14 +39,13 @@ public class DashboardEntry
 	{
 		return label;
 	}
-	
+
 	/**
-	 * @param type
-	 * 			the entryType to set
+	 * @return the type of dashboard entry
 	 */
-	public void setType(DashboardEntryType type)
+	public DashboardEntryType getType()
 	{
-		this.entryType = type;
+		return entryType;
 	}
 
 	/**
@@ -75,5 +64,14 @@ public class DashboardEntry
 	public void setLabel(final String label)
 	{
 		this.label = label;
+	}
+
+	/**
+	 * @param type
+	 *            the entryType to set
+	 */
+	public void setType(final DashboardEntryType type)
+	{
+		entryType = type;
 	}
 }

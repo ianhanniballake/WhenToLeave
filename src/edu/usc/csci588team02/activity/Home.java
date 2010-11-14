@@ -23,18 +23,51 @@ public class Home extends Activity
 	public enum EventActionType {
 		EVENT_DETAIL, EVENT_LEFT, EVENT_RIGHT, MAP_LAUNCHER, NAV_LAUNCHER
 	}
+
 	private static EventManager eventManager = new EventManager();
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 3;
 	private static final String PREF = "MyPrefs";
+	private EventEntry currentEvent;
+	private TextView eventLocation;
+	private TextView eventName;
+	private Button infoButton;
 	private Button mapButton;
 	private Button navButton;
-	private Button infoButton;
-	private TextView eventName;
-	private TextView eventLocation;
-	private EventEntry currentEvent;
-	
+
+	private void launch(final EventActionType action)
+	{
+		// Gives user a choice between Browser and Maps
+		/*
+		 * Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+		 * Uri.parse
+		 * ("http://maps.google.com/maps?saddr=20.344,34.34&daddr=20.5666,45.345"
+		 * )); startActivity(intent);
+		 */
+		if (currentEvent != null)
+			if (currentEvent.where != null)
+				switch (action)
+				{
+					case MAP_LAUNCHER:
+						final Intent map = new Intent(Intent.ACTION_VIEW,
+								Uri.parse("geo:0,0?q="
+										+ currentEvent.where.valueString
+												.replace(' ', '+')));
+						startActivity(map);
+						break;
+					case NAV_LAUNCHER:
+						final Intent nav = new Intent(Intent.ACTION_VIEW,
+								Uri.parse("google.navigation:q="
+										+ currentEvent.where.valueString
+												.replace(' ', '+')));
+						startActivity(nav);
+						break;
+					default:
+						break;
+				}
+	}
+
 	@Override
 	protected void onActivityResult(final int requestCode,
 			final int resultCode, final Intent data)
@@ -65,50 +98,15 @@ public class Home extends Activity
 		}
 	}
 
-	private void launch(final EventActionType action)
-	{
-		// Gives user a choice between Browser and Maps
-		/*
-		 * Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
-		 * Uri.parse
-		 * ("http://maps.google.com/maps?saddr=20.344,34.34&daddr=20.5666,45.345"
-		 * )); startActivity(intent);
-		 */
-		if (currentEvent != null)
-		{
-			if (currentEvent.where != null)
-			{
-				switch (action)
-				{
-					case MAP_LAUNCHER:
-						final Intent map = new Intent(Intent.ACTION_VIEW,
-								Uri.parse("geo:0,0?q="
-										 + currentEvent.where.valueString.replace(' ', '+')));
-						startActivity(map);
-						break;
-					case NAV_LAUNCHER:
-						final Intent nav = new Intent(Intent.ACTION_VIEW,
-								Uri.parse("google.navigation:q="
-										+  currentEvent.where.valueString.replace(' ', '+')));
-						startActivity(nav);
-						break;
-					default:
-						break;
-				}
-			}
-		}
-	}
-
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.home);
-		
 		// Setup Listeners for the ActionBar Buttons
 		eventName = (TextView) findViewById(R.id.eventName);
-		eventLocation= (TextView) findViewById(R.id.eventLocation);
+		eventLocation = (TextView) findViewById(R.id.eventLocation);
 		mapButton = (Button) findViewById(R.id.mapButton);
 		navButton = (Button) findViewById(R.id.navButton);
 		infoButton = (Button) findViewById(R.id.infoButton);
@@ -172,20 +170,22 @@ public class Home extends Activity
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Refresh the data for the Home Screen activity
 	 */
 	public void refreshData()
 	{
 		// Configure Home Screen Text
-		try {
+		try
+		{
 			currentEvent = eventManager.getNextEventWithLocation();
 			if (currentEvent.title != null)
 				eventName.setText(currentEvent.title);
 			if (currentEvent.where != null)
 				eventLocation.setText(currentEvent.where.valueString);
-		} catch (IOException e) {
+		} catch (final IOException e)
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

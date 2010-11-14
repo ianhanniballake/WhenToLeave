@@ -113,31 +113,30 @@ class KMLHandler extends DefaultHandler
 					{
 						final String[] coodrinatesParsed = mString.split(" ");
 						int mRouteOffset = 0;
-						
-						//if a partial route is already there, append to it.
-						if(mRoad.mRoute != null){
-							double[][] mRouteOrig = mRoad.mRoute;
-							int mRouteOrigLength = mRoad.mRoute.length;
+						// if a partial route is already there, append to it.
+						if (mRoad.mRoute != null)
+						{
+							final double[][] mRouteOrig = mRoad.mRoute;
+							final int mRouteOrigLength = mRoad.mRoute.length;
 							mRouteOffset = mRouteOrigLength;
-							//create bigger array
-							mRoad.mRoute = new double[mRouteOrigLength + coodrinatesParsed.length][2];
-							//copy existing contents in new array
-							for(int i = 0; i < mRouteOrigLength; i++)
+							// create bigger array
+							mRoad.mRoute = new double[mRouteOrigLength
+									+ coodrinatesParsed.length][2];
+							// copy existing contents in new array
+							for (int i = 0; i < mRouteOrigLength; i++)
 							{
-								mRoad.mRoute[i][0]=mRouteOrig[i][0];
-								mRoad.mRoute[i][1]=mRouteOrig[i][1];
+								mRoad.mRoute[i][0] = mRouteOrig[i][0];
+								mRoad.mRoute[i][1] = mRouteOrig[i][1];
 							}
 						}
-						//route doesn't exit, make a new one
-						else{
+						else
 							mRoad.mRoute = new double[coodrinatesParsed.length][2];
-						}
 						for (int i = 0; i < coodrinatesParsed.length; i++)
 						{
 							final String[] xyParsed = coodrinatesParsed[i]
 									.split(",");
 							for (int j = 0; j < 2 && j < xyParsed.length; j++)
-								mRoad.mRoute[i+mRouteOffset][j] = Double
+								mRoad.mRoute[i + mRouteOffset][j] = Double
 										.parseDouble(xyParsed[j]);
 						}
 					}

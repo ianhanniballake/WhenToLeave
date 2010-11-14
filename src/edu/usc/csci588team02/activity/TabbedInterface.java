@@ -30,9 +30,8 @@ public class TabbedInterface extends TabActivity
 		final TabHost tabHost = getTabHost(); // The activity TabHost
 		TabHost.TabSpec spec; // Reusable TabSpec for each tab
 		Intent intent; // Reusable Intent for each tab
-		
-		startService(new Intent(this, edu.usc.csci588team02.service.AppService.class));
-		
+		startService(new Intent(this,
+				edu.usc.csci588team02.service.AppService.class));
 		// Old Dashboard Tab
 		/*
 		 * intent = new Intent().setClass(this, Dashboard.class); spec =
@@ -58,15 +57,15 @@ public class TabbedInterface extends TabActivity
 				.setIndicator("", res.getDrawable(R.drawable.ic_tab_map))
 				.setContent(intent);
 		tabHost.addTab(spec);
-		
-		//TODO: needs a little work before it becomes it's own tab - crashes currently.
+		// TODO: needs a little work before it becomes it's own tab - crashes
+		// currently.
 		// Event Detail tab
-		/*intent = new Intent().setClass(this, EventDetails.class);
-		spec = tabHost.newTabSpec("eventdetail")
-				.setIndicator("", res.getDrawable(R.drawable.ic_tab_event))
-				.setContent(intent);
-		tabHost.addTab(spec);*/
-		
+		/*
+		 * intent = new Intent().setClass(this, EventDetails.class); spec =
+		 * tabHost.newTabSpec("eventdetail") .setIndicator("",
+		 * res.getDrawable(R.drawable.ic_tab_event)) .setContent(intent);
+		 * tabHost.addTab(spec);
+		 */
 		// Set default starting tab to Event/Home
 		tabHost.setCurrentTab(0);
 		// Setup Listeners for the ActionBar Buttons
