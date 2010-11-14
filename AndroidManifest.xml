@@ -55,6 +55,8 @@
 			android:label="@string/preferencesTitle"></activity>
 		<activity
 			android:name=".activity.Home"></activity>
+			
+		<service android:enabled="true" android:name=".service.AppService"></service>
 		<uses-library
 			android:name="com.google.android.maps" />
 	
