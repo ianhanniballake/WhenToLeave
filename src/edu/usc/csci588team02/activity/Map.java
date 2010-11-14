@@ -26,7 +26,7 @@ import edu.usc.csci588team02.maps.ItemizedOverlay;
 /**
  * @author Stephanie Trudeau
  */
-public class Map extends MapActivity
+public class Map extends MapActivity implements Refreshable
 {
 	private class MyLocationListener implements LocationListener
 	{
@@ -155,5 +155,11 @@ public class Map extends MapActivity
 				return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void refreshData()
+	{
+		// TODO Auto-generated method stub
 	}
 }

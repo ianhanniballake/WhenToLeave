@@ -18,7 +18,7 @@ import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.manager.EventManager;
 import edu.usc.csci588team02.model.EventEntry;
 
-public class Home extends Activity
+public class Home extends Activity implements Refreshable
 {
 	public enum EventActionType {
 		EVENT_DETAIL, EVENT_LEFT, EVENT_RIGHT, MAP_LAUNCHER, NAV_LAUNCHER
@@ -174,6 +174,7 @@ public class Home extends Activity
 	/**
 	 * Refresh the data for the Home Screen activity
 	 */
+	@Override
 	public void refreshData()
 	{
 		// Configure Home Screen Text

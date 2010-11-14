@@ -14,11 +14,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,7 +24,7 @@ import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.manager.EventManager;
 import edu.usc.csci588team02.model.EventEntry;
 
-public class Agenda extends Activity
+public class Agenda extends Activity implements Refreshable
 {
 	private static EventManager eventManager = new EventManager();
 	private static final int MENU_LOGOUT = 1;
@@ -85,15 +83,6 @@ public class Agenda extends Activity
 				startActivity(detailsIntent);
 			}
 		});
-		final Button refreshButton = (Button) findViewById(R.id.refreshButton);
-		refreshButton.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(final View view)
-			{
-				refreshData();
-			}
-		});
 		startActivityForResult(new Intent(this, Login.class),
 				Login.REQUEST_AUTHENTICATE);
 	}
@@ -131,6 +120,7 @@ public class Agenda extends Activity
 	/**
 	 * Refresh the data for the MainScreen activity
 	 */
+	@Override
 	public void refreshData()
 	{
 		// Set the last refreshed to a while refreshing text
