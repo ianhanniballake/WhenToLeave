@@ -3,10 +3,12 @@ package edu.usc.csci588team02.activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.TabActivity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +18,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TabHost;
 import edu.usc.csci588team02.R;
+import edu.usc.csci588team02.service.AppLocationListener;
+import edu.usc.csci588team02.utility.NotificationUtility;
 
 public class TabbedInterface extends TabActivity
 {
@@ -23,7 +27,10 @@ public class TabbedInterface extends TabActivity
 	protected static final String PREF = "MyPrefs";
 	private static final String TAG = "TabbedInterfaceActivity";
 	protected final boolean DEBUG = false;
-
+	private AppLocationListener mLocationListener;
+	private LocationManager mLocationManager;
+	private NotificationUtility mNotificationUtility;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(final Bundle savedInstanceState)
@@ -34,11 +41,24 @@ public class TabbedInterface extends TabActivity
 												// Drawables
 		final TabHost tabHost = getTabHost(); // The activity TabHost
 		TabHost.TabSpec spec; // Reusable TabSpec for each tab
-		// We'll eventually need a ServiceManager with access to the service
-		// object somewhere
-		final Intent service = new Intent(this,
+		
+		// Setup GPS callbacks
+		SharedPreferences settings = getSharedPreferences(PREF, 0);
+		int interval = settings.getInt("RefreshInterval", 5);
+		interval = interval * 1000;
+		mLocationListener = new AppLocationListener(this);
+		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, interval, 0,
+				mLocationListener);
+		
+		// Setup Notification Utility Manager
+		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		mNotificationUtility = new NotificationUtility(this, nm);
+		
+		/*Intent service = new Intent(this,
 				edu.usc.csci588team02.service.AppService.class);
-		startService(service);
+		startService(service);*/
+		
 		// Event tab
 		spec = tabHost.newTabSpec("event")
 				.setIndicator("", res.getDrawable(R.drawable.ic_tab_home))
@@ -167,5 +187,13 @@ public class TabbedInterface extends TabActivity
 				return transportDialog;
 		}
 		return super.onCreateDialog(id);
+	}
+	
+	public void CalculateTimeToLeaveAndNotify(){
+		//TODO: call time to leave calculation
+		//TODO: call notification if needed with current event
+		
+		mNotificationUtility.createSimpleNotification("Location Updated");
+		//mNotificationUtility.createSimpleNotification("Location Updated", ee, NotificationUtility.COLOR.GREEN);
 	}
 }

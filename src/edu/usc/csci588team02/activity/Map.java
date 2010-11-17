@@ -12,7 +12,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
-import android.widget.Toast;
+//import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -35,11 +35,12 @@ public class Map extends MapActivity implements Refreshable
 		{
 			if (location != null)
 			{
+				/*
 				Toast.makeText(
 						getBaseContext(),
 						"Location changed : Lat: " + location.getLatitude()
 								+ " Lng: " + location.getLongitude(),
-						Toast.LENGTH_SHORT).show();
+						Toast.LENGTH_SHORT).show();*/
 				final GeoPoint point = new GeoPoint(
 						(int) (location.getLatitude() * 1000000),
 						(int) (location.getLongitude() * 1000000));

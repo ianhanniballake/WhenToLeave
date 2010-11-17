@@ -1,5 +1,6 @@
 <resources>
 	<string-array name="intervals">
+		<item>10 Seconds</item>
 		<item>30 Seconds</item>
 		<item>1 Minute</item>
 		<item>5 Minutes</item>
@@ -16,6 +17,7 @@
 	</string-array>
 	<!-- Refresh Interval Values in Seconds -->
 	<integer-array name="interval_values">
+		<item>10</item>
 		<item>30</item>	
 		<item>60</item>
 		<item>300</item>
