@@ -30,8 +30,8 @@ public class Home extends Activity implements Refreshable
 	private static final int MENU_VIEW_CALENDARS = 3;
 	private static final String PREF = "MyPrefs";
 	private EventEntry currentEvent;
-	private TextView eventLocation;
 	private TextView eventDescription;
+	private TextView eventLocation;
 	private TextView eventName;
 	private Button infoButton;
 	private Button mapButton;
@@ -187,14 +187,12 @@ public class Home extends Activity implements Refreshable
 				eventName.setText(currentEvent.title);
 			else
 				eventName.setText("No Events");
-			
 			if (currentEvent.where != null)
 				eventLocation.setText(currentEvent.where.valueString);
 			else
 				eventLocation.setText("");
-			
-			if (currentEvent.summary != null)
-				eventDescription.setText(currentEvent.summary);
+			if (currentEvent.content != null)
+				eventDescription.setText(currentEvent.content);
 			else
 				eventDescription.setText("");
 		} catch (final IOException e)

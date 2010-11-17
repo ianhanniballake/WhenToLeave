@@ -17,7 +17,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -33,8 +32,8 @@ public class Agenda extends Activity implements Refreshable
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
 	private static final String PREF = "MyPrefs";
+	private final ArrayList<HashMap<String, String>> eventHashMapList = new ArrayList<HashMap<String, String>>();
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
-	private final ArrayList<HashMap<String,String>> eventHashMapList = new ArrayList<HashMap<String,String>>();
 
 	@Override
 	protected void onActivityResult(final int requestCode,
@@ -86,15 +85,14 @@ public class Agenda extends Activity implements Refreshable
 				startActivity(detailsIntent);
 			}
 		});
-		
-		//For complex hashmap layout
-		SimpleAdapter adapterForList = new SimpleAdapter(Agenda.this,
-				eventHashMapList, R.layout.agenda_item,
-                new String[] {"title", "when", "where", "imageUri"},
-                new int[] { R.id.agendaItemTitle, R.id.agendaItemWhen, R.id.agendaItemWhere});
+		// For complex hashmap layout
+		final SimpleAdapter adapterForList = new SimpleAdapter(Agenda.this,
+				eventHashMapList, R.layout.agenda_item, new String[] { "title",
+						"when", "where", "imageUri" }, new int[] {
+						R.id.agendaItemTitle, R.id.agendaItemWhen,
+						R.id.agendaItemWhere });
 		final ListView mainList = (ListView) findViewById(R.id.agendaList);
 		mainList.setAdapter(adapterForList);
-				
 		startActivityForResult(new Intent(this, Login.class),
 				Login.REQUEST_AUTHENTICATE);
 	}
@@ -139,8 +137,8 @@ public class Agenda extends Activity implements Refreshable
 		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);
 		lastRefreshed.setText(getText(R.string.whileRefreshing));
 		// Load the data
-		//final ListView mainList = (ListView) findViewById(R.id.agendaList);
-		//String[] calendarEvents;
+		// final ListView mainList = (ListView) findViewById(R.id.agendaList);
+		// String[] calendarEvents;
 		eventHashMapList.clear();
 		try
 		{
@@ -148,60 +146,57 @@ public class Agenda extends Activity implements Refreshable
 			twoWeeksFromNow.add(Calendar.DATE, 14);
 			final Set<EventEntry> events = eventManager
 					.getEventsStartingNow(twoWeeksFromNow.getTime());
-
-			//For simple 1string layout
-			/*int h = 0;
-			calendarEvents = new String[events.size()];*/
-			
-			//For complex hashmap layout
-			int h=0;
+			// For simple 1string layout
+			/*
+			 * int h = 0; calendarEvents = new String[events.size()];
+			 */
 			for (final EventEntry event : events)
 			{
-				//For simple 1string layout
-				/*	calendarEvents[h++] = event.title;
-				if (event.when != null && event.when.startTime != null)
-					calendarEvents[h - 1] = calendarEvents[h - 1] + " on "
-							+ event.when.startTime.toString();
-				if (event.where != null && event.where.valueString != null
-						&& !event.where.valueString.equals(""))
-					calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
-							+ event.where.valueString; */
-				
-				//For complex hashmap layout
-				HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();	
+				// For simple 1string layout
+				/*
+				 * calendarEvents[h++] = event.title; if (event.when != null &&
+				 * event.when.startTime != null) calendarEvents[h - 1] =
+				 * calendarEvents[h - 1] + " on " +
+				 * event.when.startTime.toString(); if (event.where != null &&
+				 * event.where.valueString != null &&
+				 * !event.where.valueString.equals("")) calendarEvents[h - 1] =
+				 * calendarEvents[h - 1] + " at " + event.where.valueString;
+				 */
+				// For complex hashmap layout
+				final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
 				calendarEventHashMap.put("title", event.title);
-				
 				if (event.when != null && event.when.startTime != null)
-					calendarEventHashMap.put("when", event.when.startTime.toString());
+					calendarEventHashMap.put("when",
+							event.when.startTime.toString());
 				else
 					calendarEventHashMap.put("when", "");
-				
-				if (event.where != null && event.where.valueString != null && !event.where.valueString.equals(""))
+				if (event.where != null && event.where.valueString != null
+						&& !event.where.valueString.equals(""))
 					calendarEventHashMap.put("where", event.where.valueString);
 				else
 					calendarEventHashMap.put("where", "No Location");
-				
 				eventHashMapList.add(calendarEventHashMap);
-				//eventHashMapList.set(h, calendarEventHashMap);
-				//h++;
+				// eventHashMapList.set(h, calendarEventHashMap);
+				// h++;
 			}
 			eventList.clear();
 			eventList.addAll(events);
 		} catch (final IOException e)
 		{
 			e.printStackTrace();
-			//calendarEvents = new String[] { e.getMessage() };
-			HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
+			// calendarEvents = new String[] { e.getMessage() };
+			final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
 			calendarEventHashMap.put("title", e.getMessage());
 			calendarEventHashMap.put("when", "");
 			calendarEventHashMap.put("where", "");
 			eventHashMapList.add(calendarEventHashMap);
 		}
-		//For simple 1string layout
-		/*mainList.setAdapter(new ArrayAdapter<String>(this,
-				R.layout.agenda_item, calendarEvents));*/
-		//eventHashMapList.set(index, entitiesHashMap);
-
+		// For simple 1string layout
+		/*
+		 * mainList.setAdapter(new ArrayAdapter<String>(this,
+		 * R.layout.agenda_item, calendarEvents));
+		 */
+		// eventHashMapList.set(index, entitiesHashMap);
 		// Update the last refreshed text
 		final CharSequence lastRefreshedBase = getText(R.string.lastRefreshedBase);
 		final Date currentDate = new Date();
