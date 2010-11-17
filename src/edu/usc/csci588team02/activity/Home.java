@@ -31,6 +31,7 @@ public class Home extends Activity implements Refreshable
 	private static final String PREF = "MyPrefs";
 	private EventEntry currentEvent;
 	private TextView eventDescription;
+	private TextView eventWhen;
 	private TextView eventLocation;
 	private TextView eventName;
 	private Button infoButton;
@@ -109,6 +110,7 @@ public class Home extends Activity implements Refreshable
 		eventName = (TextView) findViewById(R.id.eventName);
 		eventLocation = (TextView) findViewById(R.id.eventLocation);
 		eventDescription = (TextView) findViewById(R.id.eventDescription);
+		eventWhen = (TextView) findViewById(R.id.eventWhen);
 		mapButton = (Button) findViewById(R.id.mapButton);
 		navButton = (Button) findViewById(R.id.navButton);
 		infoButton = (Button) findViewById(R.id.infoButton);
@@ -195,6 +197,14 @@ public class Home extends Activity implements Refreshable
 				eventDescription.setText(currentEvent.content);
 			else
 				eventDescription.setText("");
+			if (currentEvent.when.startTime != null)
+			{
+				CharSequence time = android.text.format.DateFormat.format("hh:mma 'on' EEEE, MMM dd",
+						currentEvent.when.startTime.value);
+				eventWhen.setText(time);
+			}
+			else
+				eventWhen.setText("");
 		} catch (final IOException e)
 		{
 			// TODO Auto-generated catch block

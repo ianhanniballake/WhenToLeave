@@ -33,9 +33,21 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 	        android:layout_margin="2dp">
 	    </TextView>
 	    <TextView
+	        android:id="@+id/eventWhen"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text=""
+	        android:typeface="serif"
+	        android:textColor="@color/white"
+	        android:gravity="left"
+	        android:layout_gravity="left"
+	        android:textSize="18sp"
+	        android:layout_margin="2dp">
+	    </TextView>
+	    <TextView
 	        android:id="@+id/eventDescription"
 	        android:layout_width="fill_parent"
-	        android:layout_height="230dp"
+	        android:layout_height="200dp"
 	        android:text=""
 	        android:typeface="serif"
 	        android:textColor="@color/white"

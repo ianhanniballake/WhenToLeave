@@ -28,7 +28,6 @@ public class NotificationUtility
 		mainActivity = activity;
 		// Get the notification manager serivce.
         mNotificationManager = nm;
-        createSimpleNotification("Notification Utility Created");
 	}
 	
 	public void createSimpleNotification(String message)
@@ -37,9 +36,8 @@ public class NotificationUtility
 	                System.currentTimeMillis());
 
 	     // Set the info for the views that show in the notification panel.
-	     notification.setLatestEventInfo(mainActivity, "Event Title",
-	                    "12:00 - Event Location", makeNotificationIntent(1)); 
-	     				//might have to update this makeNotificationIntent id
+	     notification.setLatestEventInfo(mainActivity, message,
+	                    "", makeNotificationIntent(1)); 
 
 	     // Send the notification.
 	     // We use a layout id because it is a unique number.  We use it later to cancel.
@@ -70,12 +68,13 @@ public class NotificationUtility
 			                System.currentTimeMillis());
 				 break;
 		}
+		
+		CharSequence time = android.text.format.DateFormat.format("hh:mma", ee.when.startTime.value);
 
 	     // Set the info for the views that show in the notification panel.
 	     notification.setLatestEventInfo(mainActivity, ee.title,
-	                    ee.when.startTime.toString() + " - " + ee.where.valueString
+	    		 		time + " - " + ee.where.valueString
 	                    , makeNotificationIntent(1)); 
-	     				//might have to update this makeNotificationIntent id
 
 	     // Send the notification.
 	     // We use a layout id because it is a unique number.  We use it later to cancel.

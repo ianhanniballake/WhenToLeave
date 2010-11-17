@@ -39,10 +39,17 @@ public class EventDetails extends Activity
 			eventDetailsName.setText(event.title);
 			final TextView eventDetailsLocation = (TextView) findViewById(R.id.eventDetailsLocation);
 			final TextView eventDetailsDescription = (TextView) findViewById(R.id.eventDetailsDescription);
+			final TextView eventDetailsWhen = (TextView) findViewById(R.id.eventDetailsWhen);
 			final Button eventDetailsMapButton = (Button) findViewById(R.id.eventDetailsMapButton);
 			final Button eventDetailsNavButton = (Button) findViewById(R.id.eventDetailsNavButton);
 			if (event.content != null)
 				eventDetailsDescription.setText(event.content);
+			if (event.when.startTime != null)
+			{
+				CharSequence time = android.text.format.DateFormat.format("hh:mma 'on' EEEE, MMM dd",
+						event.when.startTime.value);
+				eventDetailsWhen.setText(time);
+			}
 			if (event.where != null && event.where.valueString != null)
 			{
 				eventDetailsLocation.setText(event.where.valueString);

@@ -166,8 +166,11 @@ public class Agenda extends Activity implements Refreshable
 				final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
 				calendarEventHashMap.put("title", event.title);
 				if (event.when != null && event.when.startTime != null)
-					calendarEventHashMap.put("when",
-							event.when.startTime.toString());
+				{
+					CharSequence time = android.text.format.DateFormat.format("hh:mma 'on' EEEE, MMM dd",
+							event.when.startTime.value);
+					calendarEventHashMap.put("when", time.toString());
+				}
 				else
 					calendarEventHashMap.put("when", "");
 				if (event.where != null && event.where.valueString != null

@@ -1,5 +1,7 @@
 package edu.usc.csci588team02.activity;
 
+import java.io.IOException;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.TabActivity;
@@ -17,9 +19,12 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TabHost;
+import android.widget.Toast;
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.service.AppLocationListener;
 import edu.usc.csci588team02.utility.NotificationUtility;
+import edu.usc.csci588team02.manager.EventManager;
+import edu.usc.csci588team02.model.EventEntry;
 
 public class TabbedInterface extends TabActivity
 {
@@ -30,6 +35,37 @@ public class TabbedInterface extends TabActivity
 	private AppLocationListener mLocationListener;
 	private LocationManager mLocationManager;
 	private NotificationUtility mNotificationUtility;
+	private static EventManager eventManager = new EventManager();
+	
+	@Override
+	protected void onActivityResult(final int requestCode,
+			final int resultCode, final Intent data)
+	{
+		super.onActivityResult(requestCode, resultCode, data);
+		switch (requestCode)
+		{
+			case Login.REQUEST_AUTHENTICATE:
+				if (resultCode == RESULT_OK)
+				{
+					final SharedPreferences settings = getSharedPreferences(
+							PREF, 0);
+					final String authToken = settings.getString("authToken",
+							null);
+					eventManager.setAuthToken(authToken);
+					//refreshData();
+				}
+				else
+				{
+					Toast.makeText(this, R.string.loginCanceled,
+							Toast.LENGTH_SHORT);
+					finish();
+				}
+				break;
+			case Logout.REQUEST_LOGOUT:
+				finish();
+				break;
+		}
+	}
 	
 	/** Called when the activity is first created. */
 	@Override
@@ -100,6 +136,10 @@ public class TabbedInterface extends TabActivity
 				// TODO: Refresh the GPS and the Time to Leave
 			}
 		});
+		
+		// Check for login so we can feed notifications later
+		startActivityForResult(new Intent(this, Login.class),
+				Login.REQUEST_AUTHENTICATE);
 	}
 
 	@Override
@@ -192,8 +232,20 @@ public class TabbedInterface extends TabActivity
 	public void CalculateTimeToLeaveAndNotify(){
 		//TODO: call time to leave calculation
 		//TODO: call notification if needed with current event
+		//TODO: update actionbar time and color
+		//TODO: call appropriate color for event notification
 		
-		mNotificationUtility.createSimpleNotification("Location Updated");
-		//mNotificationUtility.createSimpleNotification("Location Updated", ee, NotificationUtility.COLOR.GREEN);
+		//mNotificationUtility.createSimpleNotification("Location Updated");
+		EventEntry ee = null;
+		try {
+			ee = eventManager.getNextEventWithLocation();
+			if (ee != null)
+				mNotificationUtility.createSimpleNotification("Location Updated", ee, NotificationUtility.COLOR.GREEN);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			mNotificationUtility.createSimpleNotification("Location Updated");
+		}
+		
 	}
 }
