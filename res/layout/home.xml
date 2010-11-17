@@ -35,7 +35,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 	    <TextView
 	        android:id="@+id/eventDescription"
 	        android:layout_width="fill_parent"
-	        android:layout_height="200sp"
+	        android:layout_height="230dp"
 	        android:text=""
 	        android:typeface="serif"
 	        android:textColor="@color/white"
@@ -54,7 +54,10 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 	        android:textColor="@color/grey3"
 	        android:background="@drawable/custom_launcher_button_grey"
 	        android:text="More Info"
-	        android:typeface="serif">
+	        android:typeface="serif"
+	        android:layout_gravity="bottom"
+	        android:gravity="bottom"
+	        android:layout_marginBottom="5dp">
 	        </Button>
     <LinearLayout
        android:orientation="horizontal"
