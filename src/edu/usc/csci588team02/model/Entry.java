@@ -40,10 +40,10 @@ public class Entry implements Cloneable
 		return RedirectHandler.execute(request).parseAs(entryClass);
 	}
 
+	@Key
+	public String content;
 	@Key("link")
 	public List<Link> links;
-	@Key
-	public String summary;
 	@Key
 	public String title;
 	@Key
@@ -67,10 +67,10 @@ public class Entry implements Cloneable
 	{
 		final HttpRequest request = transport.buildPostRequest();
 		request.url = url;
-		final AtomContent content = new AtomContent();
-		content.namespaceDictionary = Namespace.DICTIONARY;
-		content.entry = this;
-		request.content = content;
+		final AtomContent atomContent = new AtomContent();
+		atomContent.namespaceDictionary = Namespace.DICTIONARY;
+		atomContent.entry = this;
+		request.content = atomContent;
 		return RedirectHandler.execute(request).parseAs(getClass());
 	}
 
@@ -79,11 +79,11 @@ public class Entry implements Cloneable
 	{
 		final HttpRequest request = transport.buildPatchRequest();
 		request.setUrl(getEditLink());
-		final AtomPatchRelativeToOriginalContent content = new AtomPatchRelativeToOriginalContent();
-		content.namespaceDictionary = Namespace.DICTIONARY;
-		content.originalEntry = original;
-		content.patchedEntry = this;
-		request.content = content;
+		final AtomPatchRelativeToOriginalContent atomContent = new AtomPatchRelativeToOriginalContent();
+		atomContent.namespaceDictionary = Namespace.DICTIONARY;
+		atomContent.originalEntry = original;
+		atomContent.patchedEntry = this;
+		request.content = atomContent;
 		return RedirectHandler.execute(request).parseAs(getClass());
 	}
 

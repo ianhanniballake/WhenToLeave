@@ -41,8 +41,8 @@ public class EventDetails extends Activity
 			final TextView eventDetailsDescription = (TextView) findViewById(R.id.eventDetailsDescription);
 			final Button eventDetailsMapButton = (Button) findViewById(R.id.eventDetailsMapButton);
 			final Button eventDetailsNavButton = (Button) findViewById(R.id.eventDetailsNavButton);
-			if (event.summary != null)
-				eventDetailsDescription.setText(event.summary);
+			if (event.content != null)
+				eventDetailsDescription.setText(event.content);
 			if (event.where != null && event.where.valueString != null)
 			{
 				eventDetailsLocation.setText(event.where.valueString);
