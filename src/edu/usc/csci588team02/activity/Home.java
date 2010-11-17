@@ -31,6 +31,7 @@ public class Home extends Activity implements Refreshable
 	private static final String PREF = "MyPrefs";
 	private EventEntry currentEvent;
 	private TextView eventLocation;
+	private TextView eventDescription;
 	private TextView eventName;
 	private Button infoButton;
 	private Button mapButton;
@@ -107,6 +108,7 @@ public class Home extends Activity implements Refreshable
 		// Setup Listeners for the ActionBar Buttons
 		eventName = (TextView) findViewById(R.id.eventName);
 		eventLocation = (TextView) findViewById(R.id.eventLocation);
+		eventDescription = (TextView) findViewById(R.id.eventDescription);
 		mapButton = (Button) findViewById(R.id.mapButton);
 		navButton = (Button) findViewById(R.id.navButton);
 		infoButton = (Button) findViewById(R.id.infoButton);
@@ -183,8 +185,18 @@ public class Home extends Activity implements Refreshable
 			currentEvent = eventManager.getNextEventWithLocation();
 			if (currentEvent.title != null)
 				eventName.setText(currentEvent.title);
+			else
+				eventName.setText("No Events");
+			
 			if (currentEvent.where != null)
 				eventLocation.setText(currentEvent.where.valueString);
+			else
+				eventLocation.setText("");
+			
+			if (currentEvent.summary != null)
+				eventDescription.setText(currentEvent.summary);
+			else
+				eventDescription.setText("");
 		} catch (final IOException e)
 		{
 			// TODO Auto-generated catch block

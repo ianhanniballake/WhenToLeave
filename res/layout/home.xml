@@ -4,13 +4,13 @@ android:layout_width="fill_parent"
 android:layout_height="fill_parent"
 android:orientation="vertical"
 android:padding="5dp"
-android:background="@drawable/background"
+android:background="@drawable/background6"
 xmlns:android="http://schemas.android.com/apk/res/android">   
 	    <TextView
 	        android:id="@+id/eventName"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
-	        android:text="Event Name - possibly long string"
+	        android:text="No Events Today"
 	        android:typeface="sans"
 	        android:textColor="@color/white"
 	        android:textStyle="bold"
@@ -23,13 +23,25 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 	        android:id="@+id/eventLocation"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
-	        android:text="Event Location - possibly long string"
+	        android:text=""
 	        android:typeface="sans"
 	        android:textColor="@color/blue"
 	        android:textStyle="bold"
 	        android:gravity="left"
 	        android:layout_gravity="left"
 	        android:textSize="21sp"
+	        android:layout_margin="2dp">
+	    </TextView>
+	    <TextView
+	        android:id="@+id/eventDescription"
+	        android:layout_width="fill_parent"
+	        android:layout_height="200sp"
+	        android:text=""
+	        android:typeface="serif"
+	        android:textColor="@color/white"
+	        android:gravity="left"
+	        android:layout_gravity="left"
+	        android:textSize="16sp"
 	        android:layout_margin="2dp">
 	    </TextView>
 	    <Button

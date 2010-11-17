@@ -4,40 +4,63 @@ android:layout_width="fill_parent"
 android:layout_height="fill_parent"
 android:orientation="vertical"
 xmlns:android="http://schemas.android.com/apk/res/android">
-	<Button
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="Button">
-	</Button>
+	<TextView
+	    android:id="@+id/refreshPrefText"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:text="Refresh Interval:"
+	    android:typeface="sans"
+	    android:textColor="@color/white"
+	    android:textStyle="bold"
+	    android:gravity="left"
+	    android:layout_gravity="left"
+	    android:textSize="28sp"
+	    android:layout_margin="2dp" >
+	</TextView>
 	<Spinner
+	android:id="@+id/spinnerRefreshTime"
 	android:layout_width="wrap_content"
-	android:layout_height="wrap_content">
+	android:layout_height="wrap_content"
+	android:prompt="@string/refresh_time">
 	</Spinner>
-	<CheckBox
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="CheckBox">
-	</CheckBox>
-	<CheckBox
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:text="CheckBox">
-	</CheckBox>
+	<TextView
+	    android:id="@+id/actionbarPrefText"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:text="Action Bar Performs:"
+	    android:typeface="sans"
+	    android:textColor="@color/white"
+	    android:textStyle="bold"
+	    android:gravity="left"
+	    android:layout_gravity="left"
+	    android:textSize="28sp"
+	    android:layout_margin="2dp" >
+	</TextView>
 	<RadioGroup
+	android:id="@+id/preferencesRBGroup"
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content"
-	android:orientation="vertical"
-	android:layout_x="88px"
-	android:layout_y="307px">
+	android:orientation="vertical">
 		<RadioButton
+		android:id="@+id/rbActionButtonPrefDetails"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="RadioButton">
+		android:layout_marginLeft="5dp"
+		android:text="Open Current Event Details">
 		</RadioButton>
 		<RadioButton
+		android:id="@+id/rbActionButtonPrefMap"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="RadioButton">
+		android:layout_marginLeft="5dp"
+		android:text="Map Current Event">
+		</RadioButton>
+		<RadioButton
+		android:id="@+id/rbActionButtonPrefNav"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="5dp"
+		android:text="Navigate to Current Event">
 		</RadioButton>
 	</RadioGroup>
 </LinearLayout>

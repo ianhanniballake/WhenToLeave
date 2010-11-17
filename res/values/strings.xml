@@ -24,4 +24,6 @@
 		name="lastRefreshedDefault">Last Refreshed: Never</string>
 	<string
 		name="eventLocation">35+Corporate+Dr+Burlington+MA</string>
+	<string
+		name="refresh_time">Refresh Time</string>
 </resources>

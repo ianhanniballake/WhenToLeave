@@ -5,8 +5,10 @@ import android.app.Dialog;
 import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -17,7 +19,10 @@ import edu.usc.csci588team02.R;
 
 public class TabbedInterface extends TabActivity
 {
+	protected final boolean DEBUG = false;
+	private static final String TAG = "TabbedInterfaceActivity";
 	private static final int DIALOG_TRANSPORTATION = 100;
+	protected static final String PREF = "MyPrefs";
 
 	/** Called when the activity is first created. */
 	@Override
@@ -29,8 +34,12 @@ public class TabbedInterface extends TabActivity
 												// Drawables
 		final TabHost tabHost = getTabHost(); // The activity TabHost
 		TabHost.TabSpec spec; // Reusable TabSpec for each tab
-		startService(new Intent(this,
-				edu.usc.csci588team02.service.AppService.class));
+		
+		//We'll eventually need a ServiceManager with access to the service object somewhere
+		Intent service = new Intent(this,
+				edu.usc.csci588team02.service.AppService.class);
+		startService(service);
+		
 		// Event tab
 		spec = tabHost.newTabSpec("event")
 				.setIndicator("", res.getDrawable(R.drawable.ic_tab_home))
@@ -100,7 +109,12 @@ public class TabbedInterface extends TabActivity
 					@Override
 					public void onClick(final View view)
 					{
-						// Do whatever when the button is clicked.
+						SharedPreferences settings = getSharedPreferences(PREF, 0);
+						SharedPreferences.Editor editor = settings.edit();
+						editor.putString("TransportPreference", "DRIVING");
+						editor.commit();
+						if (DEBUG)
+							Log.d(TAG, "Committed travel pref: " + settings.getString("TransportPreference", "DRIVING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -111,7 +125,12 @@ public class TabbedInterface extends TabActivity
 					@Override
 					public void onClick(final View view)
 					{
-						// Do whatever when the button is clicked.
+						SharedPreferences settings = getSharedPreferences(PREF, 0);
+						SharedPreferences.Editor editor = settings.edit();
+						editor.putString("TransportPreference", "BICYCLING");
+						editor.commit();
+						if (DEBUG)
+							Log.d(TAG, "Committed travel pref: " + settings.getString("TransportPreference", "BICYCLING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -122,7 +141,12 @@ public class TabbedInterface extends TabActivity
 					@Override
 					public void onClick(final View view)
 					{
-						// Do whatever when the button is clicked.
+						SharedPreferences settings = getSharedPreferences(PREF, 0);
+						SharedPreferences.Editor editor = settings.edit();
+						editor.putString("TransportPreference", "WALKING");
+						editor.commit();
+						if (DEBUG)
+							Log.d(TAG, "Committed travel pref: " + settings.getString("TransportPreference", "WALKING"));
 						transportDialog.dismiss();
 					}
 				});
