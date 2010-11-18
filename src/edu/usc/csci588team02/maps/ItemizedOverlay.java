@@ -78,4 +78,15 @@ public class ItemizedOverlay extends
 	{
 		return mOverlays.size();
 	}
+
+	@Override
+	protected boolean onTap(int index)
+	{
+		// final Intent detailsIntent = new Intent(Map.this,
+		// EventDetails.class);
+		// detailsIntent.putExtra("eventUrl", eventList.get(position)
+		// .getSelfLink());
+		// startActivity(detailsIntent);
+		return true;
+	}
 }

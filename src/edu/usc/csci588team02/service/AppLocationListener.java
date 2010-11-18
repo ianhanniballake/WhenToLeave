@@ -1,28 +1,28 @@
 package edu.usc.csci588team02.service;
 
-import edu.usc.csci588team02.activity.TabbedInterface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 import android.util.Log;
+import edu.usc.csci588team02.activity.TabbedInterface;
 
 public class AppLocationListener implements LocationListener
 {
 	private static TabbedInterface mainActivity;
-	
+
 	public AppLocationListener(TabbedInterface activity)
 	{
 		mainActivity = activity;
 	}
-	
+
 	@Override
 	public void onLocationChanged(final Location location)
 	{
 		if (location != null)
 		{
-			Log.d("LOCATION CHANGED", "Lat:  " +location.getLatitude() + "");
-	        Log.d("LOCATION CHANGED", "Long: " +location.getLongitude() + "");
-	        mainActivity.CalculateTimeToLeaveAndNotify();
+			Log.d("LOCATION CHANGED", "Lat:  " + location.getLatitude() + "");
+			Log.d("LOCATION CHANGED", "Long: " + location.getLongitude() + "");
+			mainActivity.CalculateTimeToLeaveAndNotify(location);
 		}
 	}
 
