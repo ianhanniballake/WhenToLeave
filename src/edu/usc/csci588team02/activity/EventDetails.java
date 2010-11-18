@@ -46,8 +46,9 @@ public class EventDetails extends Activity
 				eventDetailsDescription.setText(event.content);
 			if (event.when.startTime != null)
 			{
-				CharSequence time = android.text.format.DateFormat.format("hh:mma 'on' EEEE, MMM dd",
-						event.when.startTime.value);
+				final CharSequence time = android.text.format.DateFormat
+						.format("hh:mma 'on' EEEE, MMM dd",
+								event.when.startTime.value);
 				eventDetailsWhen.setText(time);
 			}
 			if (event.where != null && event.where.valueString != null)

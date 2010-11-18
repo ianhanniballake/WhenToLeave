@@ -10,7 +10,7 @@ public class AppLocationListener implements LocationListener
 {
 	private static TabbedInterface mainActivity;
 
-	public AppLocationListener(TabbedInterface activity)
+	public AppLocationListener(final TabbedInterface activity)
 	{
 		mainActivity = activity;
 	}

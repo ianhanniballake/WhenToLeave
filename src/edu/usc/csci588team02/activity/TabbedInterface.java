@@ -18,8 +18,8 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TabHost;
 import android.widget.Toast;
@@ -37,13 +37,64 @@ import edu.usc.csci588team02.utility.NotificationUtility;
 public class TabbedInterface extends TabActivity
 {
 	private static final int DIALOG_TRANSPORTATION = 100;
+	private static EventManager eventManager = new EventManager();
 	protected static final String PREF = "MyPrefs";
 	private static final String TAG = "TabbedInterfaceActivity";
 	protected final boolean DEBUG = false;
 	private AppLocationListener mLocationListener;
 	private LocationManager mLocationManager;
 	private NotificationUtility mNotificationUtility;
-	private static EventManager eventManager = new EventManager();
+
+	public void CalculateTimeToLeaveAndNotify(final Location location)
+	{
+		// TODO: call notification if needed with current event
+		// TODO: update actionbar time and color
+		// TODO: call appropriate color for event notification
+		// TODO: determine traveltype to determine duration
+		// Get Current Location
+		final String curLocation = location.getLatitude() + ","
+				+ location.getLongitude();
+		// mNotificationUtility.createSimpleNotification("Location Updated");
+		EventEntry ee = null;
+		try
+		{
+			ee = eventManager.getNextEventWithLocation();
+			if (ee != null)
+				// determine duration between current location and next event
+				if (ee.where.valueString != null)
+				{
+					final int dur = RouteInformation.getDuration(curLocation,
+							ee.where.valueString, TravelType.DRIVING);
+					Log.d(TAG, "Duration=" + dur);
+					final long durationTime = dur * 60 * 1000;
+					final DateTime eventStart = ee.when.startTime;
+					final long timeToLeave = eventStart.value - durationTime;
+					final Date date = new Date(timeToLeave);
+					final Date curDate = new Date(System.currentTimeMillis());
+					Log.d(TAG,
+							"TimeToLeave: "
+									+ DateFormat
+											.format("MM/dd/yy h:mmaa", date));
+					Log.d(TAG,
+							"CurrentTime: "
+									+ DateFormat.format("MM/dd/yy h:mmaa",
+											curDate));
+					Log.d(TAG,
+							"AppointmentTime: "
+									+ DateFormat.format("MM/dd/yy h:mmaa",
+											eventStart.value));
+					mNotificationUtility.createSimpleNotification(
+							"Location Updated", ee,
+							NotificationUtility.COLOR.GREEN);
+				}
+				else
+					Log.d(TAG, "Address does not exist");
+		} catch (final IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	@Override
 	protected void onActivityResult(final int requestCode,
@@ -86,7 +137,7 @@ public class TabbedInterface extends TabActivity
 		final TabHost tabHost = getTabHost(); // The activity TabHost
 		TabHost.TabSpec spec; // Reusable TabSpec for each tab
 		// Setup GPS callbacks
-		SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
 		int interval = settings.getInt("RefreshInterval", 5);
 		interval = interval * 1000;
 		mLocationListener = new AppLocationListener(this);
@@ -94,7 +145,7 @@ public class TabbedInterface extends TabActivity
 		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 				interval, 0, mLocationListener);
 		// Setup Notification Utility Manager
-		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		mNotificationUtility = new NotificationUtility(this, nm);
 		/*
 		 * Intent service = new Intent(this,
@@ -102,19 +153,19 @@ public class TabbedInterface extends TabActivity
 		 * startService(service);
 		 */
 		// Event tab
-		spec = tabHost.newTabSpec("event").setIndicator("",
-				res.getDrawable(R.drawable.ic_tab_home)).setContent(
-				new Intent(this, Home.class));
+		spec = tabHost.newTabSpec("event")
+				.setIndicator("", res.getDrawable(R.drawable.ic_tab_home))
+				.setContent(new Intent(this, Home.class));
 		tabHost.addTab(spec);
 		// Agenda tab
-		spec = tabHost.newTabSpec("agenda").setIndicator("",
-				res.getDrawable(R.drawable.ic_tab_agenda)).setContent(
-				new Intent(this, Agenda.class));
+		spec = tabHost.newTabSpec("agenda")
+				.setIndicator("", res.getDrawable(R.drawable.ic_tab_agenda))
+				.setContent(new Intent(this, Agenda.class));
 		tabHost.addTab(spec);
 		// Map tab
-		spec = tabHost.newTabSpec("map").setIndicator("",
-				res.getDrawable(R.drawable.ic_tab_map)).setContent(
-				new Intent(this, Map.class));
+		spec = tabHost.newTabSpec("map")
+				.setIndicator("", res.getDrawable(R.drawable.ic_tab_map))
+				.setContent(new Intent(this, Map.class));
 		tabHost.addTab(spec);
 		// Set default starting tab to Event/Home
 		tabHost.setCurrentTab(0);
@@ -179,9 +230,11 @@ public class TabbedInterface extends TabActivity
 						editor.putString("TransportPreference", "DRIVING");
 						editor.commit();
 						if (DEBUG)
-							Log.d(TAG, "Committed travel pref: "
-									+ settings.getString("TransportPreference",
-											"DRIVING"));
+							Log.d(TAG,
+									"Committed travel pref: "
+											+ settings.getString(
+													"TransportPreference",
+													"DRIVING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -198,9 +251,11 @@ public class TabbedInterface extends TabActivity
 						editor.putString("TransportPreference", "BICYCLING");
 						editor.commit();
 						if (DEBUG)
-							Log.d(TAG, "Committed travel pref: "
-									+ settings.getString("TransportPreference",
-											"BICYCLING"));
+							Log.d(TAG,
+									"Committed travel pref: "
+											+ settings.getString(
+													"TransportPreference",
+													"BICYCLING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -217,64 +272,16 @@ public class TabbedInterface extends TabActivity
 						editor.putString("TransportPreference", "WALKING");
 						editor.commit();
 						if (DEBUG)
-							Log.d(TAG, "Committed travel pref: "
-									+ settings.getString("TransportPreference",
-											"WALKING"));
+							Log.d(TAG,
+									"Committed travel pref: "
+											+ settings.getString(
+													"TransportPreference",
+													"WALKING"));
 						transportDialog.dismiss();
 					}
 				});
 				return transportDialog;
 		}
 		return super.onCreateDialog(id);
-	}
-
-	public void CalculateTimeToLeaveAndNotify(Location location)
-	{
-		// TODO: call notification if needed with current event
-		// TODO: update actionbar time and color
-		// TODO: call appropriate color for event notification
-		// TODO: determine traveltype to determine duration
-		// Get Current Location
-		String curLocation = location.getLatitude() + ","
-				+ location.getLongitude();
-		// mNotificationUtility.createSimpleNotification("Location Updated");
-		EventEntry ee = null;
-		try
-		{
-			ee = eventManager.getNextEventWithLocation();
-			if (ee != null)
-			{
-				// determine duration between current location and next event
-				if (ee.where.valueString != null)
-				{
-					int dur = RouteInformation.getDuration(curLocation,
-							ee.where.valueString, TravelType.DRIVING);
-					Log.d(TAG, "Duration=" + dur);
-					long durationTime = dur * 60 * 1000;
-					DateTime eventStart = ee.when.startTime;
-					long timeToLeave = eventStart.value - durationTime;
-					Date date = new Date(timeToLeave);
-					Date curDate = new Date(System.currentTimeMillis());
-					Log.d(TAG, "TimeToLeave: "
-							+ DateFormat.format("MM/dd/yy h:mmaa", date));
-					Log.d(TAG, "CurrentTime: "
-							+ DateFormat.format("MM/dd/yy h:mmaa", curDate));
-					Log.d(TAG, "AppointmentTime: "
-							+ DateFormat.format("MM/dd/yy h:mmaa",
-									eventStart.value));
-					mNotificationUtility.createSimpleNotification(
-							"Location Updated", ee,
-							NotificationUtility.COLOR.GREEN);
-				}
-				else
-				{ // event does not have location
-					Log.d(TAG, "Address does not exist");
-				}
-			}
-		} catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 }

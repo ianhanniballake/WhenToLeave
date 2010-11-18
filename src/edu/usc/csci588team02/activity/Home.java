@@ -31,9 +31,9 @@ public class Home extends Activity implements Refreshable
 	private static final String PREF = "MyPrefs";
 	private EventEntry currentEvent;
 	private TextView eventDescription;
-	private TextView eventWhen;
 	private TextView eventLocation;
 	private TextView eventName;
+	private TextView eventWhen;
 	private Button infoButton;
 	private Button mapButton;
 	private Button navButton;
@@ -199,8 +199,9 @@ public class Home extends Activity implements Refreshable
 				eventDescription.setText("");
 			if (currentEvent.when.startTime != null)
 			{
-				CharSequence time = android.text.format.DateFormat.format("hh:mma 'on' EEEE, MMM dd",
-						currentEvent.when.startTime.value);
+				final CharSequence time = android.text.format.DateFormat
+						.format("hh:mma 'on' EEEE, MMM dd",
+								currentEvent.when.startTime.value);
 				eventWhen.setText(time);
 			}
 			else

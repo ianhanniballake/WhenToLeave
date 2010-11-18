@@ -56,6 +56,17 @@ public class ItemizedOverlay extends
 		return mOverlays.get(i);
 	}
 
+	@Override
+	protected boolean onTap(final int index)
+	{
+		// final Intent detailsIntent = new Intent(Map.this,
+		// EventDetails.class);
+		// detailsIntent.putExtra("eventUrl", eventList.get(position)
+		// .getSelfLink());
+		// startActivity(detailsIntent);
+		return true;
+	}
+
 	/**
 	 * Sets the Drawable marker for an {@link OverlayItem} i.
 	 * 
@@ -77,16 +88,5 @@ public class ItemizedOverlay extends
 	public int size()
 	{
 		return mOverlays.size();
-	}
-
-	@Override
-	protected boolean onTap(int index)
-	{
-		// final Intent detailsIntent = new Intent(Map.this,
-		// EventDetails.class);
-		// detailsIntent.putExtra("eventUrl", eventList.get(position)
-		// .getSelfLink());
-		// startActivity(detailsIntent);
-		return true;
 	}
 }
