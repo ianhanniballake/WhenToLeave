@@ -7,6 +7,7 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,6 +16,8 @@ import android.util.Log;
 
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpResponseException;
+
+import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
  * Sample for Google Calendar Data API using the Atom wire format. It shows how
@@ -27,13 +30,14 @@ import com.google.api.client.http.HttpResponseException;
  * 
  * @author Ian Lake
  */
-public class Login extends Activity
+public class Login extends Activity implements Refreshable
 {
 	private static final String AUTH_TOKEN_TYPE = "cl";
 	private static final int DIALOG_ACCOUNTS = 99;
 	private static final String PREF = "MyPrefs";
 	public static final int REQUEST_AUTHENTICATE = 99;
 	private static final String TAG = "Login";
+	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	private String getAuthToken(final AccountManager manager,
 			final Account account)
@@ -81,6 +85,7 @@ public class Login extends Activity
 				editor.putString("authToken", authToken);
 				editor.commit();
 				setResult(RESULT_OK);
+				service.setAuthToken(authToken);
 				finish();
 			}
 		}.start();
@@ -161,7 +166,9 @@ public class Login extends Activity
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		gotAccount(false);
+		bindService(new Intent(this,
+				edu.usc.csci588team02.service.AppService.class), service,
+				Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -192,5 +199,18 @@ public class Login extends Activity
 				return builder.create();
 		}
 		return super.onCreateDialog(id);
+	}
+
+	@Override
+	public void onDestroy()
+	{
+		super.onDestroy();
+		unbindService(service);
+	}
+
+	@Override
+	public void refreshData()
+	{
+		gotAccount(false);
 	}
 }

@@ -5,16 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.Toast;
-import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.manager.CalendarManager;
 import edu.usc.csci588team02.model.CalendarEntry;
+import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
  * Sample for Google Calendar Data API using the Atom wire format. It shows how
@@ -27,33 +25,11 @@ import edu.usc.csci588team02.model.CalendarEntry;
  * 
  * @author Yaniv Inbar
  */
-public final class Calendars extends ListActivity
+public final class Calendars extends ListActivity implements Refreshable
 {
-	private static CalendarManager calendarManager = new CalendarManager();
 	private static final int MENU_LOGOUT = 1;
-	private static final String PREF = "MyPrefs";
 	private List<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
-
-	private void executeRefreshCalendars()
-	{
-		String[] calendarNames;
-		calendars.clear();
-		try
-		{
-			calendars = calendarManager.getCalendars();
-			final int numCalendars = calendars.size();
-			calendarNames = new String[numCalendars];
-			for (int i = 0; i < numCalendars; i++)
-				calendarNames[i] = calendars.get(i).title;
-		} catch (final IOException e)
-		{
-			e.printStackTrace();
-			calendarNames = new String[] { e.getMessage() };
-			calendars.clear();
-		}
-		setListAdapter(new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, calendarNames));
-	}
+	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	@Override
 	protected void onActivityResult(final int requestCode,
@@ -62,23 +38,6 @@ public final class Calendars extends ListActivity
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode)
 		{
-			case Login.REQUEST_AUTHENTICATE:
-				if (resultCode == RESULT_OK)
-				{
-					final SharedPreferences settings = getSharedPreferences(
-							PREF, 0);
-					final String authToken = settings.getString("authToken",
-							null);
-					calendarManager.setAuthToken(authToken);
-					executeRefreshCalendars();
-				}
-				else
-				{
-					Toast.makeText(this, R.string.loginCanceled,
-							Toast.LENGTH_SHORT);
-					finish();
-				}
-				break;
 			case Logout.REQUEST_LOGOUT:
 				finish();
 				break;
@@ -90,6 +49,9 @@ public final class Calendars extends ListActivity
 	{
 		super.onCreate(savedInstanceState);
 		getListView().setTextFilterEnabled(true);
+		bindService(new Intent(this,
+				edu.usc.csci588team02.service.AppService.class), service,
+				Context.BIND_AUTO_CREATE);
 		startActivityForResult(new Intent(this, Login.class),
 				Login.REQUEST_AUTHENTICATE);
 	}
@@ -112,5 +74,27 @@ public final class Calendars extends ListActivity
 				return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void refreshData()
+	{
+		String[] calendarNames;
+		calendars.clear();
+		try
+		{
+			calendars = service.getCalendars();
+			final int numCalendars = calendars.size();
+			calendarNames = new String[numCalendars];
+			for (int i = 0; i < numCalendars; i++)
+				calendarNames[i] = calendars.get(i).title;
+		} catch (final IOException e)
+		{
+			e.printStackTrace();
+			calendarNames = new String[] { e.getMessage() };
+			calendars.clear();
+		}
+		setListAdapter(new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, calendarNames));
 	}
 }

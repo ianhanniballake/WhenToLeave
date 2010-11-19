@@ -3,8 +3,8 @@ package edu.usc.csci588team02.activity;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,10 +13,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.manager.EventManager;
 import edu.usc.csci588team02.model.EventEntry;
+import edu.usc.csci588team02.service.AppServiceConnection;
 
 public class Home extends Activity implements Refreshable
 {
@@ -24,11 +23,9 @@ public class Home extends Activity implements Refreshable
 		EVENT_DETAIL, EVENT_LEFT, EVENT_RIGHT, MAP_LAUNCHER, NAV_LAUNCHER
 	}
 
-	private static EventManager eventManager = new EventManager();
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 3;
-	private static final String PREF = "MyPrefs";
 	private EventEntry currentEvent;
 	private TextView eventDescription;
 	private TextView eventLocation;
@@ -37,6 +34,7 @@ public class Home extends Activity implements Refreshable
 	private Button infoButton;
 	private Button mapButton;
 	private Button navButton;
+	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	private void launch(final EventActionType action)
 	{
@@ -77,23 +75,6 @@ public class Home extends Activity implements Refreshable
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode)
 		{
-			case Login.REQUEST_AUTHENTICATE:
-				if (resultCode == RESULT_OK)
-				{
-					final SharedPreferences settings = getSharedPreferences(
-							PREF, 0);
-					final String authToken = settings.getString("authToken",
-							null);
-					eventManager.setAuthToken(authToken);
-					refreshData();
-				}
-				else
-				{
-					Toast.makeText(this, R.string.loginCanceled,
-							Toast.LENGTH_SHORT);
-					finish();
-				}
-				break;
 			case Logout.REQUEST_LOGOUT:
 				finish();
 				break;
@@ -141,8 +122,12 @@ public class Home extends Activity implements Refreshable
 				launch(EventActionType.NAV_LAUNCHER);
 			}
 		});
-		startActivityForResult(new Intent(this, Login.class),
-				Login.REQUEST_AUTHENTICATE);
+		// Need to use getApplicationContext as this activity is used as a Tab
+		getApplicationContext()
+				.bindService(
+						new Intent(this,
+								edu.usc.csci588team02.service.AppService.class),
+						service, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -184,7 +169,7 @@ public class Home extends Activity implements Refreshable
 		// Configure Home Screen Text
 		try
 		{
-			currentEvent = eventManager.getNextEventWithLocation();
+			currentEvent = service.getNextEventWithLocation();
 			if (currentEvent.title != null)
 				eventName.setText(currentEvent.title);
 			else
@@ -208,7 +193,6 @@ public class Home extends Activity implements Refreshable
 				eventWhen.setText("");
 		} catch (final IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

@@ -22,28 +22,27 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TabHost;
-import android.widget.Toast;
 
 import com.google.api.client.util.DateTime;
 
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.manager.EventManager;
 import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppLocationListener;
+import edu.usc.csci588team02.service.AppServiceConnection;
 import edu.usc.csci588team02.utility.NotificationUtility;
 
 public class TabbedInterface extends TabActivity
 {
 	private static final int DIALOG_TRANSPORTATION = 100;
-	private static EventManager eventManager = new EventManager();
 	protected static final String PREF = "MyPrefs";
 	private static final String TAG = "TabbedInterfaceActivity";
 	protected final boolean DEBUG = false;
 	private AppLocationListener mLocationListener;
 	private LocationManager mLocationManager;
 	private NotificationUtility mNotificationUtility;
+	private final AppServiceConnection service = new AppServiceConnection();
 
 	public void CalculateTimeToLeaveAndNotify(final Location location)
 	{
@@ -58,7 +57,7 @@ public class TabbedInterface extends TabActivity
 		EventEntry ee = null;
 		try
 		{
-			ee = eventManager.getNextEventWithLocation();
+			ee = service.getNextEventWithLocation();
 			if (ee != null)
 				// determine duration between current location and next event
 				if (ee.where.valueString != null)
@@ -96,36 +95,6 @@ public class TabbedInterface extends TabActivity
 		}
 	}
 
-	@Override
-	protected void onActivityResult(final int requestCode,
-			final int resultCode, final Intent data)
-	{
-		super.onActivityResult(requestCode, resultCode, data);
-		switch (requestCode)
-		{
-			case Login.REQUEST_AUTHENTICATE:
-				if (resultCode == RESULT_OK)
-				{
-					final SharedPreferences settings = getSharedPreferences(
-							PREF, 0);
-					final String authToken = settings.getString("authToken",
-							null);
-					eventManager.setAuthToken(authToken);
-					// refreshData();
-				}
-				else
-				{
-					Toast.makeText(this, R.string.loginCanceled,
-							Toast.LENGTH_SHORT);
-					finish();
-				}
-				break;
-			case Logout.REQUEST_LOGOUT:
-				finish();
-				break;
-		}
-	}
-
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(final Bundle savedInstanceState)
@@ -147,12 +116,7 @@ public class TabbedInterface extends TabActivity
 		// Setup Notification Utility Manager
 		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		mNotificationUtility = new NotificationUtility(this, nm);
-		/*
-		 * Intent service = new Intent(this,
-		 * edu.usc.csci588team02.service.AppService.class);
-		 * startService(service);
-		 */
-		// Event tab
+		// Home tab
 		spec = tabHost.newTabSpec("event")
 				.setIndicator("", res.getDrawable(R.drawable.ic_tab_home))
 				.setContent(new Intent(this, Home.class));
@@ -193,7 +157,9 @@ public class TabbedInterface extends TabActivity
 				// TODO: Refresh the GPS and the Time to Leave
 			}
 		});
-		// Check for login so we can feed notifications later
+		bindService(new Intent(this,
+				edu.usc.csci588team02.service.AppService.class), service,
+				Context.BIND_AUTO_CREATE);
 		startActivityForResult(new Intent(this, Login.class),
 				Login.REQUEST_AUTHENTICATE);
 	}
