@@ -57,6 +57,12 @@
 			android:name=".activity.Home"></activity>
 			
 		<service android:enabled="true" android:name=".service.AppService"></service>
+		<receiver android:name=".widget.WidgetProvider">
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_provider" />
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+        </receiver>
 		<uses-library
 			android:name="com.google.android.maps" />
 	

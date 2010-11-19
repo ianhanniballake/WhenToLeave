@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="294dp"
+    android:minHeight="72dp"
+    android:updatePeriodMillis="900000"
+    android:initialLayout="@layout/widget_provider">
+</appwidget-provider>
+<!-- 900000 is once every 15 minutes -->

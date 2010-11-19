@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Set;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,20 +20,18 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.manager.EventManager;
 import edu.usc.csci588team02.model.EventEntry;
+import edu.usc.csci588team02.service.AppServiceConnection;
 
 public class Agenda extends Activity implements Refreshable
 {
-	private static EventManager eventManager = new EventManager();
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
-	private static final String PREF = "MyPrefs";
 	private final ArrayList<HashMap<String, String>> eventHashMapList = new ArrayList<HashMap<String, String>>();
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
+	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	@Override
 	protected void onActivityResult(final int requestCode,
@@ -42,23 +40,6 @@ public class Agenda extends Activity implements Refreshable
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode)
 		{
-			case Login.REQUEST_AUTHENTICATE:
-				if (resultCode == RESULT_OK)
-				{
-					final SharedPreferences settings = getSharedPreferences(
-							PREF, 0);
-					final String authToken = settings.getString("authToken",
-							null);
-					eventManager.setAuthToken(authToken);
-					refreshData();
-				}
-				else
-				{
-					Toast.makeText(this, R.string.loginCanceled,
-							Toast.LENGTH_SHORT);
-					finish();
-				}
-				break;
 			case Logout.REQUEST_LOGOUT:
 				finish();
 				break;
@@ -93,8 +74,12 @@ public class Agenda extends Activity implements Refreshable
 						R.id.agendaItemWhere });
 		final ListView mainList = (ListView) findViewById(R.id.agendaList);
 		mainList.setAdapter(adapterForList);
-		startActivityForResult(new Intent(this, Login.class),
-				Login.REQUEST_AUTHENTICATE);
+		// Need to use getApplicationContext as this activity is used as a Tab
+		getApplicationContext()
+				.bindService(
+						new Intent(this,
+								edu.usc.csci588team02.service.AppService.class),
+						service, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -144,25 +129,10 @@ public class Agenda extends Activity implements Refreshable
 		{
 			final Calendar twoWeeksFromNow = Calendar.getInstance();
 			twoWeeksFromNow.add(Calendar.DATE, 14);
-			final Set<EventEntry> events = eventManager
+			final Set<EventEntry> events = service
 					.getEventsStartingNow(twoWeeksFromNow.getTime());
-			// For simple 1string layout
-			/*
-			 * int h = 0; calendarEvents = new String[events.size()];
-			 */
 			for (final EventEntry event : events)
 			{
-				// For simple 1string layout
-				/*
-				 * calendarEvents[h++] = event.title; if (event.when != null &&
-				 * event.when.startTime != null) calendarEvents[h - 1] =
-				 * calendarEvents[h - 1] + " on " +
-				 * event.when.startTime.toString(); if (event.where != null &&
-				 * event.where.valueString != null &&
-				 * !event.where.valueString.equals("")) calendarEvents[h - 1] =
-				 * calendarEvents[h - 1] + " at " + event.where.valueString;
-				 */
-				// For complex hashmap layout
 				final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
 				calendarEventHashMap.put("title", event.title);
 				if (event.when != null && event.when.startTime != null)
@@ -180,27 +150,18 @@ public class Agenda extends Activity implements Refreshable
 				else
 					calendarEventHashMap.put("where", "No Location");
 				eventHashMapList.add(calendarEventHashMap);
-				// eventHashMapList.set(h, calendarEventHashMap);
-				// h++;
 			}
 			eventList.clear();
 			eventList.addAll(events);
 		} catch (final IOException e)
 		{
 			e.printStackTrace();
-			// calendarEvents = new String[] { e.getMessage() };
 			final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
 			calendarEventHashMap.put("title", e.getMessage());
 			calendarEventHashMap.put("when", "");
 			calendarEventHashMap.put("where", "");
 			eventHashMapList.add(calendarEventHashMap);
 		}
-		// For simple 1string layout
-		/*
-		 * mainList.setAdapter(new ArrayAdapter<String>(this,
-		 * R.layout.agenda_item, calendarEvents));
-		 */
-		// eventHashMapList.set(index, entitiesHashMap);
 		// Update the last refreshed text
 		final CharSequence lastRefreshedBase = getText(R.string.lastRefreshedBase);
 		final Date currentDate = new Date();

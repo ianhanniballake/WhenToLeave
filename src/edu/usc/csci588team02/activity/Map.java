@@ -8,7 +8,6 @@ import java.util.Set;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
@@ -26,10 +25,10 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.manager.EventManager;
 import edu.usc.csci588team02.maps.ItemizedOverlay;
 import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.model.EventEntry;
+import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
  * @author Stephanie Trudeau
@@ -76,8 +75,6 @@ public class Map extends MapActivity implements Refreshable
 		}
 	}
 
-	// Used for managing the list of events on the map
-	private static EventManager eventManager = new EventManager();
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
@@ -104,6 +101,8 @@ public class Map extends MapActivity implements Refreshable
 	Drawable redSquare1;
 	Drawable redSquare2;
 	Drawable redSquare3;
+	// Used for managing the list of events on the map
+	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	private void generateDrawables()
 	{
@@ -137,17 +136,6 @@ public class Map extends MapActivity implements Refreshable
 	}
 
 	/**
-	 * Gains authentication to allow you to access the user's Google Calendar
-	 * events.
-	 */
-	private void getAuthentication()
-	{
-		final SharedPreferences settings = getSharedPreferences("MyPrefs", 0);
-		final String authToken = settings.getString("authToken", null);
-		eventManager.setAuthToken(authToken);
-	}
-
-	/**
 	 * Gets the latitude and longitude based off an address.
 	 * 
 	 * @param eventLocation
@@ -165,60 +153,6 @@ public class Map extends MapActivity implements Refreshable
 		return false;
 	}
 
-	/**
-	 * Loads all of today's events on the user's calendar and plots them on the
-	 * map.
-	 */
-	private void loadEventLocations()
-	{
-		String[] calendarEvents;
-		try
-		{
-			final Calendar calendarToday = Calendar.getInstance();
-			calendarToday.add(Calendar.DATE, 1);
-			getAuthentication();
-			final Set<EventEntry> events = eventManager
-					.getEventsStartingNow(calendarToday.getTime());
-			int h = 0;
-			calendarEvents = new String[events.size()];
-			System.out.println("size of events = " + events.size());
-			GeoPoint lastAdded = null;
-			for (final EventEntry event : events)
-			{
-				calendarEvents[h++] = event.title;
-				if (event.where != null && event.where.valueString != null
-						&& !event.where.valueString.equals(""))
-				{
-					calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
-							+ event.where.valueString;
-					switch (h - 1)
-					{
-						case 0:
-							lastAdded = plotEvent(greenSquare1,
-									event.where.valueString);
-						case 1:
-							lastAdded = plotEvent(greenSquare2,
-									event.where.valueString);
-						case 2:
-							lastAdded = plotEvent(greenSquare3,
-									event.where.valueString);
-						default:
-							lastAdded = plotEvent(greenSquare,
-									event.where.valueString);
-					}
-				}
-			}
-			if (lastAdded != null)
-				zoomTo(lastAdded);
-			eventList.clear();
-			eventList.addAll(events);
-		} catch (final IOException e)
-		{
-			e.printStackTrace();
-			calendarEvents = new String[] { e.getMessage() };
-		}
-	}
-
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(final Bundle savedInstanceState)
@@ -231,12 +165,17 @@ public class Map extends MapActivity implements Refreshable
 		// Initialize overlay variables
 		mapOverlays = mapView.getOverlays();
 		generateDrawables();
-		loadEventLocations();
 		// ---use the LocationManager class to obtain GPS locations---
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		locationListener = new MyLocationListener();
 		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
 				locationListener);
+		// Need to use getApplicationContext as this activity is used as a Tab
+		getApplicationContext()
+				.bindService(
+						new Intent(this,
+								edu.usc.csci588team02.service.AppService.class),
+						service, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -293,10 +232,59 @@ public class Map extends MapActivity implements Refreshable
 		return geoPoint;
 	}
 
+	/**
+	 * Loads all of today's events on the user's calendar and plots them on the
+	 * map.
+	 */
 	@Override
 	public void refreshData()
 	{
-		// TODO Auto-generated method stub
+		mapOverlays.clear();
+		String[] calendarEvents;
+		try
+		{
+			final Calendar calendarToday = Calendar.getInstance();
+			calendarToday.add(Calendar.DATE, 1);
+			final Set<EventEntry> events = service
+					.getEventsStartingNow(calendarToday.getTime());
+			int h = 0;
+			calendarEvents = new String[events.size()];
+			System.out.println("size of events = " + events.size());
+			GeoPoint lastAdded = null;
+			for (final EventEntry event : events)
+			{
+				calendarEvents[h++] = event.title;
+				if (event.where != null && event.where.valueString != null
+						&& !event.where.valueString.equals(""))
+				{
+					calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
+							+ event.where.valueString;
+					switch (h - 1)
+					{
+						case 0:
+							lastAdded = plotEvent(greenSquare1,
+									event.where.valueString);
+						case 1:
+							lastAdded = plotEvent(greenSquare2,
+									event.where.valueString);
+						case 2:
+							lastAdded = plotEvent(greenSquare3,
+									event.where.valueString);
+						default:
+							lastAdded = plotEvent(greenSquare,
+									event.where.valueString);
+					}
+				}
+			}
+			if (lastAdded != null)
+				zoomTo(lastAdded);
+			eventList.clear();
+			eventList.addAll(events);
+		} catch (final IOException e)
+		{
+			e.printStackTrace();
+			calendarEvents = new String[] { e.getMessage() };
+		}
 	}
 
 	/**
