@@ -170,19 +170,19 @@ public class Home extends Activity implements Refreshable
 		try
 		{
 			currentEvent = service.getNextEventWithLocation();
-			if (currentEvent.title != null)
+			if (currentEvent != null && currentEvent.title != null)
 				eventName.setText(currentEvent.title);
 			else
 				eventName.setText("No Events");
-			if (currentEvent.where != null)
+			if (currentEvent != null && currentEvent.where != null)
 				eventLocation.setText(currentEvent.where.valueString);
 			else
 				eventLocation.setText("");
-			if (currentEvent.content != null)
+			if (currentEvent != null && currentEvent.content != null)
 				eventDescription.setText(currentEvent.content);
 			else
 				eventDescription.setText("");
-			if (currentEvent.when.startTime != null)
+			if (currentEvent != null && currentEvent.when.startTime != null)
 			{
 				final CharSequence time = android.text.format.DateFormat
 						.format("hh:mma 'on' EEEE, MMM dd",
