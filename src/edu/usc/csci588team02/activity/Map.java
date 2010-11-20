@@ -13,7 +13,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.LinearLayout;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -44,11 +43,10 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	Drawable greenSquare2;
 	Drawable greenSquare3;
 	//
-	ItemizedOverlay itemizedOverlay;
-	LinearLayout linearLayout;
+	private ItemizedOverlay itemizedOverlay;
 	// List of all overlays on the map
-	List<Overlay> mapOverlays;
-	MapView mapView;
+	private List<Overlay> mapOverlays;
+	private MapView mapView;
 	Drawable orangeSquare;
 	Drawable orangeSquare1;
 	Drawable orangeSquare2;
@@ -57,7 +55,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	Drawable redSquare1;
 	Drawable redSquare2;
 	Drawable redSquare3;
-	// Used for managing the list of events on the map
 	private final AppServiceConnection service = new AppServiceConnection(this,
 			this);
 
