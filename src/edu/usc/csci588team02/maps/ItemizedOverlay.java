@@ -2,9 +2,13 @@ package edu.usc.csci588team02.maps;
 
 import java.util.ArrayList;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 
 import com.google.android.maps.OverlayItem;
+
+import edu.usc.csci588team02.activity.EventDetails;
 
 /**
  * Manages a set of {@link OverlayItem}s, which can be added to a map. <br>
@@ -21,6 +25,8 @@ public class ItemizedOverlay extends
 {
 	// Holds each of the OverlayItems objects that we want on our map
 	private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
+	private final ArrayList<String> mEventURLs = new ArrayList<String>();
+	private final Context mContext;
 
 	/**
 	 * Defines the default marker to be used on each of the {@link OverlayItem}.
@@ -29,10 +35,12 @@ public class ItemizedOverlay extends
 	 * 
 	 * @param defaultMarker
 	 *            Marker to be used for each {@link OverlayItem}
+	 * @param event
 	 */
-	public ItemizedOverlay(final Drawable defaultMarker)
+	public ItemizedOverlay(final Drawable defaultMarker, Context context)
 	{
 		super(boundCenterBottom(defaultMarker));
+		this.mContext = context;
 	}
 
 	/**
@@ -40,10 +48,13 @@ public class ItemizedOverlay extends
 	 * 
 	 * @param overlay
 	 *            Overlay item to be added
+	 * @param eventURL
+	 *            A unique URL specific to this event
 	 */
-	public void addOverlay(final OverlayItem overlay)
+	public void addOverlay(final OverlayItem overlay, String eventURL)
 	{
-		mOverlays.add(overlay);
+		this.mOverlays.add(overlay);
+		this.mEventURLs.add(eventURL);
 		populate();
 	}
 
@@ -59,14 +70,23 @@ public class ItemizedOverlay extends
 	@Override
 	protected boolean onTap(final int index)
 	{
-		// final Intent detailsIntent = new Intent(Map.this,
-		// EventDetails.class);
-		// detailsIntent.putExtra("eventUrl", eventList.get(position)
-		// .getSelfLink());
-		// startActivity(detailsIntent);
+		final Intent detailsIntent = new Intent(this.mContext,
+				EventDetails.class);
+		detailsIntent.putExtra("eventUrl", this.mEventURLs.get(index));
+		this.mContext.startActivity(detailsIntent);
 		return true;
 	}
 
+	// TODO Delete
+	// @Override
+	// public boolean onTap(GeoPoint p, MapView mapView)
+	// {
+	// final Intent detailsIntent = new Intent(this.mContext,
+	// EventDetails.class);
+	// detailsIntent.putExtra("eventUrl", this.event.getSelfLink());
+	// this.mContext.startActivity(detailsIntent);
+	// return true;
+	// }
 	/**
 	 * Sets the Drawable marker for an {@link OverlayItem} i.
 	 * 

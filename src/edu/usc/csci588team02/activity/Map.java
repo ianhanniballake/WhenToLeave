@@ -114,10 +114,10 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map);
 		// Add the ability to zoom in and out on the map
-		mapView = (MapView) findViewById(R.id.mapview);
-		mapView.setBuiltInZoomControls(true);
+		this.mapView = (MapView) findViewById(R.id.mapview);
+		this.mapView.setBuiltInZoomControls(true);
 		// Initialize overlay variables
-		mapOverlays = mapView.getOverlays();
+		this.mapOverlays = this.mapView.getOverlays();
 		generateDrawables();
 		// Need to use getApplicationContext as this activity is used as a Tab
 		getApplicationContext()
@@ -154,10 +154,10 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			 * Toast.LENGTH_SHORT).show();
 			 */
 			final GeoPoint point = new GeoPoint(
-					(int) (location.getLatitude() * 1000000),
-					(int) (location.getLongitude() * 1000000));
+					(int) (location.getLatitude() * 1000000), (int) (location
+							.getLongitude() * 1000000));
 			final OverlayItem overlayitem = new OverlayItem(point, "", "");
-			itemizedOverlay.addOverlay(overlayitem);
+			itemizedOverlay.addOverlay(overlayitem, "");
 		}
 	}
 
@@ -185,23 +185,25 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	/**
 	 * Given the address of an event, this method plots it on the map.
 	 * 
+	 * @param event
+	 * 
 	 * @param icon
 	 *            The Marker that will represent the event on the map
-	 * @param eventLocation
-	 *            The address of the event to be plotted
 	 * @return the point just plotted
 	 */
-	private GeoPoint plotEvent(final Drawable icon, final String eventLocation)
+	private GeoPoint plotEvent(EventEntry event, final Drawable icon)
 	{
 		// Obtain the latitude and longitude
+		String eventLocation = event.where.valueString;
 		final GeoPoint geoPoint = getLatLon(eventLocation);
 		// Create a marker for the point
-		itemizedOverlay = new ItemizedOverlay(icon);
-		final OverlayItem overlayItem = new OverlayItem(geoPoint, "1",
-				"Appointment 1");
+		// TODO Move this to only create one ItemizedOverlay
+		itemizedOverlay = new ItemizedOverlay(icon, this.mapView.getContext());
+		final OverlayItem overlayItem = new OverlayItem(geoPoint,
+				"Appointment", "Appointment");
 		overlayItem.setMarker(icon);
 		// Add the point to the map
-		itemizedOverlay.addOverlay(overlayItem);
+		itemizedOverlay.addOverlay(overlayItem, event.getSelfLink());
 		mapOverlays.add(itemizedOverlay);
 		return geoPoint;
 	}
@@ -236,17 +238,13 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 					switch (h - 1)
 					{
 						case 0:
-							lastAdded = plotEvent(greenSquare1,
-									event.where.valueString);
+							lastAdded = plotEvent(event, greenSquare1);
 						case 1:
-							lastAdded = plotEvent(greenSquare2,
-									event.where.valueString);
+							lastAdded = plotEvent(event, greenSquare2);
 						case 2:
-							lastAdded = plotEvent(greenSquare3,
-									event.where.valueString);
+							lastAdded = plotEvent(event, greenSquare3);
 						default:
-							lastAdded = plotEvent(greenSquare,
-									event.where.valueString);
+							lastAdded = plotEvent(event, greenSquare);
 					}
 				}
 			}
@@ -272,5 +270,10 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		final MapController mapController = mapView.getController();
 		mapController.animateTo(geoPoint);
 		mapController.setZoom(12);
+	}
+
+	public ArrayList<EventEntry> getEventList()
+	{
+		return this.eventList;
 	}
 }
