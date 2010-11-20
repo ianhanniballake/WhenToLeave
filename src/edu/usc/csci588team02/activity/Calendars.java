@@ -64,6 +64,13 @@ public final class Calendars extends ListActivity implements Refreshable
 	}
 
 	@Override
+	protected void onDestroy()
+	{
+		super.onDestroy();
+		unbindService(service);
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(final MenuItem item)
 	{
 		switch (item.getItemId())

@@ -11,8 +11,14 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -23,6 +29,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.xml.atom.AtomParser;
 
+import edu.usc.csci588team02.activity.LocationAware;
 import edu.usc.csci588team02.model.CalendarEntry;
 import edu.usc.csci588team02.model.CalendarFeed;
 import edu.usc.csci588team02.model.CalendarUrl;
@@ -35,10 +42,15 @@ import edu.usc.csci588team02.model.Namespace;
 /**
  * @author Kevin Kirkpatrick
  */
-public class AppService extends Service
+public class AppService extends Service implements LocationListener
 {
 	public class AppServiceBinder extends Binder
 	{
+		public void addLocationListener(final LocationAware listener)
+		{
+			AppService.this.addLocationListener(listener);
+		}
+
 		public List<CalendarEntry> getCalendars() throws IOException
 		{
 			return AppService.this.getCalendars();
@@ -71,6 +83,11 @@ public class AppService extends Service
 			return AppService.this.isAuthenticated();
 		}
 
+		public void removeLocationListener(final LocationAware listener)
+		{
+			AppService.this.removeLocationListener(listener);
+		}
+
 		public void setAuthToken(final String authToken)
 		{
 			AppService.this.setAuthToken(authToken);
@@ -78,11 +95,23 @@ public class AppService extends Service
 	}
 
 	private static final long INTERVAL = 30000; // 30 seconds = 30000
+	private static final String PREF = "MyPrefs";
 	private static final String TAG = "AppService";
 	private final IBinder binder = new AppServiceBinder();
 	private boolean isAuthenticated = false;
+	private final ArrayList<LocationAware> locationListenerList = new ArrayList<LocationAware>();
+	private LocationManager locationManager;
 	private final Timer timer = new Timer();
 	private HttpTransport transport;
+
+	public void addLocationListener(final LocationAware listener)
+	{
+		locationListenerList.add(listener);
+		final Location lastKnownLocation = locationManager
+				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		if (lastKnownLocation != null)
+			listener.onLocationChanged(lastKnownLocation);
+	}
 
 	public List<CalendarEntry> getCalendars() throws IOException
 	{
@@ -198,7 +227,32 @@ public class AppService extends Service
 	{
 		// Toast.makeText(this, "App Service Stops", Toast.LENGTH_LONG).show();
 		Log.d(TAG, "onDestroy");
+		locationManager.removeUpdates(this);
 		timer.cancel();
+	}
+
+	@Override
+	public void onLocationChanged(final Location location)
+	{
+		if (location != null)
+		{
+			Log.d("LOCATION CHANGED", "Lat:  " + location.getLatitude() + "");
+			Log.d("LOCATION CHANGED", "Long: " + location.getLongitude() + "");
+			for (final LocationAware listener : locationListenerList)
+				listener.onLocationChanged(location);
+		}
+	}
+
+	@Override
+	public void onProviderDisabled(final String provider)
+	{
+		// Nothing to do
+	}
+
+	@Override
+	public void onProviderEnabled(final String provider)
+	{
+		// Nothing to do
 	}
 
 	@Override
@@ -209,6 +263,18 @@ public class AppService extends Service
 		Log.d(TAG, "onStart");
 	}
 
+	@Override
+	public void onStatusChanged(final String provider, final int status,
+			final Bundle extras)
+	{
+		// Nothing to do
+	}
+
+	public void removeLocationListener(final LocationAware listener)
+	{
+		locationListenerList.remove(listener);
+	}
+
 	public void setAuthToken(final String authToken)
 	{
 		((GoogleHeaders) transport.defaultHeaders).setGoogleLogin(authToken);
@@ -217,6 +283,13 @@ public class AppService extends Service
 
 	private void startUpService()
 	{
+		// Setup GPS callbacks
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		int interval = settings.getInt("RefreshInterval", 5);
+		interval = interval * 1000;
+		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				interval, 0, this);
 		timer.scheduleAtFixedRate(new TimerTask()
 		{
 			// this activity will run every defined interval.

@@ -58,6 +58,13 @@ public class EventDetails extends Activity implements Refreshable
 	}
 
 	@Override
+	protected void onDestroy()
+	{
+		super.onDestroy();
+		unbindService(service);
+	}
+
+	@Override
 	public boolean onOptionsItemSelected(final MenuItem item)
 	{
 		switch (item.getItemId())

@@ -8,6 +8,7 @@ import java.util.Set;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import edu.usc.csci588team02.activity.LocationAware;
 import edu.usc.csci588team02.activity.Refreshable;
 import edu.usc.csci588team02.model.CalendarEntry;
 import edu.usc.csci588team02.model.EventEntry;
@@ -17,14 +18,27 @@ public class AppServiceConnection implements ServiceConnection
 {
 	private AppServiceBinder service = null;
 	private Refreshable toRefreshOnConnected = null;
+	private LocationAware toUpdateLocation = null;
 
 	public AppServiceConnection()
 	{
 	}
 
+	public AppServiceConnection(final LocationAware toUpdateLocation)
+	{
+		this.toUpdateLocation = toUpdateLocation;
+	}
+
 	public AppServiceConnection(final Refreshable toRefreshOnConnected)
 	{
 		this.toRefreshOnConnected = toRefreshOnConnected;
+	}
+
+	public AppServiceConnection(final Refreshable toRefreshOnConnected,
+			final LocationAware toUpdateLocation)
+	{
+		this.toRefreshOnConnected = toRefreshOnConnected;
+		this.toUpdateLocation = toUpdateLocation;
 	}
 
 	public List<CalendarEntry> getCalendars() throws IOException
@@ -71,11 +85,15 @@ public class AppServiceConnection implements ServiceConnection
 		service = (AppServiceBinder) serviceBinder;
 		if (toRefreshOnConnected != null)
 			toRefreshOnConnected.refreshData();
+		if (toUpdateLocation != null)
+			service.addLocationListener(toUpdateLocation);
 	}
 
 	@Override
 	public void onServiceDisconnected(final ComponentName name)
 	{
+		if (toUpdateLocation != null)
+			service.removeLocationListener(toUpdateLocation);
 		service = null;
 	}
 

@@ -10,8 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,48 +31,8 @@ import edu.usc.csci588team02.service.AppServiceConnection;
 /**
  * @author Stephanie Trudeau
  */
-public class Map extends MapActivity implements Refreshable
+public class Map extends MapActivity implements Refreshable, LocationAware
 {
-	private class MyLocationListener implements LocationListener
-	{
-		@Override
-		public void onLocationChanged(final Location location)
-		{
-			if (location != null)
-			{
-				/*
-				 * Toast.makeText( getBaseContext(), "Location changed : Lat: "
-				 * + location.getLatitude() + " Lng: " +
-				 * location.getLongitude(), Toast.LENGTH_SHORT).show();
-				 */
-				final GeoPoint point = new GeoPoint(
-						(int) (location.getLatitude() * 1000000),
-						(int) (location.getLongitude() * 1000000));
-				final OverlayItem overlayitem = new OverlayItem(point, "", "");
-				itemizedOverlay.addOverlay(overlayitem);
-			}
-		}
-
-		@Override
-		public void onProviderDisabled(final String provider)
-		{
-			// TODO Auto-generated method stub
-		}
-
-		@Override
-		public void onProviderEnabled(final String provider)
-		{
-			// TODO Auto-generated method stub
-		}
-
-		@Override
-		public void onStatusChanged(final String provider, final int status,
-				final Bundle extras)
-		{
-			// TODO Auto-generated method stub
-		}
-	}
-
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
@@ -88,8 +46,6 @@ public class Map extends MapActivity implements Refreshable
 	//
 	ItemizedOverlay itemizedOverlay;
 	LinearLayout linearLayout;
-	private LocationManager lm;
-	private LocationListener locationListener;
 	// List of all overlays on the map
 	List<Overlay> mapOverlays;
 	MapView mapView;
@@ -102,7 +58,8 @@ public class Map extends MapActivity implements Refreshable
 	Drawable redSquare2;
 	Drawable redSquare3;
 	// Used for managing the list of events on the map
-	private final AppServiceConnection service = new AppServiceConnection(this);
+	private final AppServiceConnection service = new AppServiceConnection(this,
+			this);
 
 	private void generateDrawables()
 	{
@@ -165,11 +122,6 @@ public class Map extends MapActivity implements Refreshable
 		// Initialize overlay variables
 		mapOverlays = mapView.getOverlays();
 		generateDrawables();
-		// ---use the LocationManager class to obtain GPS locations---
-		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		locationListener = new MyLocationListener();
-		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0,
-				locationListener);
 		// Need to use getApplicationContext as this activity is used as a Tab
 		getApplicationContext()
 				.bindService(
@@ -185,6 +137,31 @@ public class Map extends MapActivity implements Refreshable
 		menu.add(0, MENU_LOGOUT, 0, "Logout");
 		menu.add(0, MENU_PREFERENCES, 0, "Preferences");
 		return true;
+	}
+
+	@Override
+	protected void onDestroy()
+	{
+		super.onDestroy();
+		getApplicationContext().unbindService(service);
+	}
+
+	@Override
+	public void onLocationChanged(final Location location)
+	{
+		if (location != null)
+		{
+			/*
+			 * Toast.makeText( getBaseContext(), "Location changed : Lat: " +
+			 * location.getLatitude() + " Lng: " + location.getLongitude(),
+			 * Toast.LENGTH_SHORT).show();
+			 */
+			final GeoPoint point = new GeoPoint(
+					(int) (location.getLatitude() * 1000000),
+					(int) (location.getLongitude() * 1000000));
+			final OverlayItem overlayitem = new OverlayItem(point, "", "");
+			itemizedOverlay.addOverlay(overlayitem);
+		}
 	}
 
 	@Override
