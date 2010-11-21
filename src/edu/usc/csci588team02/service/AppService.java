@@ -180,12 +180,14 @@ public class AppService extends Service implements LocationListener
 		final Calendar queryTo = Calendar.getInstance();
 		queryTo.add(Calendar.DATE, 1);
 		int daysToAdd = 2;
+		long curTime = System.currentTimeMillis();
 		while (daysToAdd < 2048)
 		{
 			final Set<EventEntry> events = getEvents(queryFrom.getTime(),
 					queryTo.getTime());
 			for (final EventEntry event : events)
-				if (event.where != null && event.where.valueString != null)
+				if (event.where != null && event.where.valueString != null &&
+						(event.when.startTime.value > curTime ))
 					return event;
 			queryFrom = queryTo;
 			queryTo.add(Calendar.DATE, daysToAdd);

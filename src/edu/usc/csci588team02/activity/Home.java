@@ -100,10 +100,13 @@ public class Home extends Activity implements Refreshable
 			@Override
 			public void onClick(final View view)
 			{
-				final Intent detailsIntent = new Intent(Home.this,
-						EventDetails.class);
-				detailsIntent.putExtra("eventUrl", currentEvent.getSelfLink());
-				startActivity(detailsIntent);
+				if (currentEvent != null)
+				{
+					final Intent detailsIntent = new Intent(Home.this,
+							EventDetails.class);
+					detailsIntent.putExtra("eventUrl", currentEvent.getSelfLink());
+					startActivity(detailsIntent);
+				}
 			}
 		});
 		mapButton.setOnClickListener(new OnClickListener()

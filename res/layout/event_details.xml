@@ -44,7 +44,7 @@ android:padding="5dp">
 	    <TextView
 	        android:id="@+id/eventDetailsDescription"
 		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
+		    android:layout_height="175dp"
 		    android:typeface="serif"
 		    android:textColor="@color/grey3"
 		    android:gravity="left"

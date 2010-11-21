@@ -26,4 +26,6 @@
 		name="eventLocation">35+Corporate+Dr+Burlington+MA</string>
 	<string
 		name="refresh_time">Refresh Time</string>
+	<string
+		name="notify_time">Notify Me to Leave</string>
 </resources>

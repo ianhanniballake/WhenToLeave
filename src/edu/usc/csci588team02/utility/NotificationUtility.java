@@ -48,34 +48,41 @@ public class NotificationUtility
 	}
 
 	public void createSimpleNotification(final String message,
-			final EventEntry ee, final COLOR c)
+			final EventEntry ee, long leaveInMinutes, int notifyTimeInMin)
 	{
 		Notification notification = null;
-		// TODO: update icon to color coded arrow
-		switch (c)
+			
+		NotificationUtility.COLOR notifcationColor = NotificationUtility.COLOR.GREEN;
+		if (leaveInMinutes < notifyTimeInMin*(.33333))
+			notifcationColor = NotificationUtility.COLOR.RED;
+		else if (leaveInMinutes < notifyTimeInMin*(.6666))
+			notifcationColor = NotificationUtility.COLOR.ORANGE;
+		
+		switch (notifcationColor)
 		{
 			case RED:
-				notification = new Notification(R.drawable.ic_red_square,
+				notification = new Notification(R.drawable.ic_red_arrow72,
 						message, System.currentTimeMillis());
 				break;
 			case ORANGE:
-				notification = new Notification(R.drawable.ic_orange_square,
+				notification = new Notification(R.drawable.ic_orange_arrow72,
 						message, System.currentTimeMillis());
 				break;
 			case GREEN:
-				notification = new Notification(R.drawable.ic_green_square,
+				notification = new Notification(R.drawable.ic_green_arrow72,
 						message, System.currentTimeMillis());
 				break;
 			default:
-				notification = new Notification(R.drawable.ic_green_square,
+				notification = new Notification(R.drawable.ic_green_arrow72,
 						message, System.currentTimeMillis());
 				break;
 		}
 		final CharSequence time = android.text.format.DateFormat.format(
 				"hh:mma", ee.when.startTime.value);
 		// Set the info for the views that show in the notification panel.
-		notification.setLatestEventInfo(mainActivity, ee.title, time + " - "
-				+ ee.where.valueString, makeNotificationIntent());
+		notification.setLatestEventInfo(mainActivity, ee.title, "Leave " + 
+				((leaveInMinutes > 0)? "in " + leaveInMinutes + "m - " : "Now -") +
+				ee.where.valueString + " @" + time, makeNotificationIntent());
 		// Send the notification.
 		// We use a layout id because it is a unique number. We use it later to
 		// cancel.

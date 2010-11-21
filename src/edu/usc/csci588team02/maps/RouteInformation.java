@@ -30,7 +30,7 @@ public class RouteInformation
 		return formattedAddress;
 	}
 
-	static private InputStream getConnection(final String url)
+	private static InputStream getConnection(final String url)
 	{
 		InputStream is = null;
 		try

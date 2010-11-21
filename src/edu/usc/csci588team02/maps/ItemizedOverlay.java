@@ -4,8 +4,10 @@ import java.util.ArrayList;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 
+import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
 
 import edu.usc.csci588team02.activity.EventDetails;
@@ -43,6 +45,12 @@ public class ItemizedOverlay extends
 		this.mContext = context;
 	}
 
+	@Override
+	public void draw(Canvas pCanvas, MapView pMapView, boolean pShadow) {
+	    super.draw(pCanvas, pMapView, false);
+
+	}
+	
 	/**
 	 * Adds new {@link OverlayItem} to our {@link ArrayList}.
 	 * 
@@ -57,7 +65,7 @@ public class ItemizedOverlay extends
 		this.mEventURLs.add(eventURL);
 		populate();
 	}
-
+	
 	/**
 	 * Redefined to read from our {@link ArrayList}.
 	 */
@@ -72,8 +80,11 @@ public class ItemizedOverlay extends
 	{
 		final Intent detailsIntent = new Intent(this.mContext,
 				EventDetails.class);
-		detailsIntent.putExtra("eventUrl", this.mEventURLs.get(index));
-		this.mContext.startActivity(detailsIntent);
+		if (!this.mEventURLs.get(index).equals(""))
+		{
+			detailsIntent.putExtra("eventUrl", this.mEventURLs.get(index));
+			this.mContext.startActivity(detailsIntent);
+		}
 		return true;
 	}
 

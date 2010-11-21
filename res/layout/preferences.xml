@@ -21,6 +21,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 	android:id="@+id/spinnerRefreshTime"
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content"
+	android:layout_marginLeft="5dp"
 	android:prompt="@string/refresh_time">
 	</Spinner>
 	<TextView
@@ -63,4 +64,42 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		android:text="Navigate to Current Event">
 		</RadioButton>
 	</RadioGroup>
+	<TextView
+	    android:id="@+id/notificationPrefText"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:text="Notifications:"
+	    android:typeface="sans"
+	    android:textColor="@color/white"
+	    android:textStyle="bold"
+	    android:gravity="left"
+	    android:layout_gravity="left"
+	    android:textSize="28sp"
+	    android:layout_margin="2dp" >
+	</TextView>
+	<CheckBox
+		android:id="@+id/cbEnableNotifications"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="Enable Notifications">
+	</CheckBox>
+	<TextView
+		android:id="@+id/notificationIntervalPrefText"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="Notify Me:"
+		android:typeface="sans"
+		android:textColor="@color/white"
+		android:textStyle="bold"
+		android:gravity="left"
+		android:textSize="28sp"
+		android:layout_gravity="center"
+		android:layout_margin="2dp" >
+	</TextView>		
+	<Spinner
+		android:id="@+id/spinnerNotifyTime"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:prompt="@string/notify_time">
+	</Spinner>
 </LinearLayout>

@@ -18,12 +18,8 @@ package edu.usc.csci588team02.widget;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.RemoteViews;
 
 import edu.usc.csci588team02.R;
