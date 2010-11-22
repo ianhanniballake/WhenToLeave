@@ -31,6 +31,7 @@ import edu.usc.csci588team02.R;
 
 public class WidgetProvider extends AppWidgetProvider
 {
+	private static AlarmManager alarmManager;
 	private static PendingIntent pendingIntent;
 	// log tag
 	private static final String TAG = "ExampleAppWidgetProvider";
@@ -41,8 +42,6 @@ public class WidgetProvider extends AppWidgetProvider
 	{
 		super.onDisabled(context);
 		Log.d(TAG, "onDisabled");
-		final AlarmManager alarmManager = (AlarmManager) context
-				.getSystemService(Context.ALARM_SERVICE);
 		alarmManager.cancel(pendingIntent);
 	}
 
@@ -51,7 +50,7 @@ public class WidgetProvider extends AppWidgetProvider
 	{
 		super.onEnabled(context);
 		Log.d(TAG, "onEnabled");
-		final AlarmManager alarmManager = (AlarmManager) context
+		alarmManager = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
 		final Intent alarmIntent = new Intent(WIDGET_UPDATE_ACTION);
 		pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, 0);
