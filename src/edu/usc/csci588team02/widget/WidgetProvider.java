@@ -99,12 +99,18 @@ public class WidgetProvider extends AppWidgetProvider
 		Log.d(TAG, "updateAppWidget appWidgetId=" + appWidgetId);
 		final CharSequence text = android.text.format.DateFormat.format(
 				"hh:mma", new Date());
+		final CharSequence leaveIn = "Leave in 1:04h";
+		final CharSequence eventTitle = "Event Title";
+		final CharSequence eventTime = "12:00pm @ Event Location";
 		// Construct the RemoteViews object. It takes the package name (in our
 		// case, it's our package, but it needs this because on the other side
 		// it's the widget host inflating the layout from our package).
 		final RemoteViews views = new RemoteViews(context.getPackageName(),
 				R.layout.widget_provider);
-		views.setTextViewText(R.id.widgetEventDetailButton, text);
+		
+		views.setTextViewText(R.id.widgetLeaveInText, leaveIn);
+        views.setTextViewText(R.id.widgetEventDetail, eventTitle);
+        views.setTextViewText(R.id.widgetEventTime, text);
 		// Button transportButton = (Button)
 		// findViewById(R.id.widgetEventDetailButton);
 		// Tell the widget manager

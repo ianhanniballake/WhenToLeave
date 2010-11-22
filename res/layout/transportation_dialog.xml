@@ -13,7 +13,7 @@
    <ImageButton android:id="@+id/publicButton"
                android:layout_width="300px"
                android:layout_height="200px"
-               android:src="@drawable/rail_grey170"
+               android:src="@drawable/bicycle_grey170"
                android:background="@drawable/custom_large_dialog_button"/>
    <ImageButton android:id="@+id/walkButton"
                android:layout_width="300px"
