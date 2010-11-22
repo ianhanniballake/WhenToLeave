@@ -14,7 +14,7 @@ public class MapRouteOverlay extends com.google.android.maps.Overlay
 	ArrayList<GeoPoint> mPoints;
 	Road mRoad;
 
-	public MapRouteOverlay(final Road road, final MapView mv)
+	public MapRouteOverlay(final Road road)
 	{
 		mRoad = road;
 		if (road.mRoute.length > 0)
@@ -42,7 +42,7 @@ public class MapRouteOverlay extends com.google.android.maps.Overlay
 		{
 			int x1 = -1, y1 = -1, x2 = -1, y2 = -1;
 			final Paint paint = new Paint();
-			paint.setColor(0xff48b4fe); //@color/blue with extra 0xff for alpha
+			paint.setColor(0xff48b4fe); // @color/blue with extra 0xff for alpha
 			paint.setStyle(Paint.Style.STROKE);
 			paint.setStrokeWidth(4);
 			for (int i = 0; i < mPoints.size(); i++)

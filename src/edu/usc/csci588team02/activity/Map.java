@@ -30,10 +30,10 @@ import com.google.android.maps.OverlayItem;
 
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.maps.ItemizedOverlay;
+import edu.usc.csci588team02.maps.MapRouteOverlay;
 import edu.usc.csci588team02.maps.Road;
 import edu.usc.csci588team02.maps.RoadProvider;
 import edu.usc.csci588team02.maps.RouteInformation;
-import edu.usc.csci588team02.maps.MapRouteOverlay;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
@@ -42,24 +42,20 @@ import edu.usc.csci588team02.service.AppServiceConnection;
  */
 public class Map extends MapActivity implements Refreshable, LocationAware
 {
-	private static final String TAG = "MapActivity";
-	protected final boolean DEBUG = true;
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
-	
+	private static final String TAG = "MapActivity";
+	protected final boolean DEBUG = true;
 	// Holds the list of all the events currently displayed on the map
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
 	// The markers on the map
 	Drawable gpsLocationIcon;
 	Drawable greenSquare;
 	Drawable greenSquare1;
-	Drawable orangeSquare;
-	Drawable orangeSquare1;
-	Drawable redSquare;
-	Drawable redSquare1;	
 	Drawable greySquare;
 	Drawable greySquare1;
+	Drawable greySquare10;
 	Drawable greySquare2;
 	Drawable greySquare3;
 	Drawable greySquare4;
@@ -68,44 +64,79 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	Drawable greySquare7;
 	Drawable greySquare8;
 	Drawable greySquare9;
-	Drawable greySquare10;
-	
 	private ItemizedOverlay itemizedOverlay;
 	// List of all overlays on the map
 	private List<Overlay> mapOverlays;
 	private MapView mapView;
-
+	GeoPoint mGpsLocationPoint;
 	// Global references to the GPS location overlay and it's GeoPoint
 	OverlayItem mGpsOverlayItem;
-	GeoPoint mGpsLocationPoint;
-	
-	// Nory's route/road provider
-	RoadProvider mRoadProvider;
-	Road mRoad = null;
-	
-	// Connection to the persistent service
-	private final AppServiceConnection service = new AppServiceConnection(this,
-			this);
-	
 	Handler mHandler = new Handler()
 	{
 		@Override
 		public void handleMessage(final android.os.Message msg)
 		{
 			if (mRoad != null)
-			{
-				/*final TextView textView = (TextView) findViewById(R.id.mapdescription);
-				textView.setText(mRoad.mName + " " + mRoad.mDescription);
-				final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoad, mapView);
-				//TODO: integrate this with refreshdata
-				mapOverlays.clear();
-				mapOverlays.add(mapOverlay);
-				mapView.invalidate();*/
+				/*
+				 * final TextView textView = (TextView)
+				 * findViewById(R.id.mapdescription);
+				 * textView.setText(mRoad.mName + " " + mRoad.mDescription);
+				 * final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoad,
+				 * mapView); //TODO: integrate this with refreshdata
+				 * mapOverlays.clear(); mapOverlays.add(mapOverlay);
+				 * mapView.invalidate();
+				 */
 				refreshData();
-			}
 		}
 	};
-	
+	Road mRoad = null;
+	// Nory's route/road provider
+	RoadProvider mRoadProvider;
+	Drawable orangeSquare;
+	Drawable orangeSquare1;
+	Drawable redSquare;
+	Drawable redSquare1;
+	// Connection to the persistent service
+	private final AppServiceConnection service = new AppServiceConnection(this,
+			this);
+
+	private void generateDrawables()
+	{
+		// GPS and Colored Square Resources
+		gpsLocationIcon = getResources()
+				.getDrawable(R.drawable.ic_gps_location);
+		greenSquare = getResources().getDrawable(R.drawable.ic_green_square);
+		greenSquare1 = getResources().getDrawable(R.drawable.ic_green_square_1);
+		orangeSquare = getResources().getDrawable(R.drawable.ic_orange_square);
+		orangeSquare1 = getResources().getDrawable(
+				R.drawable.ic_orange_square_1);
+		redSquare = getResources().getDrawable(R.drawable.ic_red_square);
+		redSquare1 = getResources().getDrawable(R.drawable.ic_red_square_1);
+		// Grey Numbered Square Resources
+		greySquare = getResources().getDrawable(R.drawable.ic_grey_square);
+		greySquare1 = getResources().getDrawable(R.drawable.ic_grey_square_1);
+		greySquare2 = getResources().getDrawable(R.drawable.ic_grey_square_2);
+		greySquare3 = getResources().getDrawable(R.drawable.ic_grey_square_3);
+		greySquare4 = getResources().getDrawable(R.drawable.ic_grey_square_4);
+		greySquare5 = getResources().getDrawable(R.drawable.ic_grey_square_5);
+		greySquare6 = getResources().getDrawable(R.drawable.ic_grey_square_6);
+		greySquare7 = getResources().getDrawable(R.drawable.ic_grey_square_7);
+		greySquare8 = getResources().getDrawable(R.drawable.ic_grey_square_8);
+		greySquare9 = getResources().getDrawable(R.drawable.ic_grey_square_9);
+		greySquare10 = getResources().getDrawable(R.drawable.ic_grey_square_10);
+		// GPS and Colored Square Bounds
+		gpsLocationIcon.setBounds(0, 0, 36, 36);
+		greenSquare.setBounds(0, 0, 36, 36);
+		greenSquare1.setBounds(0, 0, 36, 36);
+		orangeSquare.setBounds(0, 0, 36, 36);
+		orangeSquare1.setBounds(0, 0, 36, 36);
+		redSquare.setBounds(0, 0, 36, 36);
+		redSquare1.setBounds(0, 0, 36, 36);
+		mGpsLocationPoint = null;
+		mGpsOverlayItem = new OverlayItem(mGpsLocationPoint, "", "");
+		mGpsOverlayItem.setMarker(gpsLocationIcon);
+	}
+
 	private InputStream getConnection(final String url)
 	{
 		InputStream is = null;
@@ -123,43 +154,9 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		return is;
 	}
 
-	private void generateDrawables()
+	public ArrayList<EventEntry> getEventList()
 	{
-		// GPS and Colored Square Resources
-		gpsLocationIcon = getResources().getDrawable(R.drawable.ic_gps_location);
-		greenSquare = getResources().getDrawable(R.drawable.ic_green_square);
-		greenSquare1 = getResources().getDrawable(R.drawable.ic_green_square_1);
-		orangeSquare = getResources().getDrawable(R.drawable.ic_orange_square);
-		orangeSquare1 = getResources().getDrawable(
-				R.drawable.ic_orange_square_1);
-		redSquare = getResources().getDrawable(R.drawable.ic_red_square);
-		redSquare1 = getResources().getDrawable(R.drawable.ic_red_square_1);
-		
-		// Grey Numbered Square Resources
-		greySquare = getResources().getDrawable(R.drawable.ic_grey_square);
-		greySquare1 = getResources().getDrawable(R.drawable.ic_grey_square_1);
-		greySquare2 = getResources().getDrawable(R.drawable.ic_grey_square_2);
-		greySquare3 = getResources().getDrawable(R.drawable.ic_grey_square_3);
-		greySquare4 = getResources().getDrawable(R.drawable.ic_grey_square_4);
-		greySquare5 = getResources().getDrawable(R.drawable.ic_grey_square_5);
-		greySquare6 = getResources().getDrawable(R.drawable.ic_grey_square_6);
-		greySquare7 = getResources().getDrawable(R.drawable.ic_grey_square_7);
-		greySquare8 = getResources().getDrawable(R.drawable.ic_grey_square_8);
-		greySquare9 = getResources().getDrawable(R.drawable.ic_grey_square_9);
-		greySquare10 = getResources().getDrawable(R.drawable.ic_grey_square_10);
-		
-		// GPS and Colored Square Bounds
-		gpsLocationIcon.setBounds(0, 0, 36, 36);
-		greenSquare.setBounds(0, 0, 36, 36);
-		greenSquare1.setBounds(0, 0, 36, 36);
-		orangeSquare.setBounds(0, 0, 36, 36);
-		orangeSquare1.setBounds(0, 0, 36, 36);
-		redSquare.setBounds(0, 0, 36, 36);
-		redSquare1.setBounds(0, 0, 36, 36);
-		
-		mGpsLocationPoint = null;
-		mGpsOverlayItem = new OverlayItem(mGpsLocationPoint, "", "");
-		mGpsOverlayItem.setMarker(gpsLocationIcon);
+		return eventList;
 	}
 
 	/**
@@ -187,10 +184,10 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map);
 		// Add the ability to zoom in and out on the map
-		this.mapView = (MapView) findViewById(R.id.mapview);
-		this.mapView.setBuiltInZoomControls(true);
+		mapView = (MapView) findViewById(R.id.mapview);
+		mapView.setBuiltInZoomControls(true);
 		// Initialize overlay variables
-		this.mapOverlays = this.mapView.getOverlays();
+		mapOverlays = mapView.getOverlays();
 		generateDrawables();
 		// Need to use getApplicationContext as this activity is used as a Tab
 		getApplicationContext()
@@ -198,7 +195,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 						new Intent(this,
 								edu.usc.csci588team02.service.AppService.class),
 						service, Context.BIND_AUTO_CREATE);
-		
 		mRoadProvider = new RoadProvider();
 	}
 
@@ -224,28 +220,28 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		if (location != null)
 		{
 			final GeoPoint point = new GeoPoint(
-					(int) (location.getLatitude() * 1000000), (int) (location
-							.getLongitude() * 1000000));
+					(int) (location.getLatitude() * 1000000),
+					(int) (location.getLongitude() * 1000000));
 			mGpsLocationPoint = point;
-			
-			try {
+			try
+			{
 				final EventEntry ee = service.getNextEventWithLocation();
 				if (ee != null)
-				{
 					if (ee.where != null)
-					{
 						new Thread()
 						{
 							@Override
 							public void run()
 							{
-								GeoPoint gpCurrentEvent = getLatLon(ee.where.valueString);
-								final String url = RoadProvider.getUrlFromLatLong(location.getLatitude(), location.getLongitude(),
-										gpCurrentEvent.getLatitudeE6()/1E6, gpCurrentEvent.getLongitudeE6()/1E6);
-								
+								final GeoPoint gpCurrentEvent = getLatLon(ee.where.valueString);
+								final String url = RoadProvider
+										.getUrlFromLatLong(
+												location.getLatitude(),
+												location.getLongitude(),
+												gpCurrentEvent.getLatitudeE6() / 1E6,
+												gpCurrentEvent.getLongitudeE6() / 1E6);
 								if (DEBUG)
-									Log.d(TAG,	"URL: " + url);
-								
+									Log.d(TAG, "URL: " + url);
 								final InputStream is = getConnection(url);
 								if (is != null)
 								{
@@ -254,14 +250,13 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 								}
 							}
 						}.start();
-					}
-				}
-			} catch (IOException e) {
+			} catch (final IOException e)
+			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			//TODO: reenable this by calling it in the thear handler response
-			//refreshData();
+			// TODO: reenable this by calling it in the thear handler response
+			// refreshData();
 		}
 	}
 
@@ -290,19 +285,20 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	 * Given the address of an event, this method plots it on the map.
 	 * 
 	 * @param event
+	 *            the event to plot
 	 * 
 	 * @param icon
 	 *            The Marker that will represent the event on the map
 	 * @return the point just plotted
 	 */
-	private GeoPoint plotEvent(EventEntry event, final Drawable icon)
+	private GeoPoint plotEvent(final EventEntry event, final Drawable icon)
 	{
 		// Obtain the latitude and longitude
-		String eventLocation = event.where.valueString;
+		final String eventLocation = event.where.valueString;
 		final GeoPoint geoPoint = getLatLon(eventLocation);
 		// Create a marker for the point
 		// TODO Move this to only create one ItemizedOverlay
-		itemizedOverlay = new ItemizedOverlay(icon, this.mapView.getContext());
+		itemizedOverlay = new ItemizedOverlay(icon, mapView.getContext());
 		final OverlayItem overlayItem = new OverlayItem(geoPoint,
 				"Appointment", "Appointment");
 		overlayItem.setMarker(icon);
@@ -328,10 +324,9 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			{
 				final TextView textView = (TextView) findViewById(R.id.mapdescription);
 				textView.setText(mRoad.mName + " " + mRoad.mDescription);
-				final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoad, mapView);
+				final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoad);
 				mapOverlays.add(mapOverlay);
 			}
-			
 			// Plot events for the day
 			final Calendar calendarToday = Calendar.getInstance();
 			calendarToday.add(Calendar.DATE, 1);
@@ -386,14 +381,13 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 							break;
 					}
 					if (DEBUG)
-						Log.d(TAG,	"Plotting Event: " + h);
+						Log.d(TAG, "Plotting Event: " + h);
 				}
 			}
 			if (lastAdded != null)
 				zoomTo(lastAdded);
 			eventList.clear();
 			eventList.addAll(events);
-			
 			// Add GPS location overlay if we have our location set
 			if (mGpsLocationPoint != null)
 			{
@@ -419,10 +413,5 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		final MapController mapController = mapView.getController();
 		mapController.animateTo(geoPoint);
 		mapController.setZoom(12);
-	}
-
-	public ArrayList<EventEntry> getEventList()
-	{
-		return this.eventList;
 	}
 }

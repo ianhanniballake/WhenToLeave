@@ -104,7 +104,8 @@ public class Home extends Activity implements Refreshable
 				{
 					final Intent detailsIntent = new Intent(Home.this,
 							EventDetails.class);
-					detailsIntent.putExtra("eventUrl", currentEvent.getSelfLink());
+					detailsIntent.putExtra("eventUrl",
+							currentEvent.getSelfLink());
 					startActivity(detailsIntent);
 				}
 			}

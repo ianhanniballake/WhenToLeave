@@ -12,14 +12,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 
 import edu.usc.csci588team02.R;
+import edu.usc.csci588team02.maps.MapRouteOverlay;
 import edu.usc.csci588team02.maps.Road;
 import edu.usc.csci588team02.maps.RoadProvider;
-import edu.usc.csci588team02.maps.MapRouteOverlay;
 
 public class MapRouteActivity extends MapActivity
 {
@@ -33,7 +34,7 @@ public class MapRouteActivity extends MapActivity
 			final TextView textView = (TextView) findViewById(R.id.mapdescription);
 			textView.setText(mRoad.mName + " " + mRoad.mDescription);
 			System.out.println(mRoad.mName + " " + mRoad.mDescription);
-			final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoad, mapView);
+			final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoad);
 			final List<Overlay> listOfOverlays = mapView.getOverlays();
 			listOfOverlays.clear();
 			listOfOverlays.add(mapOverlay);

@@ -25,10 +25,10 @@ import edu.usc.csci588team02.activity.EventDetails;
 public class ItemizedOverlay extends
 		com.google.android.maps.ItemizedOverlay<OverlayItem>
 {
+	private final Context mContext;
+	private final ArrayList<String> mEventURLs = new ArrayList<String>();
 	// Holds each of the OverlayItems objects that we want on our map
 	private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
-	private final ArrayList<String> mEventURLs = new ArrayList<String>();
-	private final Context mContext;
 
 	/**
 	 * Defines the default marker to be used on each of the {@link OverlayItem}.
@@ -37,20 +37,15 @@ public class ItemizedOverlay extends
 	 * 
 	 * @param defaultMarker
 	 *            Marker to be used for each {@link OverlayItem}
-	 * @param event
+	 * @param context
+	 *            context to launch activities from
 	 */
-	public ItemizedOverlay(final Drawable defaultMarker, Context context)
+	public ItemizedOverlay(final Drawable defaultMarker, final Context context)
 	{
 		super(boundCenterBottom(defaultMarker));
-		this.mContext = context;
+		mContext = context;
 	}
 
-	@Override
-	public void draw(Canvas pCanvas, MapView pMapView, boolean pShadow) {
-	    super.draw(pCanvas, pMapView, false);
-
-	}
-	
 	/**
 	 * Adds new {@link OverlayItem} to our {@link ArrayList}.
 	 * 
@@ -59,13 +54,13 @@ public class ItemizedOverlay extends
 	 * @param eventURL
 	 *            A unique URL specific to this event
 	 */
-	public void addOverlay(final OverlayItem overlay, String eventURL)
+	public void addOverlay(final OverlayItem overlay, final String eventURL)
 	{
-		this.mOverlays.add(overlay);
-		this.mEventURLs.add(eventURL);
+		mOverlays.add(overlay);
+		mEventURLs.add(eventURL);
 		populate();
 	}
-	
+
 	/**
 	 * Redefined to read from our {@link ArrayList}.
 	 */
@@ -76,14 +71,20 @@ public class ItemizedOverlay extends
 	}
 
 	@Override
+	public void draw(final Canvas pCanvas, final MapView pMapView,
+			final boolean pShadow)
+	{
+		super.draw(pCanvas, pMapView, false);
+	}
+
+	@Override
 	protected boolean onTap(final int index)
 	{
-		final Intent detailsIntent = new Intent(this.mContext,
-				EventDetails.class);
-		if (!this.mEventURLs.get(index).equals(""))
+		final Intent detailsIntent = new Intent(mContext, EventDetails.class);
+		if (!mEventURLs.get(index).equals(""))
 		{
-			detailsIntent.putExtra("eventUrl", this.mEventURLs.get(index));
-			this.mContext.startActivity(detailsIntent);
+			detailsIntent.putExtra("eventUrl", mEventURLs.get(index));
+			mContext.startActivity(detailsIntent);
 		}
 		return true;
 	}

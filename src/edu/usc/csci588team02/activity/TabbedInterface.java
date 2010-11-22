@@ -223,10 +223,8 @@ public class TabbedInterface extends TabActivity implements LocationAware
 	{
 		// TODO: call notification if needed with current event
 		// TODO: update actionbar time and color
-
 		// Get shared preferences
-		final SharedPreferences settings = getSharedPreferences(
-				PREF, 0);
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
 		// Don't create notifications if they are disabled
 		if (settings.getBoolean("EnableNotifications", true))
 		{
@@ -238,29 +236,33 @@ public class TabbedInterface extends TabActivity implements LocationAware
 			{
 				ee = service.getNextEventWithLocation();
 				if (ee != null)
-					// determine duration between current location and next event
+					// determine duration between current location and next
+					// event
 					if (ee.where.valueString != null)
 					{
-						// Convert the shared travel preference to a TravelType enum 
+						// Convert the shared travel preference to a TravelType
+						// enum
 						TravelType tt = TravelType.DRIVING;
-						String travelTypePref = settings.getString("TransportPreference", "DRIVING");
+						final String travelTypePref = settings.getString(
+								"TransportPreference", "DRIVING");
 						if (travelTypePref.equals("BICYCLING"))
 							tt = TravelType.BICYCLING;
 						else if (travelTypePref.equals("WALKING"))
 							tt = TravelType.WALKING;
-						
-						final int dur = RouteInformation.getDuration(curLocation,
-								ee.where.valueString, tt);
+						final int dur = RouteInformation.getDuration(
+								curLocation, ee.where.valueString, tt);
 						Log.d(TAG, "Duration=" + dur);
 						final long durationTime = dur * 60 * 1000;
 						final DateTime eventStart = ee.when.startTime;
-						final long timeToLeave = eventStart.value - durationTime;
+						final long timeToLeave = eventStart.value
+								- durationTime;
 						final Date date = new Date(timeToLeave);
-						final Date curDate = new Date(System.currentTimeMillis());
+						final Date curDate = new Date(
+								System.currentTimeMillis());
 						Log.d(TAG,
 								"TimeToLeave: "
-										+ DateFormat
-												.format("MM/dd/yy h:mmaa", date));
+										+ DateFormat.format("MM/dd/yy h:mmaa",
+												date));
 						Log.d(TAG,
 								"CurrentTime: "
 										+ DateFormat.format("MM/dd/yy h:mmaa",
@@ -269,19 +271,17 @@ public class TabbedInterface extends TabActivity implements LocationAware
 								"AppointmentTime: "
 										+ DateFormat.format("MM/dd/yy h:mmaa",
 												eventStart.value));
-						
 						// Setup notifcation color to send
 						// TODO: send color to action bar
 						long leaveInMinutes = 0;
 						if (date.getTime() - curDate.getTime() > 0)
 							leaveInMinutes = date.getTime() - curDate.getTime();
 						leaveInMinutes = leaveInMinutes / (1000 * 60);
-						
-						int notifyTimeInMin = settings.getInt("NotifyTime", 3600);
+						int notifyTimeInMin = settings.getInt("NotifyTime",
+								3600);
 						notifyTimeInMin = notifyTimeInMin / 60;
-						
-						mNotificationUtility.createSimpleNotification(
-								ee.title, ee, leaveInMinutes, notifyTimeInMin);
+						mNotificationUtility.createSimpleNotification(ee.title,
+								ee, leaveInMinutes, notifyTimeInMin);
 					}
 					else
 						Log.d(TAG, "Address does not exist");

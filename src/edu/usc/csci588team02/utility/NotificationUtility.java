@@ -48,16 +48,15 @@ public class NotificationUtility
 	}
 
 	public void createSimpleNotification(final String message,
-			final EventEntry ee, long leaveInMinutes, int notifyTimeInMin)
+			final EventEntry ee, final long leaveInMinutes,
+			final int notifyTimeInMin)
 	{
 		Notification notification = null;
-			
 		NotificationUtility.COLOR notifcationColor = NotificationUtility.COLOR.GREEN;
-		if (leaveInMinutes < notifyTimeInMin*(.33333))
+		if (leaveInMinutes < notifyTimeInMin * .33333)
 			notifcationColor = NotificationUtility.COLOR.RED;
-		else if (leaveInMinutes < notifyTimeInMin*(.6666))
+		else if (leaveInMinutes < notifyTimeInMin * .6666)
 			notifcationColor = NotificationUtility.COLOR.ORANGE;
-		
 		switch (notifcationColor)
 		{
 			case RED:
@@ -80,9 +79,10 @@ public class NotificationUtility
 		final CharSequence time = android.text.format.DateFormat.format(
 				"hh:mma", ee.when.startTime.value);
 		// Set the info for the views that show in the notification panel.
-		notification.setLatestEventInfo(mainActivity, ee.title, "Leave " + 
-				((leaveInMinutes > 0)? "in " + leaveInMinutes + "m - " : "Now -") +
-				ee.where.valueString + " @" + time, makeNotificationIntent());
+		notification.setLatestEventInfo(mainActivity, ee.title, "Leave "
+				+ (leaveInMinutes > 0 ? "in " + leaveInMinutes + "m - "
+						: "Now -") + ee.where.valueString + " @" + time,
+				makeNotificationIntent());
 		// Send the notification.
 		// We use a layout id because it is a unique number. We use it later to
 		// cancel.
