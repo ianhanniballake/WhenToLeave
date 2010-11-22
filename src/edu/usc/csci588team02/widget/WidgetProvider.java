@@ -15,89 +15,70 @@
  */
 package edu.usc.csci588team02.widget;
 
+import java.util.Date;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
 import edu.usc.csci588team02.R;
 
 public class WidgetProvider extends AppWidgetProvider
 {
+	private static PendingIntent pendingIntent;
 	// log tag
 	private static final String TAG = "ExampleAppWidgetProvider";
-
-	static void updateAppWidget(final Context context,
-			final AppWidgetManager appWidgetManager, final int appWidgetId,
-			final String titlePrefix)
-	{
-		Log.d(TAG, "updateAppWidget appWidgetId=" + appWidgetId
-				+ " titlePrefix=" + titlePrefix);
-		// Getting the string this way allows the string to be localized. The
-		// format
-		// string is filled in using java.util.Formatter-style format strings.
-		final CharSequence text = "Test CharSequence";
-		// Construct the RemoteViews object. It takes the package name (in our
-		// case, it's our
-		// package, but it needs this because on the other side it's the widget
-		// host inflating
-		// the layout from our package).
-		final RemoteViews views = new RemoteViews(context.getPackageName(),
-				R.layout.widget_provider);
-		views.setTextViewText(R.id.widgetEventDetailButton, text);
-		// views.
-		// Button transportButton = (Button)
-		// findViewById(R.id.widgetEventDetailButton);
-		// Tell the widget manager
-		appWidgetManager.updateAppWidget(appWidgetId, views);
-	}
-
-	@Override
-	public void onDeleted(final Context context, final int[] appWidgetIds)
-	{
-		Log.d(TAG, "onDeleted");
-		final int N = appWidgetIds.length;
-		for (int i = 0; i < N; i++)
-		{
-			// clean up
-		}
-	}
+	private static final String WIDGET_UPDATE_ACTION = "WHENTOLEAVE_WIDGET_UPDATE_ACTION";
 
 	@Override
 	public void onDisabled(final Context context)
 	{
-		// When the first widget is created, stop listening for the
-		// TIMEZONE_CHANGED and
-		// TIME_CHANGED broadcasts.
-		/*
-		 * Log.d(TAG, "onDisabled"); PackageManager pm =
-		 * context.getPackageManager(); pm.setComponentEnabledSetting( new
-		 * ComponentName("com.example.android.apis",
-		 * ".appwidget.ExampleBroadcastReceiver"),
-		 * PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-		 * PackageManager.DONT_KILL_APP);
-		 */
+		super.onDisabled(context);
+		Log.d(TAG, "onDisabled");
+		final AlarmManager alarmManager = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		alarmManager.cancel(pendingIntent);
 	}
 
 	@Override
 	public void onEnabled(final Context context)
 	{
+		super.onEnabled(context);
 		Log.d(TAG, "onEnabled");
-		// When the first widget is created, register for the TIMEZONE_CHANGED
-		// and TIME_CHANGED
-		// broadcasts. We don't want to be listening for these if nobody has our
-		// widget active.
-		// This setting is sticky across reboots, but that doesn't matter,
-		// because this will
-		// be called after boot if there is a widget instance for this provider.
-		/*
-		 * PackageManager pm = context.getPackageManager();
-		 * pm.setComponentEnabledSetting( new
-		 * ComponentName("com.example.android.apis",
-		 * ".appwidget.ExampleBroadcastReceiver"),
-		 * PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-		 * PackageManager.DONT_KILL_APP);
-		 */
+		final AlarmManager alarmManager = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		final Intent alarmIntent = new Intent(WIDGET_UPDATE_ACTION);
+		pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, 0);
+		// Set up the alarm to trigger every minute
+		alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, 60000,
+				pendingIntent);
+	}
+
+	@Override
+	public void onReceive(final Context context, final Intent intent)
+	{
+		super.onReceive(context, intent);
+		if (WIDGET_UPDATE_ACTION.equals(intent.getAction()))
+		{
+			final Bundle extras = intent.getExtras();
+			if (extras != null)
+			{
+				final AppWidgetManager appWidgetManager = AppWidgetManager
+						.getInstance(context);
+				final ComponentName thisAppWidget = new ComponentName(
+						context.getPackageName(),
+						WidgetProvider.class.getName());
+				final int[] appWidgetIds = appWidgetManager
+						.getAppWidgetIds(thisAppWidget);
+				onUpdate(context, appWidgetManager, appWidgetIds);
+			}
+		}
 	}
 
 	@Override
@@ -109,12 +90,25 @@ public class WidgetProvider extends AppWidgetProvider
 		// - Create a RemoteViews object for it
 		// - Set the text in the RemoteViews object
 		// - Tell the AppWidgetManager to show that views object for the widget.
-		final int N = appWidgetIds.length;
-		for (int i = 0; i < N; i++)
-		{
-			final int appWidgetId = appWidgetIds[i];
-			final String titlePrefix = "Initial Widget Sketch";
-			updateAppWidget(context, appWidgetManager, appWidgetId, titlePrefix);
-		}
+		for (final int appWidgetId : appWidgetIds)
+			updateAppWidget(context, appWidgetManager, appWidgetId);
+	}
+
+	private void updateAppWidget(final Context context,
+			final AppWidgetManager appWidgetManager, final int appWidgetId)
+	{
+		Log.d(TAG, "updateAppWidget appWidgetId=" + appWidgetId);
+		final CharSequence text = android.text.format.DateFormat.format(
+				"hh:mma", new Date());
+		// Construct the RemoteViews object. It takes the package name (in our
+		// case, it's our package, but it needs this because on the other side
+		// it's the widget host inflating the layout from our package).
+		final RemoteViews views = new RemoteViews(context.getPackageName(),
+				R.layout.widget_provider);
+		views.setTextViewText(R.id.widgetEventDetailButton, text);
+		// Button transportButton = (Button)
+		// findViewById(R.id.widgetEventDetailButton);
+		// Tell the widget manager
+		appWidgetManager.updateAppWidget(appWidgetId, views);
 	}
 }
