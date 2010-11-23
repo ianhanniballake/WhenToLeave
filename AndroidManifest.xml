@@ -56,7 +56,8 @@
 		<activity
 			android:name=".activity.Home"></activity>
 			
-		<service android:enabled="true" android:name=".service.AppService"></service>
+		<service android:enabled="true" android:name=".service.AppService"></service> 
+        <service android:enabled="true" android:name=".widget.WidgetUpdateService"></service>
 		<receiver android:name=".widget.WidgetProvider">
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_provider" />
             <intent-filter>

@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import edu.usc.csci588team02.model.CalendarEntry;
+import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
@@ -49,8 +50,7 @@ public final class Calendars extends ListActivity implements Refreshable
 	{
 		super.onCreate(savedInstanceState);
 		getListView().setTextFilterEnabled(true);
-		bindService(new Intent(this,
-				edu.usc.csci588team02.service.AppService.class), service,
+		bindService(new Intent(this, AppService.class), service,
 				Context.BIND_AUTO_CREATE);
 		startActivityForResult(new Intent(this, Login.class),
 				Login.REQUEST_AUTHENTICATE);

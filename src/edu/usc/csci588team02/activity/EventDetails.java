@@ -19,6 +19,7 @@ import com.google.android.maps.GeoPoint;
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.model.EventEntry;
+import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
 public class EventDetails extends Activity implements Refreshable
@@ -45,8 +46,7 @@ public class EventDetails extends Activity implements Refreshable
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.event_details);
-		bindService(new Intent(this,
-				edu.usc.csci588team02.service.AppService.class), service,
+		bindService(new Intent(this, AppService.class), service,
 				Context.BIND_AUTO_CREATE);
 	}
 

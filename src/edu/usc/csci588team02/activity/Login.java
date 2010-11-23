@@ -17,6 +17,7 @@ import android.util.Log;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpResponseException;
 
+import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
@@ -166,8 +167,7 @@ public class Login extends Activity implements Refreshable
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		bindService(new Intent(this,
-				edu.usc.csci588team02.service.AppService.class), service,
+		bindService(new Intent(this, AppService.class), service,
 				Context.BIND_AUTO_CREATE);
 	}
 

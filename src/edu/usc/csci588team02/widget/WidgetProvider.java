@@ -15,8 +15,6 @@
  */
 package edu.usc.csci588team02.widget;
 
-import java.util.Date;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -26,8 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.RemoteViews;
-import edu.usc.csci588team02.R;
 
 public class WidgetProvider extends AppWidgetProvider
 {
@@ -43,6 +39,7 @@ public class WidgetProvider extends AppWidgetProvider
 		super.onDisabled(context);
 		Log.d(TAG, "onDisabled");
 		alarmManager.cancel(pendingIntent);
+		context.stopService(new Intent(context, WidgetUpdateService.class));
 	}
 
 	@Override
@@ -85,33 +82,6 @@ public class WidgetProvider extends AppWidgetProvider
 			final AppWidgetManager appWidgetManager, final int[] appWidgetIds)
 	{
 		Log.d(TAG, "onUpdate");
-		// For each widget that needs an update:
-		// - Create a RemoteViews object for it
-		// - Set the text in the RemoteViews object
-		// - Tell the AppWidgetManager to show that views object for the widget.
-		for (final int appWidgetId : appWidgetIds)
-			updateAppWidget(context, appWidgetManager, appWidgetId);
-	}
-
-	private void updateAppWidget(final Context context,
-			final AppWidgetManager appWidgetManager, final int appWidgetId)
-	{
-		Log.d(TAG, "updateAppWidget appWidgetId=" + appWidgetId);
-		final CharSequence leaveIn = "Leave in 1:04h";
-		final CharSequence eventTitle = "Event Title";
-		final CharSequence eventTime = android.text.format.DateFormat.format(
-				"hh:mma", new Date()) + " @ Event Location";
-		// Construct the RemoteViews object. It takes the package name (in our
-		// case, it's our package, but it needs this because on the other side
-		// it's the widget host inflating the layout from our package).
-		final RemoteViews views = new RemoteViews(context.getPackageName(),
-				R.layout.widget_provider);
-		views.setTextViewText(R.id.widgetLeaveInText, leaveIn);
-		views.setTextViewText(R.id.widgetEventDetail, eventTitle);
-		views.setTextViewText(R.id.widgetEventTime, eventTime);
-		// Button transportButton = (Button)
-		// findViewById(R.id.widgetEventDetailButton);
-		// Tell the widget manager
-		appWidgetManager.updateAppWidget(appWidgetId, views);
+		context.startService(new Intent(context, WidgetUpdateService.class));
 	}
 }

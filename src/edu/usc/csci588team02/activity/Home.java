@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.model.EventEntry;
+import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
 public class Home extends Activity implements Refreshable
@@ -127,11 +128,8 @@ public class Home extends Activity implements Refreshable
 			}
 		});
 		// Need to use getApplicationContext as this activity is used as a Tab
-		getApplicationContext()
-				.bindService(
-						new Intent(this,
-								edu.usc.csci588team02.service.AppService.class),
-						service, Context.BIND_AUTO_CREATE);
+		getApplicationContext().bindService(new Intent(this, AppService.class),
+				service, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override

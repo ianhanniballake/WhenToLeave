@@ -29,6 +29,7 @@ import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.EventEntry;
+import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 import edu.usc.csci588team02.utility.NotificationUtility;
 
@@ -208,9 +209,8 @@ public class TabbedInterface extends TabActivity implements LocationAware
 				// Set default starting tab to Event/Home
 				tabHost.setCurrentTab(0);
 				actionBar = new ActionBar();
-				bindService(new Intent(this,
-						edu.usc.csci588team02.service.AppService.class),
-						service, Context.BIND_AUTO_CREATE);
+				bindService(new Intent(this, AppService.class), service,
+						Context.BIND_AUTO_CREATE);
 				break;
 		}
 	}
@@ -220,6 +220,11 @@ public class TabbedInterface extends TabActivity implements LocationAware
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		// If notifications are enabled, keep the service running after the
+		// program exits
+		if (settings.getBoolean("EnableNotifications", true))
+			startService(new Intent(this, AppService.class));
 		startActivityForResult(new Intent(this, Login.class),
 				Login.REQUEST_AUTHENTICATE);
 	}

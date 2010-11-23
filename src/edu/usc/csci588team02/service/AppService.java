@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeSet;
 
 import android.app.Service;
@@ -94,7 +93,6 @@ public class AppService extends Service implements LocationListener
 		}
 	}
 
-	private static final long INTERVAL = 30000; // 30 seconds = 30000
 	private static final String PREF = "MyPrefs";
 	private static final String TAG = "AppService";
 	private final IBinder binder = new AppServiceBinder();
@@ -204,6 +202,7 @@ public class AppService extends Service implements LocationListener
 	@Override
 	public IBinder onBind(final Intent intent)
 	{
+		Log.d(TAG, "onBind");
 		return binder;
 	}
 
@@ -258,11 +257,11 @@ public class AppService extends Service implements LocationListener
 	}
 
 	@Override
-	public void onStart(final Intent intent, final int startid)
+	public int onStartCommand(final Intent intent, final int flags,
+			final int startId)
 	{
-		// Toast.makeText(this, "App Service Started",
-		// Toast.LENGTH_LONG).show();
 		Log.d(TAG, "onStart");
+		return START_STICKY;
 	}
 
 	@Override
@@ -292,14 +291,5 @@ public class AppService extends Service implements LocationListener
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 				interval, 0, this);
-		timer.scheduleAtFixedRate(new TimerTask()
-		{
-			// this activity will run every defined interval.
-			@Override
-			public void run()
-			{
-				Log.d(TAG, "TimerKick");
-			}
-		}, 0, INTERVAL);
 	}
 }
