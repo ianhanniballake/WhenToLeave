@@ -34,25 +34,15 @@ import edu.usc.csci588team02.utility.NotificationUtility;
 
 public class TabbedInterface extends TabActivity implements LocationAware
 {
-	private static final int DIALOG_TRANSPORTATION = 100;
-	private static final String PREF = "MyPrefs";
-	private static final String TAG = "TabbedInterfaceActivity";
-	protected final boolean DEBUG = false;
-	private NotificationUtility mNotificationUtility;
-	private final AppServiceConnection service = new AppServiceConnection(this);
-	public enum COLOR { GREEN, ORANGE, RED };
-	
 	public class ActionBar
 	{
-		private ImageButton transportButton;
-		private ImageButton refreshButton;
-		private Button actionBarButton;
-		
+		private final Button actionBarButton;
+		private final ImageButton refreshButton;
+		private final ImageButton transportButton;
+
 		public ActionBar()
 		{
-			final Resources res = getResources();
-			final SharedPreferences settings = getSharedPreferences(
-					PREF, 0);
+			final SharedPreferences settings = getSharedPreferences(PREF, 0);
 			TravelType tt = TravelType.DRIVING;
 			final String travelTypePref = settings.getString(
 					"TransportPreference", "DRIVING");
@@ -62,7 +52,6 @@ public class TabbedInterface extends TabActivity implements LocationAware
 				tt = TravelType.WALKING;
 			// Setup Listeners for the ActionBar Buttons
 			actionBarButton = (Button) findViewById(R.id.actionBar);
-			
 			transportButton = (ImageButton) findViewById(R.id.transportModeButton);
 			transportButton.setOnClickListener(new OnClickListener()
 			{
@@ -73,7 +62,6 @@ public class TabbedInterface extends TabActivity implements LocationAware
 				}
 			});
 			setTransportMode(tt);
-			
 			refreshButton = (ImageButton) findViewById(R.id.refreshButton);
 			refreshButton.setOnClickListener(new OnClickListener()
 			{
@@ -87,38 +75,47 @@ public class TabbedInterface extends TabActivity implements LocationAware
 					tab.refreshData();
 					// TODO: Refresh the GPS and the Time to Leave
 				}
-			});			
+			});
 		}
-		
-		public void setColor(COLOR c)
+
+		public void setColor(final COLOR c)
 		{
 			final Resources res = getResources();
 			switch (c)
 			{
-			case GREEN:
-				actionBarButton.setBackgroundDrawable(res.getDrawable(R.drawable.custom_action_bar_green));
-				transportButton.setBackgroundDrawable(res.getDrawable(R.drawable.custom_action_bar_green));
-				refreshButton.setBackgroundDrawable(res.getDrawable(R.drawable.custom_action_bar_green));
-				break;
-			case ORANGE:
-				actionBarButton.setBackgroundDrawable(res.getDrawable(R.drawable.custom_action_bar_orange));
-				transportButton.setBackgroundDrawable(res.getDrawable(R.drawable.custom_action_bar_orange));
-				refreshButton.setBackgroundDrawable(res.getDrawable(R.drawable.custom_action_bar_orange));				
-				break;
-			case RED:
-				actionBarButton.setBackgroundDrawable(res.getDrawable(R.drawable.custom_action_bar_red));
-				transportButton.setBackgroundDrawable(res.getDrawable(R.drawable.custom_action_bar_red));
-				refreshButton.setBackgroundDrawable(res.getDrawable(R.drawable.custom_action_bar_red));				
-				break;
+				case GREEN:
+					actionBarButton.setBackgroundDrawable(res
+							.getDrawable(R.drawable.custom_action_bar_green));
+					transportButton.setBackgroundDrawable(res
+							.getDrawable(R.drawable.custom_action_bar_green));
+					refreshButton.setBackgroundDrawable(res
+							.getDrawable(R.drawable.custom_action_bar_green));
+					break;
+				case ORANGE:
+					actionBarButton.setBackgroundDrawable(res
+							.getDrawable(R.drawable.custom_action_bar_orange));
+					transportButton.setBackgroundDrawable(res
+							.getDrawable(R.drawable.custom_action_bar_orange));
+					refreshButton.setBackgroundDrawable(res
+							.getDrawable(R.drawable.custom_action_bar_orange));
+					break;
+				case RED:
+					actionBarButton.setBackgroundDrawable(res
+							.getDrawable(R.drawable.custom_action_bar_red));
+					transportButton.setBackgroundDrawable(res
+							.getDrawable(R.drawable.custom_action_bar_red));
+					refreshButton.setBackgroundDrawable(res
+							.getDrawable(R.drawable.custom_action_bar_red));
+					break;
 			}
 		}
-		
-		public void setText(String text)
+
+		public void setText(final String text)
 		{
 			actionBarButton.setText(text);
 		}
-		
-		public void setTextAndColor (final long leaveInMinutes,
+
+		public void setTextAndColor(final long leaveInMinutes,
 				final int notifyTimeInMin)
 		{
 			COLOR actionBarColor = COLOR.GREEN;
@@ -126,32 +123,44 @@ public class TabbedInterface extends TabActivity implements LocationAware
 				actionBarColor = COLOR.RED;
 			else if (leaveInMinutes < notifyTimeInMin * .6666)
 				actionBarColor = COLOR.ORANGE;
-			
 			setColor(actionBarColor);
-			setText("Leave " + (leaveInMinutes > 0 ?
-					"in " + leaveInMinutes + "m" :
-					"Now"));
+			setText("Leave "
+					+ (leaveInMinutes > 0 ? "in " + leaveInMinutes + "m"
+							: "Now"));
 		}
-		
-		public void setTransportMode (TravelType tt)
+
+		public void setTransportMode(final TravelType tt)
 		{
 			final Resources res = getResources();
 			switch (tt)
 			{
-			case DRIVING:
-				transportButton.setImageDrawable(res.getDrawable(R.drawable.car_white55));
-				break;
-			case BICYCLING:
-				transportButton.setImageDrawable(res.getDrawable(R.drawable.bicycle_white55));
-				break;
-			case WALKING:
-				transportButton.setImageDrawable(res.getDrawable(R.drawable.person_white55));
-				break;
+				case DRIVING:
+					transportButton.setImageDrawable(res
+							.getDrawable(R.drawable.car_white55));
+					break;
+				case BICYCLING:
+					transportButton.setImageDrawable(res
+							.getDrawable(R.drawable.bicycle_white55));
+					break;
+				case WALKING:
+					transportButton.setImageDrawable(res
+							.getDrawable(R.drawable.person_white55));
+					break;
 			}
 		}
 	}
-	
+
+	public enum COLOR {
+		GREEN, ORANGE, RED
+	}
+
+	private static final int DIALOG_TRANSPORTATION = 100;
+	private static final String PREF = "MyPrefs";
+	private static final String TAG = "TabbedInterfaceActivity";
 	public ActionBar actionBar;
+	protected final boolean DEBUG = false;
+	private NotificationUtility mNotificationUtility;
+	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	/**
 	 * This method is called when the Login activity (started in onCreate)
@@ -170,7 +179,7 @@ public class TabbedInterface extends TabActivity implements LocationAware
 				final Resources res = getResources(); // Resource object to get
 				// Drawables
 				final TabHost tabHost = getTabHost(); // The activity TabHost
-				//tabHost.setup();
+				// tabHost.setup();
 				TabHost.TabSpec spec; // Reusable TabSpec for each tab
 				// Setup Notification Utility Manager
 				final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -198,9 +207,7 @@ public class TabbedInterface extends TabActivity implements LocationAware
 				tabHost.addTab(spec);
 				// Set default starting tab to Event/Home
 				tabHost.setCurrentTab(0);
-				
 				actionBar = new ActionBar();
-				
 				bindService(new Intent(this,
 						edu.usc.csci588team02.service.AppService.class),
 						service, Context.BIND_AUTO_CREATE);
@@ -378,10 +385,9 @@ public class TabbedInterface extends TabActivity implements LocationAware
 						notifyTimeInMin = notifyTimeInMin / 60;
 						mNotificationUtility.createSimpleNotification(ee.title,
 								ee, leaveInMinutes, notifyTimeInMin);
-						
 						// Set actionbar color and text
-						actionBar.setTextAndColor(leaveInMinutes, notifyTimeInMin);
-						
+						actionBar.setTextAndColor(leaveInMinutes,
+								notifyTimeInMin);
 					}
 					else
 						Log.d(TAG, "Address does not exist");
