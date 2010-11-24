@@ -67,6 +67,8 @@
                 <action android:name="WHENTOLEAVE_WIDGET_UPDATE_ACTION" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".service.AppAlarmReceiver" android:process=":remote" />
+  
 		<uses-library
 			android:name="com.google.android.maps" />
 	

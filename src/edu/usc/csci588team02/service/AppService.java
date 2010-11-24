@@ -9,6 +9,9 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TreeSet;
 
+import android.app.AlarmManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +22,7 @@ import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.google.api.client.apache.ApacheHttpTransport;
@@ -29,6 +33,8 @@ import com.google.api.client.util.DateTime;
 import com.google.api.client.xml.atom.AtomParser;
 
 import edu.usc.csci588team02.activity.LocationAware;
+import edu.usc.csci588team02.maps.RouteInformation;
+import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.CalendarEntry;
 import edu.usc.csci588team02.model.CalendarFeed;
 import edu.usc.csci588team02.model.CalendarUrl;
@@ -37,6 +43,7 @@ import edu.usc.csci588team02.model.EventEntryComparator;
 import edu.usc.csci588team02.model.EventFeed;
 import edu.usc.csci588team02.model.EventUrl;
 import edu.usc.csci588team02.model.Namespace;
+import edu.usc.csci588team02.utility.NotificationUtility;
 
 /**
  * @author Kevin Kirkpatrick
@@ -91,6 +98,16 @@ public class AppService extends Service implements LocationListener
 		{
 			AppService.this.setAuthToken(authToken);
 		}
+
+		public long getLeaveInMinutes()
+		{
+			return AppService.this.getLeaveInMinutes();
+		}
+
+		public int getNotifyTimeInMinutes()
+		{
+			return AppService.this.getNotifyTimeInMinutes();
+		}
 	}
 
 	private static final String PREF = "MyPrefs";
@@ -101,7 +118,11 @@ public class AppService extends Service implements LocationListener
 	private LocationManager locationManager;
 	private final Timer timer = new Timer();
 	private HttpTransport transport;
+	private NotificationUtility mNotificationUtility;
+	private long leaveInMinutes = 0;
+	private int notifyTimeInMin = 0;
 
+	// private final AppServiceConnection service = new AppServiceConnection();
 	public void addLocationListener(final LocationAware listener)
 	{
 		locationListenerList.add(listener);
@@ -144,11 +165,14 @@ public class AppService extends Service implements LocationListener
 		final List<CalendarEntry> calendars = getCalendars();
 		for (final CalendarEntry calendar : calendars)
 		{
-			final CalendarUrl eventFeedUrl = new CalendarUrl(
-					calendar.getEventFeedLink() + "?start-min="
-							+ new DateTime(start) + "&start-max="
-							+ new DateTime(end) + "&orderby=starttime"
-							+ "&singleevents=true");
+			final CalendarUrl eventFeedUrl = new CalendarUrl(calendar
+					.getEventFeedLink()
+					+ "?start-min="
+					+ new DateTime(start)
+					+ "&start-max="
+					+ new DateTime(end)
+					+ "&orderby=starttime"
+					+ "&singleevents=true");
 			final EventFeed eventFeed = EventFeed.executeGet(transport,
 					eventFeedUrl);
 			events.addAll(eventFeed.getEntries());
@@ -199,6 +223,16 @@ public class AppService extends Service implements LocationListener
 		return isAuthenticated;
 	}
 
+	public long getLeaveInMinutes()
+	{
+		return leaveInMinutes;
+	}
+
+	public int getNotifyTimeInMinutes()
+	{
+		return notifyTimeInMin;
+	}
+
 	@Override
 	public IBinder onBind(final Intent intent)
 	{
@@ -209,8 +243,6 @@ public class AppService extends Service implements LocationListener
 	@Override
 	public void onCreate()
 	{
-		// Toast.makeText(this, "App Servcie Created",
-		// Toast.LENGTH_LONG).show();
 		Log.d(TAG, "onCreate");
 		HttpTransport.setLowLevelHttpTransport(ApacheHttpTransport.INSTANCE);
 		transport = GoogleTransport.create();
@@ -220,6 +252,9 @@ public class AppService extends Service implements LocationListener
 		final AtomParser parser = new AtomParser();
 		parser.namespaceDictionary = Namespace.DICTIONARY;
 		transport.addParser(parser);
+		// Setup Notification Utility Manager
+		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		mNotificationUtility = new NotificationUtility(this, nm);
 		startUpService();
 	}
 
@@ -237,10 +272,93 @@ public class AppService extends Service implements LocationListener
 	{
 		if (location != null)
 		{
-			Log.d("LOCATION CHANGED", "Lat:  " + location.getLatitude() + "");
-			Log.d("LOCATION CHANGED", "Long: " + location.getLongitude() + "");
+			Log.d("Service LOCATION CHANGED", "Lat:  " + location.getLatitude()
+					+ "");
+			Log.d("Service LOCATION CHANGED", "Long: "
+					+ location.getLongitude() + "");
 			for (final LocationAware listener : locationListenerList)
 				listener.onLocationChanged(location);
+			// Setup Alarm Test Code
+			Intent intent = new Intent(this, AppAlarmReceiver.class);
+			PendingIntent pendingIntent = PendingIntent.getBroadcast(
+					getBaseContext(), AlarmManager.RTC_WAKEUP, intent, 0);
+			AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+			alarmManager.set(AlarmManager.RTC_WAKEUP, System
+					.currentTimeMillis()
+					+ (20 * 1000), pendingIntent);
+			Log.d(TAG, "Alarm set in 20 sec");
+			// TODO: call notification if needed with current event
+			// TODO: update actionbar time and color
+			// Get shared preferences
+			final SharedPreferences settings = getSharedPreferences(PREF, 0);
+			// Don't create notifications if they are disabled
+			if (settings.getBoolean("EnableNotifications", true))
+			{
+				// Get Current Location
+				final String curLocation = location.getLatitude() + ","
+						+ location.getLongitude();
+				EventEntry ee = null;
+				try
+				{
+					ee = getNextEventWithLocation();
+					if (ee != null)
+						// determine duration between current location and next
+						// event
+						if (ee.where.valueString != null)
+						{
+							// Convert the shared travel preference to a
+							// TravelType
+							// enum
+							TravelType tt = TravelType.DRIVING;
+							final String travelTypePref = settings.getString(
+									"TransportPreference", "DRIVING");
+							if (travelTypePref.equals("BICYCLING"))
+								tt = TravelType.BICYCLING;
+							else if (travelTypePref.equals("WALKING"))
+								tt = TravelType.WALKING;
+							final int dur = RouteInformation.getDuration(
+									curLocation, ee.where.valueString, tt);
+							Log.d(TAG, "Duration=" + dur);
+							final long durationTime = dur * 60 * 1000;
+							final DateTime eventStart = ee.when.startTime;
+							final long timeToLeave = eventStart.value
+									- durationTime;
+							final Date date = new Date(timeToLeave);
+							final Date curDate = new Date(System
+									.currentTimeMillis());
+							Log.d(TAG, "TimeToLeave: "
+									+ DateFormat
+											.format("MM/dd/yy h:mmaa", date));
+							Log.d(TAG, "CurrentTime: "
+									+ DateFormat.format("MM/dd/yy h:mmaa",
+											curDate));
+							Log.d(TAG, "AppointmentTime: "
+									+ DateFormat.format("MM/dd/yy h:mmaa",
+											eventStart.value));
+							// Setup notifcation color to send
+							// TODO: send color to action bar
+							if (date.getTime() - curDate.getTime() > 0)
+								leaveInMinutes = date.getTime()
+										- curDate.getTime();
+							leaveInMinutes = leaveInMinutes / (1000 * 60);
+							int notifyTimeInMin = settings.getInt("NotifyTime",
+									3600);
+							notifyTimeInMin = notifyTimeInMin / 60;
+							mNotificationUtility.createSimpleNotification(
+									ee.title, ee, leaveInMinutes,
+									notifyTimeInMin);
+							int tnotifyTimeInMin = settings.getInt(
+									"NotifyTime", 3600);
+							notifyTimeInMin = tnotifyTimeInMin / 60;
+						}
+						else
+							Log.d(TAG, "Address does not exist");
+				} catch (final IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

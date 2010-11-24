@@ -1,11 +1,7 @@
 package edu.usc.csci588team02.activity;
 
-import java.io.IOException;
-import java.util.Date;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.NotificationManager;
 import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -13,25 +9,18 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TabHost;
-
-import com.google.api.client.util.DateTime;
-
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.maps.RouteInformation.TravelType;
-import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
-import edu.usc.csci588team02.utility.NotificationUtility;
 
 public class TabbedInterface extends TabActivity implements LocationAware
 {
@@ -160,7 +149,6 @@ public class TabbedInterface extends TabActivity implements LocationAware
 	private static final String TAG = "TabbedInterfaceActivity";
 	public ActionBar actionBar;
 	protected final boolean DEBUG = false;
-	private NotificationUtility mNotificationUtility;
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	/**
@@ -182,29 +170,20 @@ public class TabbedInterface extends TabActivity implements LocationAware
 				final TabHost tabHost = getTabHost(); // The activity TabHost
 				// tabHost.setup();
 				TabHost.TabSpec spec; // Reusable TabSpec for each tab
-				// Setup Notification Utility Manager
-				final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-				mNotificationUtility = new NotificationUtility(this, nm);
 				// Home tab
-				spec = tabHost
-						.newTabSpec("event")
-						.setIndicator("",
-								res.getDrawable(R.drawable.ic_tab_home))
-						.setContent(new Intent(this, Home.class));
+				spec = tabHost.newTabSpec("event").setIndicator("",
+						res.getDrawable(R.drawable.ic_tab_home)).setContent(
+						new Intent(this, Home.class));
 				tabHost.addTab(spec);
 				// Agenda tab
-				spec = tabHost
-						.newTabSpec("agenda")
-						.setIndicator("",
-								res.getDrawable(R.drawable.ic_tab_agenda))
-						.setContent(new Intent(this, Agenda.class));
+				spec = tabHost.newTabSpec("agenda").setIndicator("",
+						res.getDrawable(R.drawable.ic_tab_agenda)).setContent(
+						new Intent(this, Agenda.class));
 				tabHost.addTab(spec);
 				// Map tab
-				spec = tabHost
-						.newTabSpec("map")
-						.setIndicator("",
-								res.getDrawable(R.drawable.ic_tab_map))
-						.setContent(new Intent(this, Map.class));
+				spec = tabHost.newTabSpec("map").setIndicator("",
+						res.getDrawable(R.drawable.ic_tab_map)).setContent(
+						new Intent(this, Map.class));
 				tabHost.addTab(spec);
 				// Set default starting tab to Event/Home
 				tabHost.setCurrentTab(0);
@@ -262,11 +241,9 @@ public class TabbedInterface extends TabActivity implements LocationAware
 						editor.commit();
 						actionBar.setTransportMode(TravelType.DRIVING);
 						if (DEBUG)
-							Log.d(TAG,
-									"Committed travel pref: "
-											+ settings.getString(
-													"TransportPreference",
-													"DRIVING"));
+							Log.d(TAG, "Committed travel pref: "
+									+ settings.getString("TransportPreference",
+											"DRIVING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -284,11 +261,9 @@ public class TabbedInterface extends TabActivity implements LocationAware
 						editor.commit();
 						actionBar.setTransportMode(TravelType.BICYCLING);
 						if (DEBUG)
-							Log.d(TAG,
-									"Committed travel pref: "
-											+ settings.getString(
-													"TransportPreference",
-													"BICYCLING"));
+							Log.d(TAG, "Committed travel pref: "
+									+ settings.getString("TransportPreference",
+											"BICYCLING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -306,11 +281,9 @@ public class TabbedInterface extends TabActivity implements LocationAware
 						editor.commit();
 						actionBar.setTransportMode(TravelType.WALKING);
 						if (DEBUG)
-							Log.d(TAG,
-									"Committed travel pref: "
-											+ settings.getString(
-													"TransportPreference",
-													"WALKING"));
+							Log.d(TAG, "Committed travel pref: "
+									+ settings.getString("TransportPreference",
+											"WALKING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -329,78 +302,9 @@ public class TabbedInterface extends TabActivity implements LocationAware
 	@Override
 	public void onLocationChanged(final Location location)
 	{
-		// TODO: call notification if needed with current event
-		// TODO: update actionbar time and color
-		// Get shared preferences
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		// Don't create notifications if they are disabled
-		if (settings.getBoolean("EnableNotifications", true))
-		{
-			// Get Current Location
-			final String curLocation = location.getLatitude() + ","
-					+ location.getLongitude();
-			EventEntry ee = null;
-			try
-			{
-				ee = service.getNextEventWithLocation();
-				if (ee != null)
-					// determine duration between current location and next
-					// event
-					if (ee.where.valueString != null)
-					{
-						// Convert the shared travel preference to a TravelType
-						// enum
-						TravelType tt = TravelType.DRIVING;
-						final String travelTypePref = settings.getString(
-								"TransportPreference", "DRIVING");
-						if (travelTypePref.equals("BICYCLING"))
-							tt = TravelType.BICYCLING;
-						else if (travelTypePref.equals("WALKING"))
-							tt = TravelType.WALKING;
-						final int dur = RouteInformation.getDuration(
-								curLocation, ee.where.valueString, tt);
-						Log.d(TAG, "Duration=" + dur);
-						final long durationTime = dur * 60 * 1000;
-						final DateTime eventStart = ee.when.startTime;
-						final long timeToLeave = eventStart.value
-								- durationTime;
-						final Date date = new Date(timeToLeave);
-						final Date curDate = new Date(
-								System.currentTimeMillis());
-						Log.d(TAG,
-								"TimeToLeave: "
-										+ DateFormat.format("MM/dd/yy h:mmaa",
-												date));
-						Log.d(TAG,
-								"CurrentTime: "
-										+ DateFormat.format("MM/dd/yy h:mmaa",
-												curDate));
-						Log.d(TAG,
-								"AppointmentTime: "
-										+ DateFormat.format("MM/dd/yy h:mmaa",
-												eventStart.value));
-						// Setup notifcation color to send
-						// TODO: send color to action bar
-						long leaveInMinutes = 0;
-						if (date.getTime() - curDate.getTime() > 0)
-							leaveInMinutes = date.getTime() - curDate.getTime();
-						leaveInMinutes = leaveInMinutes / (1000 * 60);
-						int notifyTimeInMin = settings.getInt("NotifyTime",
-								3600);
-						notifyTimeInMin = notifyTimeInMin / 60;
-						mNotificationUtility.createSimpleNotification(ee.title,
-								ee, leaveInMinutes, notifyTimeInMin);
-						// Set actionbar color and text
-						actionBar.setTextAndColor(leaveInMinutes,
-								notifyTimeInMin);
-					}
-					else
-						Log.d(TAG, "Address does not exist");
-			} catch (final IOException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		// Set actionbar color and text
+		// this should move somewhere else
+		this.actionBar.setTextAndColor(service.getLeaveInMinutes(), service
+				.getNotifyTimeInMinutes());
 	}
 }
