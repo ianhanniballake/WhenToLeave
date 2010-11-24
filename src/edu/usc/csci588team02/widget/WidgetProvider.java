@@ -38,7 +38,8 @@ public class WidgetProvider extends AppWidgetProvider
 	{
 		super.onDisabled(context);
 		Log.d(TAG, "onDisabled");
-		alarmManager.cancel(pendingIntent);
+		if (alarmManager != null)
+			alarmManager.cancel(pendingIntent);
 		context.stopService(new Intent(context, WidgetUpdateService.class));
 	}
 
