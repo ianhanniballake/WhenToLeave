@@ -112,8 +112,11 @@ public class WidgetUpdateService extends Service implements LocationAware,
 					travelType = TravelType.BICYCLING;
 				else if (travelTypePref.equals("WALKING"))
 					travelType = TravelType.WALKING;
-				final int minutesToEvent = RouteInformation.getDuration("",
-						nextEvent.where.valueString, travelType);
+				final String locationString = currentLocation.getLatitude()
+						+ "," + currentLocation.getLongitude();
+				final int minutesToEvent = RouteInformation
+						.getDuration(locationString,
+								nextEvent.where.valueString, travelType);
 				final long minutesUntilEvent = (nextEvent.when.startTime.value - new Date()
 						.getTime()) / 60000;
 				final long hoursToGo = Math.abs(minutesUntilEvent
