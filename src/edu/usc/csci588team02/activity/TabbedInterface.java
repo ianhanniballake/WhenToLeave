@@ -1,7 +1,9 @@
 package edu.usc.csci588team02.activity;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -12,8 +14,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TabHost;
@@ -21,6 +23,7 @@ import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
+import edu.usc.csci588team02.service.NotificationService;
 
 public class TabbedInterface extends TabActivity implements LocationAware
 {
@@ -171,19 +174,25 @@ public class TabbedInterface extends TabActivity implements LocationAware
 				// tabHost.setup();
 				TabHost.TabSpec spec; // Reusable TabSpec for each tab
 				// Home tab
-				spec = tabHost.newTabSpec("event").setIndicator("",
-						res.getDrawable(R.drawable.ic_tab_home)).setContent(
-						new Intent(this, Home.class));
+				spec = tabHost
+						.newTabSpec("event")
+						.setIndicator("",
+								res.getDrawable(R.drawable.ic_tab_home))
+						.setContent(new Intent(this, Home.class));
 				tabHost.addTab(spec);
 				// Agenda tab
-				spec = tabHost.newTabSpec("agenda").setIndicator("",
-						res.getDrawable(R.drawable.ic_tab_agenda)).setContent(
-						new Intent(this, Agenda.class));
+				spec = tabHost
+						.newTabSpec("agenda")
+						.setIndicator("",
+								res.getDrawable(R.drawable.ic_tab_agenda))
+						.setContent(new Intent(this, Agenda.class));
 				tabHost.addTab(spec);
 				// Map tab
-				spec = tabHost.newTabSpec("map").setIndicator("",
-						res.getDrawable(R.drawable.ic_tab_map)).setContent(
-						new Intent(this, Map.class));
+				spec = tabHost
+						.newTabSpec("map")
+						.setIndicator("",
+								res.getDrawable(R.drawable.ic_tab_map))
+						.setContent(new Intent(this, Map.class));
 				tabHost.addTab(spec);
 				// Set default starting tab to Event/Home
 				tabHost.setCurrentTab(0);
@@ -203,7 +212,17 @@ public class TabbedInterface extends TabActivity implements LocationAware
 		// If notifications are enabled, keep the service running after the
 		// program exits
 		if (settings.getBoolean("EnableNotifications", true))
+		{
 			startService(new Intent(this, AppService.class));
+			// Set up the Notification alarm
+			final Intent intent = new Intent(this, NotificationService.class);
+			final PendingIntent pendingIntent = PendingIntent.getService(
+					getBaseContext(), AlarmManager.RTC_WAKEUP, intent, 0);
+			final AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
+					System.currentTimeMillis() + 60 * 1000, 60000,
+					pendingIntent);
+		}
 		startActivityForResult(new Intent(this, Login.class),
 				Login.REQUEST_AUTHENTICATE);
 	}
@@ -241,9 +260,11 @@ public class TabbedInterface extends TabActivity implements LocationAware
 						editor.commit();
 						actionBar.setTransportMode(TravelType.DRIVING);
 						if (DEBUG)
-							Log.d(TAG, "Committed travel pref: "
-									+ settings.getString("TransportPreference",
-											"DRIVING"));
+							Log.d(TAG,
+									"Committed travel pref: "
+											+ settings.getString(
+													"TransportPreference",
+													"DRIVING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -261,9 +282,11 @@ public class TabbedInterface extends TabActivity implements LocationAware
 						editor.commit();
 						actionBar.setTransportMode(TravelType.BICYCLING);
 						if (DEBUG)
-							Log.d(TAG, "Committed travel pref: "
-									+ settings.getString("TransportPreference",
-											"BICYCLING"));
+							Log.d(TAG,
+									"Committed travel pref: "
+											+ settings.getString(
+													"TransportPreference",
+													"BICYCLING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -281,9 +304,11 @@ public class TabbedInterface extends TabActivity implements LocationAware
 						editor.commit();
 						actionBar.setTransportMode(TravelType.WALKING);
 						if (DEBUG)
-							Log.d(TAG, "Committed travel pref: "
-									+ settings.getString("TransportPreference",
-											"WALKING"));
+							Log.d(TAG,
+									"Committed travel pref: "
+											+ settings.getString(
+													"TransportPreference",
+													"WALKING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -302,9 +327,6 @@ public class TabbedInterface extends TabActivity implements LocationAware
 	@Override
 	public void onLocationChanged(final Location location)
 	{
-		// Set actionbar color and text
-		// this should move somewhere else
-		this.actionBar.setTextAndColor(service.getLeaveInMinutes(), service
-				.getNotifyTimeInMinutes());
+		// TODO: Update actionBar
 	}
 }

@@ -101,14 +101,4 @@ public class AppServiceConnection implements ServiceConnection
 	{
 		service.setAuthToken(authToken);
 	}
-
-	public long getLeaveInMinutes()
-	{
-		return service.getLeaveInMinutes();
-	}
-
-	public int getNotifyTimeInMinutes()
-	{
-		return service.getNotifyTimeInMinutes();
-	}
 }

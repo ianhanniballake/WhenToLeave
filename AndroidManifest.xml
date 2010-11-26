@@ -56,7 +56,8 @@
 		<activity
 			android:name=".activity.Home"></activity>
 			
-		<service android:enabled="true" android:name=".service.AppService"></service> 
+		<service android:enabled="true" android:name=".service.AppService"></service>
+        <service android:enabled="true" android:name=".service.NotificationService"></service>
         <service android:enabled="true" android:name=".widget.WidgetUpdateService"></service>
 		<receiver android:name=".widget.WidgetProvider">
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_provider" />
@@ -67,7 +68,6 @@
                 <action android:name="WHENTOLEAVE_WIDGET_UPDATE_ACTION" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".service.AppAlarmReceiver" android:process=":remote" />
   
 		<uses-library
 			android:name="com.google.android.maps" />

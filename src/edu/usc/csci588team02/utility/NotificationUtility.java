@@ -3,12 +3,12 @@ package edu.usc.csci588team02.utility;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.activity.TabbedInterface;
 import edu.usc.csci588team02.model.EventEntry;
-import edu.usc.csci588team02.service.AppService;
 
 /**
  * @author Stephen Barnes
@@ -19,18 +19,18 @@ public class NotificationUtility
 		GREEN, ORANGE, RED
 	}
 
-	private AppService myService;
 	private NotificationManager mNotificationManager;
+	private Context myContext;
 
 	public NotificationUtility()
 	{
 	}
 
-	public NotificationUtility(final AppService service,
+	public NotificationUtility(final Context context,
 			final NotificationManager nm)
 	{
 		// Setup the home activity
-		myService = service;
+		myContext = context;
 		// Get the notification manager serivce.
 		mNotificationManager = nm;
 	}
@@ -40,7 +40,7 @@ public class NotificationUtility
 		final Notification notification = new Notification(
 				R.drawable.ic_green_square, message, System.currentTimeMillis());
 		// Set the info for the views that show in the notification panel.
-		notification.setLatestEventInfo(myService, message, "",
+		notification.setLatestEventInfo(myContext, message, "",
 				makeNotificationIntent());
 		// Send the notification.
 		// We use a layout id because it is a unique number. We use it later to
@@ -82,7 +82,7 @@ public class NotificationUtility
 		final CharSequence time = android.text.format.DateFormat.format(
 				"hh:mma", ee.when.startTime.value);
 		// Set the info for the views that show in the notification panel.
-		notification.setLatestEventInfo(myService, ee.title, "Leave "
+		notification.setLatestEventInfo(myContext, ee.title, "Leave "
 				+ (leaveInMinutes > 0 ? "in " + leaveInMinutes + "m - "
 						: "Now -") + ee.where.valueString + " @" + time,
 				makeNotificationIntent());
@@ -100,7 +100,7 @@ public class NotificationUtility
 		// is already an active matching pending intent, we will update its
 		// extras to be the ones passed in here.
 		final PendingIntent contentIntent = PendingIntent.getActivity(
-				myService, 0, new Intent(myService, TabbedInterface.class)
+				myContext, 0, new Intent(myContext, TabbedInterface.class)
 						.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
 				PendingIntent.FLAG_UPDATE_CURRENT);
 		return contentIntent;
