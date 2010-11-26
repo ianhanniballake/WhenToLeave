@@ -16,9 +16,15 @@
 package edu.usc.csci588team02.model;
 
 import java.io.IOException;
+import java.util.Date;
+
+import android.location.Location;
 
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.Key;
+
+import edu.usc.csci588team02.maps.RouteInformation;
+import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 
 /**
  * @author Yaniv Inbar
@@ -47,5 +53,17 @@ public class EventEntry extends Entry
 			final CalendarUrl url) throws IOException
 	{
 		return (EventEntry) super.executeInsert(transport, url);
+	}
+
+	public long getWhenToLeaveInMinutes(final Location location,
+			final TravelType travelType)
+	{
+		final String locationString = location.getLatitude() + ","
+				+ location.getLongitude();
+		final int minutesToEvent = RouteInformation.getDuration(locationString,
+				where.valueString, travelType);
+		final long minutesUntilEvent = (when.startTime.value - new Date()
+				.getTime()) / 60000;
+		return minutesUntilEvent - minutesToEvent;
 	}
 }

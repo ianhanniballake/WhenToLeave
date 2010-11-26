@@ -1,7 +1,6 @@
 package edu.usc.csci588team02.service;
 
 import java.io.IOException;
-import java.util.Date;
 
 import android.app.NotificationManager;
 import android.app.Service;
@@ -13,7 +12,6 @@ import android.os.IBinder;
 import android.util.Log;
 import edu.usc.csci588team02.activity.LocationAware;
 import edu.usc.csci588team02.activity.Refreshable;
-import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.utility.NotificationUtility;
@@ -103,13 +101,8 @@ public class NotificationService extends Service implements Refreshable,
 				travelType = TravelType.BICYCLING;
 			else if (travelTypePref.equals("WALKING"))
 				travelType = TravelType.WALKING;
-			final String locationString = currentLocation.getLatitude() + ","
-					+ currentLocation.getLongitude();
-			final int minutesToEvent = RouteInformation.getDuration(
-					locationString, nextEvent.where.valueString, travelType);
-			final long minutesUntilEvent = (nextEvent.when.startTime.value - new Date()
-					.getTime()) / 60000;
-			final long leaveInMinutes = minutesUntilEvent - minutesToEvent;
+			final long leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
+					currentLocation, travelType);
 			Log.v(TAG, "Leave in " + leaveInMinutes + " minutes");
 			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
 			// Send the notification

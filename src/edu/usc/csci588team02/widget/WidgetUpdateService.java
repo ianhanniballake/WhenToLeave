@@ -1,7 +1,6 @@
 package edu.usc.csci588team02.widget;
 
 import java.io.IOException;
-import java.util.Date;
 
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
@@ -16,7 +15,6 @@ import android.widget.RemoteViews;
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.activity.LocationAware;
 import edu.usc.csci588team02.activity.Refreshable;
-import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
@@ -112,17 +110,10 @@ public class WidgetUpdateService extends Service implements LocationAware,
 					travelType = TravelType.BICYCLING;
 				else if (travelTypePref.equals("WALKING"))
 					travelType = TravelType.WALKING;
-				final String locationString = currentLocation.getLatitude()
-						+ "," + currentLocation.getLongitude();
-				final int minutesToEvent = RouteInformation
-						.getDuration(locationString,
-								nextEvent.where.valueString, travelType);
-				final long minutesUntilEvent = (nextEvent.when.startTime.value - new Date()
-						.getTime()) / 60000;
-				final long hoursToGo = Math.abs(minutesUntilEvent
-						- minutesToEvent) / 60;
-				final long minutesToGo = Math.abs(minutesUntilEvent
-						- minutesToEvent) % 60;
+				final long leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
+						currentLocation, travelType);
+				final long hoursToGo = Math.abs(leaveInMinutes) / 60;
+				final long minutesToGo = Math.abs(leaveInMinutes) % 60;
 				final StringBuffer formattedTime = new StringBuffer();
 				if (hoursToGo > 0)
 				{
@@ -138,7 +129,7 @@ public class WidgetUpdateService extends Service implements LocationAware,
 					formattedTime.append(minutesToGo);
 					formattedTime.append("m");
 				}
-				if (minutesToEvent > minutesUntilEvent)
+				if (leaveInMinutes < 0)
 					leaveIn = "Running " + formattedTime
 							+ " behind - Leave now!";
 				else

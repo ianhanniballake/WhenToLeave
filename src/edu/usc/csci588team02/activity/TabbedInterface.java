@@ -1,5 +1,7 @@
 package edu.usc.csci588team02.activity;
 
+import java.io.IOException;
+
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -21,6 +23,7 @@ import android.widget.ImageButton;
 import android.widget.TabHost;
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.maps.RouteInformation.TravelType;
+import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 import edu.usc.csci588team02.service.NotificationService;
@@ -151,6 +154,7 @@ public class TabbedInterface extends TabActivity implements LocationAware
 	private static final String PREF = "MyPrefs";
 	private static final String TAG = "TabbedInterfaceActivity";
 	public ActionBar actionBar;
+	private Location currentLocation = null;
 	protected final boolean DEBUG = false;
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
@@ -327,6 +331,31 @@ public class TabbedInterface extends TabActivity implements LocationAware
 	@Override
 	public void onLocationChanged(final Location location)
 	{
-		// TODO: Update actionBar
+		currentLocation = location;
+		updateActionBar();
+	}
+
+	public void updateActionBar()
+	{
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		TravelType travelType = TravelType.DRIVING;
+		final String travelTypePref = settings.getString("TransportPreference",
+				"DRIVING");
+		if (travelTypePref.equals("BICYCLING"))
+			travelType = TravelType.BICYCLING;
+		else if (travelTypePref.equals("WALKING"))
+			travelType = TravelType.WALKING;
+		EventEntry ee;
+		try
+		{
+			ee = service.getNextEventWithLocation();
+			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
+			actionBar.setTextAndColor(
+					ee.getWhenToLeaveInMinutes(currentLocation, travelType),
+					notifyTimeInMin);
+		} catch (final IOException e)
+		{
+			Log.e(TAG, "Error updating actionBar", e);
+		}
 	}
 }
