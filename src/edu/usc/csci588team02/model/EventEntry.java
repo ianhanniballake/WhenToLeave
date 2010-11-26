@@ -37,6 +37,28 @@ public class EventEntry extends Entry
 		return (EventEntry) Entry.executeGet(transport, url, EventEntry.class);
 	}
 
+	public static String formatWhenToLeave(final long leaveInMinutes)
+	{
+		final long hoursToGo = Math.abs(leaveInMinutes) / 60;
+		final long minutesToGo = Math.abs(leaveInMinutes) % 60;
+		final StringBuffer formattedTime = new StringBuffer();
+		if (hoursToGo > 0)
+		{
+			formattedTime.append(hoursToGo);
+			formattedTime.append(":");
+			if (minutesToGo < 10)
+				formattedTime.append("0");
+			formattedTime.append(minutesToGo);
+			formattedTime.append("h");
+		}
+		else
+		{
+			formattedTime.append(minutesToGo);
+			formattedTime.append("m");
+		}
+		return formattedTime.toString();
+	}
+
 	@Key("gd:when")
 	public When when;
 	@Key("gd:where")

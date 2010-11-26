@@ -2,10 +2,8 @@ package edu.usc.csci588team02.activity;
 
 import java.io.IOException;
 
-import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -26,9 +24,9 @@ import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
-import edu.usc.csci588team02.service.NotificationService;
 
-public class TabbedInterface extends TabActivity implements LocationAware
+public class TabbedInterface extends TabActivity implements Refreshable,
+		LocationAware
 {
 	public class ActionBar
 	{
@@ -120,9 +118,10 @@ public class TabbedInterface extends TabActivity implements LocationAware
 			else if (leaveInMinutes < notifyTimeInMin * .6666)
 				actionBarColor = COLOR.ORANGE;
 			setColor(actionBarColor);
+			final String formattedTime = EventEntry
+					.formatWhenToLeave(leaveInMinutes);
 			setText("Leave "
-					+ (leaveInMinutes > 0 ? "in " + leaveInMinutes + "m"
-							: "Now"));
+					+ (leaveInMinutes > 0 ? "in " + formattedTime : "Now"));
 		}
 
 		public void setTransportMode(final TravelType tt)
@@ -156,7 +155,8 @@ public class TabbedInterface extends TabActivity implements LocationAware
 	public ActionBar actionBar;
 	private Location currentLocation = null;
 	protected final boolean DEBUG = false;
-	private final AppServiceConnection service = new AppServiceConnection(this);
+	private final AppServiceConnection service = new AppServiceConnection(this,
+			this, true);
 
 	/**
 	 * This method is called when the Login activity (started in onCreate)
@@ -216,17 +216,7 @@ public class TabbedInterface extends TabActivity implements LocationAware
 		// If notifications are enabled, keep the service running after the
 		// program exits
 		if (settings.getBoolean("EnableNotifications", true))
-		{
 			startService(new Intent(this, AppService.class));
-			// Set up the Notification alarm
-			final Intent intent = new Intent(this, NotificationService.class);
-			final PendingIntent pendingIntent = PendingIntent.getService(
-					getBaseContext(), AlarmManager.RTC_WAKEUP, intent, 0);
-			final AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-					System.currentTimeMillis() + 60 * 1000, 60000,
-					pendingIntent);
-		}
 		startActivityForResult(new Intent(this, Login.class),
 				Login.REQUEST_AUTHENTICATE);
 	}
@@ -332,30 +322,41 @@ public class TabbedInterface extends TabActivity implements LocationAware
 	public void onLocationChanged(final Location location)
 	{
 		currentLocation = location;
-		updateActionBar();
+		refreshData();
 	}
 
-	public void updateActionBar()
+	@Override
+	public void refreshData()
 	{
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		TravelType travelType = TravelType.DRIVING;
-		final String travelTypePref = settings.getString("TransportPreference",
-				"DRIVING");
-		if (travelTypePref.equals("BICYCLING"))
-			travelType = TravelType.BICYCLING;
-		else if (travelTypePref.equals("WALKING"))
-			travelType = TravelType.WALKING;
-		EventEntry ee;
-		try
+		// Can't show WhenToLeave if we don't know where we are
+		if (currentLocation == null)
+			return;
+		// Only things on the UI thread can update the Views
+		runOnUiThread(new Runnable()
 		{
-			ee = service.getNextEventWithLocation();
-			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
-			actionBar.setTextAndColor(
-					ee.getWhenToLeaveInMinutes(currentLocation, travelType),
-					notifyTimeInMin);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "Error updating actionBar", e);
-		}
+			@Override
+			public void run()
+			{
+				final SharedPreferences settings = getSharedPreferences(PREF, 0);
+				TravelType travelType = TravelType.DRIVING;
+				final String travelTypePref = settings.getString(
+						"TransportPreference", "DRIVING");
+				if (travelTypePref.equals("BICYCLING"))
+					travelType = TravelType.BICYCLING;
+				else if (travelTypePref.equals("WALKING"))
+					travelType = TravelType.WALKING;
+				try
+				{
+					final EventEntry ee = service.getNextEventWithLocation();
+					final int notifyTimeInMin = settings.getInt("NotifyTime",
+							3600) / 60;
+					actionBar.setTextAndColor(ee.getWhenToLeaveInMinutes(
+							currentLocation, travelType), notifyTimeInMin);
+				} catch (final IOException e)
+				{
+					Log.e(TAG, "Error updating actionBar", e);
+				}
+			}
+		});
 	}
 }

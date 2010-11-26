@@ -16,29 +16,38 @@ import edu.usc.csci588team02.service.AppService.AppServiceBinder;
 
 public class AppServiceConnection implements ServiceConnection
 {
+	private boolean refreshOnTimer = false;
 	private AppServiceBinder service = null;
-	private Refreshable toRefreshOnConnected = null;
+	private Refreshable toRefresh = null;
 	private LocationAware toUpdateLocation = null;
 
 	public AppServiceConnection()
 	{
+		this(null, null, false);
 	}
 
 	public AppServiceConnection(final LocationAware toUpdateLocation)
 	{
-		this.toUpdateLocation = toUpdateLocation;
+		this(null, toUpdateLocation, false);
 	}
 
 	public AppServiceConnection(final Refreshable toRefreshOnConnected)
 	{
-		this.toRefreshOnConnected = toRefreshOnConnected;
+		this(toRefreshOnConnected, null, false);
 	}
 
 	public AppServiceConnection(final Refreshable toRefreshOnConnected,
 			final LocationAware toUpdateLocation)
 	{
-		this.toRefreshOnConnected = toRefreshOnConnected;
+		this(toRefreshOnConnected, toUpdateLocation, false);
+	}
+
+	public AppServiceConnection(final Refreshable toRefresh,
+			final LocationAware toUpdateLocation, final boolean refreshOnTimer)
+	{
+		this.toRefresh = toRefresh;
 		this.toUpdateLocation = toUpdateLocation;
+		this.refreshOnTimer = refreshOnTimer;
 	}
 
 	public List<CalendarEntry> getCalendars() throws IOException
@@ -83,10 +92,12 @@ public class AppServiceConnection implements ServiceConnection
 			final IBinder serviceBinder)
 	{
 		service = (AppServiceBinder) serviceBinder;
-		if (toRefreshOnConnected != null)
-			toRefreshOnConnected.refreshData();
 		if (toUpdateLocation != null)
 			service.addLocationListener(toUpdateLocation);
+		if (refreshOnTimer)
+			service.addRefreshOnTimerListener(toRefresh);
+		else if (toRefresh != null)
+			toRefresh.refreshData();
 	}
 
 	@Override
@@ -94,6 +105,8 @@ public class AppServiceConnection implements ServiceConnection
 	{
 		if (toUpdateLocation != null)
 			service.removeLocationListener(toUpdateLocation);
+		if (refreshOnTimer)
+			service.removeRefreshOnTimerListener(toRefresh);
 		service = null;
 	}
 

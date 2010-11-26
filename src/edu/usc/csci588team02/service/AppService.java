@@ -7,8 +7,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeSet;
 
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +31,8 @@ import com.google.api.client.util.DateTime;
 import com.google.api.client.xml.atom.AtomParser;
 
 import edu.usc.csci588team02.activity.LocationAware;
+import edu.usc.csci588team02.activity.Refreshable;
+import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.CalendarEntry;
 import edu.usc.csci588team02.model.CalendarFeed;
 import edu.usc.csci588team02.model.CalendarUrl;
@@ -37,6 +41,7 @@ import edu.usc.csci588team02.model.EventEntryComparator;
 import edu.usc.csci588team02.model.EventFeed;
 import edu.usc.csci588team02.model.EventUrl;
 import edu.usc.csci588team02.model.Namespace;
+import edu.usc.csci588team02.utility.NotificationUtility;
 
 /**
  * @author Kevin Kirkpatrick
@@ -48,6 +53,11 @@ public class AppService extends Service implements LocationListener
 		public void addLocationListener(final LocationAware listener)
 		{
 			AppService.this.addLocationListener(listener);
+		}
+
+		public void addRefreshOnTimerListener(final Refreshable listener)
+		{
+			AppService.this.addRefreshOnTimerListener(listener);
 		}
 
 		public List<CalendarEntry> getCalendars() throws IOException
@@ -87,6 +97,11 @@ public class AppService extends Service implements LocationListener
 			AppService.this.removeLocationListener(listener);
 		}
 
+		public void removeRefreshOnTimerListener(final Refreshable listener)
+		{
+			AppService.this.removeRefreshOnTimerListener(listener);
+		}
+
 		public void setAuthToken(final String authToken)
 		{
 			AppService.this.setAuthToken(authToken);
@@ -96,9 +111,12 @@ public class AppService extends Service implements LocationListener
 	private static final String PREF = "MyPrefs";
 	private static final String TAG = "AppService";
 	private final IBinder binder = new AppServiceBinder();
+	private Location currentLocation = null;
 	private boolean isAuthenticated = false;
 	private final ArrayList<LocationAware> locationListenerList = new ArrayList<LocationAware>();
 	private LocationManager locationManager;
+	private NotificationUtility mNotificationUtility = null;
+	private final ArrayList<Refreshable> refreshOnTimerListenerList = new ArrayList<Refreshable>();
 	private final Timer timer = new Timer();
 	private HttpTransport transport;
 
@@ -110,6 +128,50 @@ public class AppService extends Service implements LocationListener
 				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 		if (lastKnownLocation != null)
 			listener.onLocationChanged(lastKnownLocation);
+	}
+
+	public void addRefreshOnTimerListener(final Refreshable listener)
+	{
+		refreshOnTimerListenerList.add(listener);
+		listener.refreshData();
+	}
+
+	private void checkNotifications()
+	{
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		if (!settings.getBoolean("EnableNotifications", true))
+			return;
+		Log.d(TAG, "Checking for notification");
+		// Don't do anything until we are authenticated.
+		if (!isAuthenticated())
+			return;
+		try
+		{
+			final EventEntry nextEvent = getNextEventWithLocation();
+			// No next event = no notification needed
+			if (nextEvent == null)
+				return;
+			// No current location = no when to leave
+			if (currentLocation == null)
+				return;
+			TravelType travelType = TravelType.DRIVING;
+			final String travelTypePref = settings.getString(
+					"TransportPreference", "DRIVING");
+			if (travelTypePref.equals("BICYCLING"))
+				travelType = TravelType.BICYCLING;
+			else if (travelTypePref.equals("WALKING"))
+				travelType = TravelType.WALKING;
+			final long leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
+					currentLocation, travelType);
+			Log.v(TAG, "Leave in " + leaveInMinutes + " minutes");
+			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
+			// Send the notification
+			mNotificationUtility.createSimpleNotification(nextEvent.title,
+					nextEvent, leaveInMinutes, notifyTimeInMin);
+		} catch (final IOException e)
+		{
+			Log.e(TAG, "Error checking for notifications", e);
+		}
 	}
 
 	public List<CalendarEntry> getCalendars() throws IOException
@@ -225,7 +287,6 @@ public class AppService extends Service implements LocationListener
 	@Override
 	public void onDestroy()
 	{
-		// Toast.makeText(this, "App Service Stops", Toast.LENGTH_LONG).show();
 		Log.d(TAG, "onDestroy");
 		locationManager.removeUpdates(this);
 		timer.cancel();
@@ -240,6 +301,8 @@ public class AppService extends Service implements LocationListener
 					+ "");
 			Log.d("Service LOCATION CHANGED",
 					"Long: " + location.getLongitude() + "");
+			currentLocation = location;
+			checkNotifications();
 			for (final LocationAware listener : locationListenerList)
 				listener.onLocationChanged(location);
 		}
@@ -277,6 +340,11 @@ public class AppService extends Service implements LocationListener
 		locationListenerList.remove(listener);
 	}
 
+	public void removeRefreshOnTimerListener(final Refreshable listener)
+	{
+		refreshOnTimerListenerList.remove(listener);
+	}
+
 	public void setAuthToken(final String authToken)
 	{
 		((GoogleHeaders) transport.defaultHeaders).setGoogleLogin(authToken);
@@ -292,5 +360,20 @@ public class AppService extends Service implements LocationListener
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
 				interval, 0, this);
+		// Setup Notification Utility Manager
+		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		mNotificationUtility = new NotificationUtility(this, nm);
+		if (settings.getBoolean("EnableNotifications", true))
+			timer.scheduleAtFixedRate(new TimerTask()
+			{
+				// this activity will run every defined interval.
+				@Override
+				public void run()
+				{
+					checkNotifications();
+					for (final Refreshable refreshable : refreshOnTimerListenerList)
+						refreshable.refreshData();
+				}
+			}, 0, 60000);
 	}
 }

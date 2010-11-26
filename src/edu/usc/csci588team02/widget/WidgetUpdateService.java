@@ -112,23 +112,8 @@ public class WidgetUpdateService extends Service implements LocationAware,
 					travelType = TravelType.WALKING;
 				final long leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
 						currentLocation, travelType);
-				final long hoursToGo = Math.abs(leaveInMinutes) / 60;
-				final long minutesToGo = Math.abs(leaveInMinutes) % 60;
-				final StringBuffer formattedTime = new StringBuffer();
-				if (hoursToGo > 0)
-				{
-					formattedTime.append(hoursToGo);
-					formattedTime.append(":");
-					if (minutesToGo < 10)
-						formattedTime.append("0");
-					formattedTime.append(minutesToGo);
-					formattedTime.append("h");
-				}
-				else
-				{
-					formattedTime.append(minutesToGo);
-					formattedTime.append("m");
-				}
+				final String formattedTime = EventEntry
+						.formatWhenToLeave(leaveInMinutes);
 				if (leaveInMinutes < 0)
 					leaveIn = "Running " + formattedTime
 							+ " behind - Leave now!";

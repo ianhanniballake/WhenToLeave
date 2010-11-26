@@ -82,10 +82,15 @@ public class NotificationUtility
 		final CharSequence time = android.text.format.DateFormat.format(
 				"hh:mma", ee.when.startTime.value);
 		// Set the info for the views that show in the notification panel.
-		notification.setLatestEventInfo(myContext, ee.title, "Leave "
-				+ (leaveInMinutes > 0 ? "in " + leaveInMinutes + "m - "
-						: "Now -") + ee.where.valueString + " @" + time,
-				makeNotificationIntent());
+		final String formattedTime = EventEntry
+				.formatWhenToLeave(leaveInMinutes);
+		notification
+				.setLatestEventInfo(myContext, ee.title,
+						"Leave "
+								+ (leaveInMinutes > 0 ? "in " + formattedTime
+										+ " - " : "Now -")
+								+ ee.where.valueString + " @" + time,
+						makeNotificationIntent());
 		// Send the notification.
 		// We use a layout id because it is a unique number. We use it later to
 		// cancel.
