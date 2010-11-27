@@ -77,6 +77,11 @@ public class AppServiceConnection implements ServiceConnection
 		return service.getNextEventWithLocation();
 	}
 
+	public void invalidateAuthToken()
+	{
+		service.invalidateAuthToken();
+	}
+
 	public boolean isAuthenticated()
 	{
 		return service.isAuthenticated();

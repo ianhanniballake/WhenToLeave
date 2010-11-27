@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -25,22 +23,8 @@ import edu.usc.csci588team02.service.AppServiceConnection;
 
 public class EventDetails extends Activity implements Refreshable
 {
-	private static final int MENU_LOGOUT = 1;
 	private static final String TAG = "EventDetails";
 	private final AppServiceConnection service = new AppServiceConnection(this);
-
-	@Override
-	protected void onActivityResult(final int requestCode,
-			final int resultCode, final Intent data)
-	{
-		super.onActivityResult(requestCode, resultCode, data);
-		switch (requestCode)
-		{
-			case Logout.REQUEST_LOGOUT:
-				finish();
-				break;
-		}
-	}
 
 	/** Called when the activity is first created. */
 	@Override
@@ -53,30 +37,10 @@ public class EventDetails extends Activity implements Refreshable
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(final Menu menu)
-	{
-		menu.add(0, MENU_LOGOUT, 0, "Logout");
-		return true;
-	}
-
-	@Override
 	protected void onDestroy()
 	{
 		super.onDestroy();
 		unbindService(service);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(final MenuItem item)
-	{
-		switch (item.getItemId())
-		{
-			case MENU_LOGOUT:
-				startActivityForResult(new Intent(this, Logout.class),
-						Logout.REQUEST_LOGOUT);
-				return true;
-		}
-		return false;
 	}
 
 	@Override

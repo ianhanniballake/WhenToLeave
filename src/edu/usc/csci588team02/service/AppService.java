@@ -87,6 +87,11 @@ public class AppService extends Service implements LocationListener
 			return AppService.this.getNextEventWithLocation();
 		}
 
+		public void invalidateAuthToken()
+		{
+			AppService.this.invalidateAuthToken();
+		}
+
 		public boolean isAuthenticated()
 		{
 			return AppService.this.isAuthenticated();
@@ -263,6 +268,12 @@ public class AppService extends Service implements LocationListener
 		return null;
 	}
 
+	public void invalidateAuthToken()
+	{
+		((GoogleHeaders) transport.defaultHeaders).remove("Authorization");
+		isAuthenticated = false;
+	}
+
 	public boolean isAuthenticated()
 	{
 		return isAuthenticated;
@@ -303,10 +314,10 @@ public class AppService extends Service implements LocationListener
 	{
 		if (location != null)
 		{
-			Log.d("Service LOCATION CHANGED", "Lat:  " + location.getLatitude()
-					+ "");
-			Log.d("Service LOCATION CHANGED",
-					"Long: " + location.getLongitude() + "");
+			Log.d(TAG,
+					"Service LOCATION CHANGED: + (Lat/Long): ("
+							+ location.getLatitude() + ", "
+							+ location.getLongitude() + ")");
 			currentLocation = location;
 			checkNotifications();
 			for (final LocationAware listener : locationListenerList)

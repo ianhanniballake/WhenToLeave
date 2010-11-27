@@ -30,7 +30,7 @@ public class WidgetProvider extends AppWidgetProvider
 	private static AlarmManager alarmManager;
 	private static PendingIntent pendingIntent;
 	// log tag
-	private static final String TAG = "ExampleAppWidgetProvider";
+	private static final String TAG = "WidgetProvider";
 	private static final String WIDGET_UPDATE_ACTION = "WHENTOLEAVE_WIDGET_UPDATE_ACTION";
 
 	@Override

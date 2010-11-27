@@ -17,8 +17,6 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.google.android.maps.GeoPoint;
@@ -43,9 +41,6 @@ import edu.usc.csci588team02.service.AppServiceConnection;
  */
 public class Map extends MapActivity implements Refreshable, LocationAware
 {
-	private static final int MENU_LOGOUT = 1;
-	private static final int MENU_PREFERENCES = 2;
-	private static final int MENU_VIEW_CALENDARS = 0;
 	private static final String TAG = "MapActivity";
 	// Holds the list of all the events currently displayed on the map
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
@@ -77,15 +72,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		public void handleMessage(final android.os.Message msg)
 		{
 			if (mRoad != null)
-				/*
-				 * final TextView textView = (TextView)
-				 * findViewById(R.id.mapdescription);
-				 * textView.setText(mRoad.mName + " " + mRoad.mDescription);
-				 * final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoad,
-				 * mapView); //TODO: integrate this with refreshdata
-				 * mapOverlays.clear(); mapOverlays.add(mapOverlay);
-				 * mapView.invalidate();
-				 */
 				refreshData();
 		}
 	};
@@ -196,15 +182,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(final Menu menu)
-	{
-		menu.add(0, MENU_VIEW_CALENDARS, 0, "View Calendars");
-		menu.add(0, MENU_LOGOUT, 0, "Logout");
-		menu.add(0, MENU_PREFERENCES, 0, "Preferences");
-		return true;
-	}
-
-	@Override
 	protected void onDestroy()
 	{
 		super.onDestroy();
@@ -250,30 +227,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			{
 				Log.e(TAG, "onLocationChanged IO Error", e);
 			}
-			// TODO: reenable this by calling it in the thear handler response
-			// refreshData();
 		}
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(final MenuItem item)
-	{
-		switch (item.getItemId())
-		{
-			case MENU_VIEW_CALENDARS:
-				final Intent i = new Intent(this, Calendars.class);
-				startActivity(i);
-				return true;
-			case MENU_LOGOUT:
-				startActivityForResult(new Intent(this, Logout.class),
-						Logout.REQUEST_LOGOUT);
-				return true;
-			case MENU_PREFERENCES:
-				final Intent j = new Intent(this, Preferences.class);
-				startActivity(j);
-				return true;
-		}
-		return false;
 	}
 
 	/**

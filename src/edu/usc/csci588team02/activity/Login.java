@@ -41,25 +41,43 @@ public class Login extends Activity implements Refreshable
 		{
 			final Bundle bundle = manager.getAuthToken(account,
 					AUTH_TOKEN_TYPE, true, null, null).getResult();
-			try
+			if (bundle.containsKey(AccountManager.KEY_INTENT))
 			{
-				if (bundle.containsKey(AccountManager.KEY_INTENT))
-				{
-					final Intent intent = bundle
-							.getParcelable(AccountManager.KEY_INTENT);
-					int flags = intent.getFlags();
-					flags &= ~Intent.FLAG_ACTIVITY_NEW_TASK;
-					intent.setFlags(flags);
-					startActivityForResult(intent, REQUEST_AUTHENTICATE);
-				}
-				authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
-			} catch (final Exception e)
-			{
-				handleException(e);
+				final Intent intent = bundle
+						.getParcelable(AccountManager.KEY_INTENT);
+				int flags = intent.getFlags();
+				flags &= ~Intent.FLAG_ACTIVITY_NEW_TASK;
+				intent.setFlags(flags);
+				startActivityForResult(intent, REQUEST_AUTHENTICATE);
 			}
+			authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
 		} catch (final Exception e)
 		{
-			handleException(e);
+			Log.e(TAG, "Handling error " + e.getMessage(), e);
+			if (e instanceof HttpResponseException)
+			{
+				final HttpResponse response = ((HttpResponseException) e).response;
+				final int statusCode = response.statusCode;
+				try
+				{
+					response.ignore();
+				} catch (final IOException e1)
+				{
+					Log.w(TAG, "Error on ignoring HttpResponse", e1);
+				}
+				if (statusCode == 401 || statusCode == 403)
+				{
+					gotAccount(true);
+					return authToken;
+				}
+				try
+				{
+					Log.e(TAG, response.parseAsString());
+				} catch (final IOException parseException)
+				{
+					Log.w(TAG, "Error on parsing response", parseException);
+				}
+			}
 		}
 		return authToken;
 	}
@@ -104,35 +122,6 @@ public class Login extends Activity implements Refreshable
 				}
 		}
 		showDialog(DIALOG_ACCOUNTS);
-	}
-
-	private void handleException(final Exception e)
-	{
-		Log.e(TAG, "Handling error " + e.getMessage(), e);
-		if (e instanceof HttpResponseException)
-		{
-			final HttpResponse response = ((HttpResponseException) e).response;
-			final int statusCode = response.statusCode;
-			try
-			{
-				response.ignore();
-			} catch (final IOException e1)
-			{
-				Log.w(TAG, "Error on ignoring HttpResponse", e1);
-			}
-			if (statusCode == 401 || statusCode == 403)
-			{
-				gotAccount(true);
-				return;
-			}
-			try
-			{
-				Log.e(TAG, response.parseAsString());
-			} catch (final IOException parseException)
-			{
-				Log.w(TAG, "Error on parsing response", parseException);
-			}
-		}
 	}
 
 	@Override

@@ -13,6 +13,8 @@ import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -67,7 +69,7 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 					final Refreshable tab = (Refreshable) getLocalActivityManager()
 							.getActivity(tabTag);
 					tab.refreshData();
-					// TODO: Refresh the GPS and the Time to Leave
+					refreshData();
 				}
 			});
 		}
@@ -150,6 +152,9 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 	}
 
 	private static final int DIALOG_TRANSPORTATION = 100;
+	private static final int MENU_LOGOUT = 1;
+	private static final int MENU_PREFERENCES = 2;
+	private static final int MENU_VIEW_CALENDARS = 0;
 	private static final String PREF = "MyPrefs";
 	private static final String TAG = "TabbedInterfaceActivity";
 	public ActionBar actionBar;
@@ -169,12 +174,13 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 		super.onActivityResult(requestCode, resultCode, data);
 		switch (requestCode)
 		{
+			case Logout.REQUEST_LOGOUT:
+				finish();
+				break;
 			case Login.REQUEST_AUTHENTICATE:
 				setContentView(R.layout.tabbed_interface);
 				final Resources res = getResources(); // Resource object to get
-				// Drawables
 				final TabHost tabHost = getTabHost(); // The activity TabHost
-				// tabHost.setup();
 				TabHost.TabSpec spec; // Reusable TabSpec for each tab
 				// Home tab
 				spec = tabHost
@@ -308,6 +314,15 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 	}
 
 	@Override
+	public boolean onCreateOptionsMenu(final Menu menu)
+	{
+		menu.add(0, MENU_VIEW_CALENDARS, 0, "View Calendars");
+		menu.add(0, MENU_LOGOUT, 0, "Logout");
+		menu.add(0, MENU_PREFERENCES, 0, "Preferences");
+		return true;
+	}
+
+	@Override
 	protected void onDestroy()
 	{
 		super.onDestroy();
@@ -319,6 +334,27 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 	{
 		currentLocation = location;
 		refreshData();
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(final MenuItem item)
+	{
+		switch (item.getItemId())
+		{
+			case MENU_VIEW_CALENDARS:
+				final Intent i = new Intent(this, Calendars.class);
+				startActivity(i);
+				return true;
+			case MENU_LOGOUT:
+				startActivityForResult(new Intent(this, Logout.class),
+						Logout.REQUEST_LOGOUT);
+				return true;
+			case MENU_PREFERENCES:
+				final Intent j = new Intent(this, Preferences.class);
+				startActivity(j);
+				return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -349,6 +385,9 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 					actionBar.setTextAndColor(ee.getWhenToLeaveInMinutes(
 							currentLocation, travelType), notifyTimeInMin);
 				} catch (final IOException e)
+				{
+					Log.e(TAG, "Error updating actionBar", e);
+				} catch (final IllegalStateException e)
 				{
 					Log.e(TAG, "Error updating actionBar", e);
 				}

@@ -70,7 +70,6 @@ public class Preferences extends Activity
 				notifyTime = iValues[pos];
 			editor.putInt("NotifyTime", notifyTime);
 			editor.commit();
-			// AppService.this.setIntervalTime(interval);
 			Log.v(TAG, "Clicked on: " + notifyTime);
 			Log.v(TAG, "Committed: " + settings.getInt("NotifyTime", 0));
 		}
