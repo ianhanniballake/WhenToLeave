@@ -38,15 +38,9 @@
 			android:name=".activity.Map"
 			android:label="@string/mapTitle"></activity>
 		<activity
-			android:name=".activity.MapRouteActivity"
-			android:label="@string/mapTitle"></activity>
-		<activity
 			android:name=".activity.Login"></activity>
 		<activity
 			android:name=".activity.Logout"></activity>
-		<activity
-			android:name=".activity.Dashboard"
-			android:label="@string/app_name"></activity>
         <activity
             android:name=".activity.EventDetails"
             android:label="@string/eventDetailsTitle" android:theme="@style/Theme.EventDetails"></activity>

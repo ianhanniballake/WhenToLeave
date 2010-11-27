@@ -8,6 +8,7 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -25,10 +26,12 @@ import edu.usc.csci588team02.service.AppServiceConnection;
  * </p>
  * 
  * @author Yaniv Inbar
+ * @author Ian Lake
  */
 public final class Calendars extends ListActivity implements Refreshable
 {
 	private static final int MENU_LOGOUT = 1;
+	private static final String TAG = "Calendars";
 	private List<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
@@ -97,7 +100,7 @@ public final class Calendars extends ListActivity implements Refreshable
 				calendarNames[i] = calendars.get(i).title;
 		} catch (final IOException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "Error while refreshing data", e);
 			calendarNames = new String[] { e.getMessage() };
 			calendars.clear();
 		}

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +28,7 @@ public class Home extends Activity implements Refreshable
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 3;
+	private static final String TAG = "Home";
 	private EventEntry currentEvent;
 	private TextView eventDescription;
 	private TextView eventLocation;
@@ -202,7 +204,7 @@ public class Home extends Activity implements Refreshable
 				eventWhen.setText("");
 		} catch (final IOException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "Error while refreshing data", e);
 		}
 	}
 }

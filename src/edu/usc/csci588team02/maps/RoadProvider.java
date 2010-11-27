@@ -13,6 +13,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import android.util.Log;
+
 class KMLHandler extends DefaultHandler
 {
 	boolean isItemIcon;
@@ -171,6 +173,8 @@ class KMLHandler extends DefaultHandler
 
 public class RoadProvider
 {
+	private static final String TAG = "RoadProvider";
+
 	public static Road getRoute(final InputStream is)
 	{
 		final KMLHandler handler = new KMLHandler();
@@ -181,13 +185,13 @@ public class RoadProvider
 			parser.parse(is, handler);
 		} catch (final ParserConfigurationException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "SAX Configuration Error", e);
 		} catch (final SAXException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "SAX Error", e);
 		} catch (final IOException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "IO Error", e);
 		}
 		return handler.mRoad;
 	}

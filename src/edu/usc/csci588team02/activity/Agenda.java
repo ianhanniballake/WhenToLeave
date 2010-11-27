@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +31,7 @@ public class Agenda extends Activity implements Refreshable
 	private static final int MENU_LOGOUT = 1;
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
+	private static final String TAG = "Agenda";
 	private final ArrayList<HashMap<String, String>> eventHashMapList = new ArrayList<HashMap<String, String>>();
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
 	private final AppServiceConnection service = new AppServiceConnection(this);
@@ -160,7 +162,7 @@ public class Agenda extends Activity implements Refreshable
 			eventList.addAll(events);
 		} catch (final IOException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "Error while refreshing data", e);
 			final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
 			calendarEventHashMap.put("title", e.getMessage());
 			calendarEventHashMap.put("when", "");

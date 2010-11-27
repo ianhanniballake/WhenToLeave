@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,6 +26,7 @@ import edu.usc.csci588team02.service.AppServiceConnection;
 public class EventDetails extends Activity implements Refreshable
 {
 	private static final int MENU_LOGOUT = 1;
+	private static final String TAG = "EventDetails";
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	@Override
@@ -150,7 +152,7 @@ public class EventDetails extends Activity implements Refreshable
 			}
 		} catch (final IOException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "Error while refreshing data", e);
 			eventDetailsName.setText(e.toString());
 		}
 	}

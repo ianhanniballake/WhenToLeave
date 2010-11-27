@@ -47,7 +47,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	private static final int MENU_PREFERENCES = 2;
 	private static final int MENU_VIEW_CALENDARS = 0;
 	private static final String TAG = "MapActivity";
-	protected final boolean DEBUG = true;
 	// Holds the list of all the events currently displayed on the map
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
 	// The markers on the map
@@ -147,10 +146,10 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			is = conn.getInputStream();
 		} catch (final MalformedURLException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "getConnection: Invalid URL", e);
 		} catch (final IOException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "getConnection: IO Error", e);
 		}
 		return is;
 	}
@@ -238,8 +237,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 												location.getLongitude(),
 												gpCurrentEvent.getLatitudeE6() / 1E6,
 												gpCurrentEvent.getLongitudeE6() / 1E6);
-								if (DEBUG)
-									Log.d(TAG, "URL: " + url);
+								Log.v(TAG, "onLocationChanged URL: " + url);
 								final InputStream is = getConnection(url);
 								if (is != null)
 								{
@@ -250,8 +248,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 						}.start();
 			} catch (final IOException e)
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(TAG, "onLocationChanged IO Error", e);
 			}
 			// TODO: reenable this by calling it in the thear handler response
 			// refreshData();
@@ -332,7 +329,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 					.getEventsStartingNow(calendarToday.getTime());
 			int h = 0;
 			calendarEvents = new String[events.size()];
-			System.out.println("size of events = " + events.size());
+			Log.v(TAG, "refreshData: size of events = " + events.size());
 			GeoPoint lastAdded = null;
 			for (final EventEntry event : events)
 			{
@@ -378,8 +375,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 							lastAdded = plotEvent(event, greySquare);
 							break;
 					}
-					if (DEBUG)
-						Log.d(TAG, "Plotting Event: " + h);
+					Log.v(TAG, "refreshData: Plotting Event: " + h);
 				}
 			}
 			if (lastAdded != null)
@@ -395,7 +391,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			}
 		} catch (final IOException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "Error on refreshData", e);
 			calendarEvents = new String[] { e.getMessage() };
 		}
 	}

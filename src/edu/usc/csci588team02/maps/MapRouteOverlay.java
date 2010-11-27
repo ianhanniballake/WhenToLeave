@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.util.Log;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 
 public class MapRouteOverlay extends com.google.android.maps.Overlay
 {
+	private static final String TAG = "MapRouteOverlay";
 	ArrayList<GeoPoint> mPoints;
 	Road mRoad;
 
@@ -20,7 +22,7 @@ public class MapRouteOverlay extends com.google.android.maps.Overlay
 		if (road.mRoute.length > 0)
 		{
 			mPoints = new ArrayList<GeoPoint>();
-			System.out.println("Route Length " + road.mRoute.length);
+			Log.v(TAG, "Route Length " + road.mRoute.length);
 			for (final double[] element : road.mRoute)
 				mPoints.add(new GeoPoint((int) (element[1] * 1000000),
 						(int) (element[0] * 1000000)));

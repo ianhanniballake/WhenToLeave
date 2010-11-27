@@ -154,7 +154,6 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 	private static final String TAG = "TabbedInterfaceActivity";
 	public ActionBar actionBar;
 	private Location currentLocation = null;
-	protected final boolean DEBUG = false;
 	private final AppServiceConnection service = new AppServiceConnection(this,
 			this, true);
 
@@ -253,12 +252,11 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 						editor.putString("TransportPreference", "DRIVING");
 						editor.commit();
 						actionBar.setTransportMode(TravelType.DRIVING);
-						if (DEBUG)
-							Log.d(TAG,
-									"Committed travel pref: "
-											+ settings.getString(
-													"TransportPreference",
-													"DRIVING"));
+						Log.v(TAG,
+								"Committed travel pref: "
+										+ settings.getString(
+												"TransportPreference",
+												"DRIVING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -275,12 +273,11 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 						editor.putString("TransportPreference", "BICYCLING");
 						editor.commit();
 						actionBar.setTransportMode(TravelType.BICYCLING);
-						if (DEBUG)
-							Log.d(TAG,
-									"Committed travel pref: "
-											+ settings.getString(
-													"TransportPreference",
-													"BICYCLING"));
+						Log.v(TAG,
+								"Committed travel pref: "
+										+ settings.getString(
+												"TransportPreference",
+												"BICYCLING"));
 						transportDialog.dismiss();
 					}
 				});
@@ -297,12 +294,11 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 						editor.putString("TransportPreference", "WALKING");
 						editor.commit();
 						actionBar.setTransportMode(TravelType.WALKING);
-						if (DEBUG)
-							Log.d(TAG,
-									"Committed travel pref: "
-											+ settings.getString(
-													"TransportPreference",
-													"WALKING"));
+						Log.v(TAG,
+								"Committed travel pref: "
+										+ settings.getString(
+												"TransportPreference",
+												"WALKING"));
 						transportDialog.dismiss();
 					}
 				});

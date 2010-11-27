@@ -71,11 +71,8 @@ public class Preferences extends Activity
 			editor.putInt("NotifyTime", notifyTime);
 			editor.commit();
 			// AppService.this.setIntervalTime(interval);
-			if (DEBUG)
-			{
-				Log.d(TAG, "Clicked on: " + notifyTime);
-				Log.d(TAG, "Committed: " + settings.getInt("NotifyTime", 0));
-			}
+			Log.v(TAG, "Clicked on: " + notifyTime);
+			Log.v(TAG, "Committed: " + settings.getInt("NotifyTime", 0));
 		}
 
 		@Override
@@ -135,13 +132,8 @@ public class Preferences extends Activity
 				interval = iValues[pos];
 			editor.putInt("RefreshInterval", interval);
 			editor.commit();
-			// AppService.this.setIntervalTime(interval);
-			if (DEBUG)
-			{
-				Log.d(TAG, "Clicked on: " + interval);
-				Log.d(TAG,
-						"Committed: " + settings.getInt("RefreshInterval", 0));
-			}
+			Log.v(TAG, "Clicked on: " + interval);
+			Log.v(TAG, "Committed: " + settings.getInt("RefreshInterval", 0));
 		}
 
 		@Override
@@ -152,7 +144,6 @@ public class Preferences extends Activity
 
 	protected static final String PREF = "MyPrefs";
 	private static final String TAG = "PreferencesActivity";
-	protected final boolean DEBUG = true;
 	protected ArrayAdapter<CharSequence> mAdapter;
 	protected int mPos;
 
@@ -208,11 +199,10 @@ public class Preferences extends Activity
 				final SharedPreferences.Editor editor = settings.edit();
 				editor.putString("ActionBarPreference", "EventDetails");
 				editor.commit();
-				if (DEBUG)
-					Log.d(TAG,
-							"Should have commit r1: "
-									+ settings.getString("ActionBarPreference",
-											"EventDetails"));
+				Log.v(TAG,
+						"Should have commit r1: "
+								+ settings.getString("ActionBarPreference",
+										"EventDetails"));
 			}
 		});
 		final RadioButton r2 = (RadioButton) findViewById(R.id.rbActionButtonPrefMap);
@@ -225,11 +215,10 @@ public class Preferences extends Activity
 				final SharedPreferences.Editor editor = settings.edit();
 				editor.putString("ActionBarPreference", "Map");
 				editor.commit();
-				if (DEBUG)
-					Log.d(TAG,
-							"Should have commit r2: "
-									+ settings.getString("ActionBarPreference",
-											"Map"));
+				Log.v(TAG,
+						"Should have commit r2: "
+								+ settings.getString("ActionBarPreference",
+										"Map"));
 			}
 		});
 		final RadioButton r3 = (RadioButton) findViewById(R.id.rbActionButtonPrefNav);
@@ -242,11 +231,10 @@ public class Preferences extends Activity
 				final SharedPreferences.Editor editor = settings.edit();
 				editor.putString("ActionBarPreference", "Navigate");
 				editor.commit();
-				if (DEBUG)
-					Log.d(TAG,
-							"Should have commit r3: "
-									+ settings.getString("ActionBarPreference",
-											"Navigate"));
+				Log.v(TAG,
+						"Should have commit r3: "
+								+ settings.getString("ActionBarPreference",
+										"Navigate"));
 			}
 		});
 		// Setup radio button initial configuration
@@ -274,21 +262,15 @@ public class Preferences extends Activity
 						final SharedPreferences.Editor editor = settings.edit();
 						editor.putBoolean("EnableNotifications", isChecked);
 						editor.commit();
-						if (DEBUG)
-							Log.d(TAG,
-									"Should have commit EnableNotifications: "
-											+ settings
-													.getBoolean(
-															"EnableNotifications",
-															true));
+						Log.v(TAG,
+								"Should have commit EnableNotifications: "
+										+ settings.getBoolean(
+												"EnableNotifications", true));
 					}
 				});
-		if (DEBUG)
-		{
-			Log.d(TAG, "Creating Preferences Activity, and interval is: "
-					+ interval);
-			Log.d(TAG, "Creating Preferences Activity, and pref is: "
-					+ actionBarPref);
-		}
+		Log.v(TAG, "Creating Preferences Activity, and interval is: "
+				+ interval);
+		Log.v(TAG, "Creating Preferences Activity, and pref is: "
+				+ actionBarPref);
 	}
 }

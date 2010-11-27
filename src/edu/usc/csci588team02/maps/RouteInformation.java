@@ -12,6 +12,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import android.util.Log;
+
 import com.google.android.maps.GeoPoint;
 
 public class RouteInformation
@@ -19,6 +21,8 @@ public class RouteInformation
 	public enum TravelType {
 		BICYCLING, DRIVING, WALKING
 	}
+
+	private static final String TAG = "RouteInformation";
 
 	public static String formatAddress(final String address)
 	{
@@ -39,10 +43,10 @@ public class RouteInformation
 			is = conn.getInputStream();
 		} catch (final MalformedURLException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "getConnection: Invalid URL", e);
 		} catch (final IOException e)
 		{
-			e.printStackTrace();
+			Log.e(TAG, "getConnection: IO Error", e);
 		}
 		return is;
 	}
@@ -70,7 +74,7 @@ public class RouteInformation
 			else
 				urlString.append("&mode=driving");
 			final String url = urlString.toString();
-			System.out.println("URL: " + url);
+			Log.v(TAG, "getDuration URL: " + url);
 			final InputStream is = getConnection(url);
 			final BufferedReader br = new BufferedReader(new InputStreamReader(
 					is));
@@ -80,7 +84,6 @@ public class RouteInformation
 				sb.append(line + "\n");
 			br.close();
 			final String jsontext = new String(sb.toString());
-			// System.out.println(jsontext);
 			final JSONObject googleMapJSONEntireObject = (JSONObject) new JSONTokener(
 					jsontext).nextValue();
 			final JSONArray googleMapJSONRoutes = googleMapJSONEntireObject
@@ -103,8 +106,7 @@ public class RouteInformation
 			}
 		} catch (final Exception je)
 		{
-			System.out.println("Error w/file: " + je.getMessage());
-			je.printStackTrace();
+			Log.e(TAG, "getDuration Error " + je.getMessage(), je);
 		}
 		return durationSec / 60;
 	}
@@ -120,7 +122,7 @@ public class RouteInformation
 			urlString.append("?address=");
 			urlString.append(formattedAddress);
 			urlString.append("&sensor=false");
-			System.out.println("URL: " + urlString.toString());
+			Log.v(TAG, "getLocation URL: " + urlString.toString());
 			final String url = urlString.toString();
 			final InputStream is = getConnection(url);
 			final BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -141,8 +143,7 @@ public class RouteInformation
 			return new GeoPoint((int) (lat * 1E6), (int) (lng * 1E6));
 		} catch (final Exception e)
 		{
-			System.out.println("Error w/file: " + e.getMessage());
-			e.printStackTrace();
+			Log.e(TAG, "getLocation Error " + e.getMessage(), e);
 		}
 		return new GeoPoint(0, 0);
 	}

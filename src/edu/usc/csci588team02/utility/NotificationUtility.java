@@ -19,12 +19,9 @@ public class NotificationUtility
 		GREEN, ORANGE, RED
 	}
 
-	private NotificationManager mNotificationManager;
-	private Context myContext;
-
-	public NotificationUtility()
-	{
-	}
+	private static final String TAG = "NotificationUtility";
+	private final NotificationManager mNotificationManager;
+	private final Context myContext;
 
 	public NotificationUtility(final Context context,
 			final NotificationManager nm)
@@ -53,7 +50,7 @@ public class NotificationUtility
 			final EventEntry ee, final long leaveInMinutes,
 			final int notifyTimeInMin)
 	{
-		Log.d("NotificationUtility", "Creating Message: " + message);
+		Log.d(TAG, "Creating Message: " + message);
 		Notification notification = null;
 		NotificationUtility.COLOR notifcationColor = NotificationUtility.COLOR.GREEN;
 		if (leaveInMinutes < notifyTimeInMin * .33333)

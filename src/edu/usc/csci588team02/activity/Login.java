@@ -21,13 +21,6 @@ import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
- * Sample for Google Calendar Data API using the Atom wire format. It shows how
- * to authenticate, get calendars, add a new calendar, update it, and delete it.
- * <p>
- * To enable logging of HTTP requests/responses, run this command: {@code adb
- * shell setprop log.tag.HttpTransport DEBUG}. Then press-and-hold a calendar,
- * and enable "Logging".
- * </p>
  * 
  * @author Ian Lake
  */
@@ -115,9 +108,7 @@ public class Login extends Activity implements Refreshable
 
 	private void handleException(final Exception e)
 	{
-		e.printStackTrace();
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		final boolean log = settings.getBoolean("logging", false);
+		Log.e(TAG, "Handling error " + e.getMessage(), e);
 		if (e instanceof HttpResponseException)
 		{
 			final HttpResponse response = ((HttpResponseException) e).response;
@@ -127,24 +118,21 @@ public class Login extends Activity implements Refreshable
 				response.ignore();
 			} catch (final IOException e1)
 			{
-				e1.printStackTrace();
+				Log.w(TAG, "Error on ignoring HttpResponse", e1);
 			}
 			if (statusCode == 401 || statusCode == 403)
 			{
 				gotAccount(true);
 				return;
 			}
-			if (log)
-				try
-				{
-					Log.e(TAG, response.parseAsString());
-				} catch (final IOException parseException)
-				{
-					parseException.printStackTrace();
-				}
+			try
+			{
+				Log.e(TAG, response.parseAsString());
+			} catch (final IOException parseException)
+			{
+				Log.w(TAG, "Error on parsing response", parseException);
+			}
 		}
-		if (log)
-			Log.e(TAG, e.getMessage(), e);
 	}
 
 	@Override
