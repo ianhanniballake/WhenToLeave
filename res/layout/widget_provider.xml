@@ -1,73 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-android:layout_width="fill_parent"
-android:layout_height="fill_parent"
-android:orientation="horizontal"
-android:padding="10dp"
-android:background="@drawable/widget_frame"
-xmlns:android="http://schemas.android.com/apk/res/android">
-    <LinearLayout
-	android:layout_width="wrap_content"
+	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:orientation="horizontal"
-	android:padding="5dp"
-	android:layout_marginLeft="3dp"
-	android:background="@drawable/custom_widget_background_green">
-		<LinearLayout
+	android:padding="10dp"
+	android:background="@drawable/widget_frame"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<LinearLayout
+		android:id="@+id/widgetBackgroudLayout"
 		android:layout_width="wrap_content"
 		android:layout_height="fill_parent"
-		android:orientation="vertical"
-		android:padding="0dp"
-		>
-			<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-			    android:id="@+id/widgetLeaveInText"
-			    android:layout_width="170dp"
-			    android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:padding="5dp"
+		android:layout_marginLeft="3dp"
+		android:background="@drawable/custom_widget_background_green">
+		<LinearLayout
+			android:id="@+id/widgetClickableLayout"
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:orientation="vertical"
+			android:padding="0dp"
+			android:clickable="true"
+			android:focusable="true">
+			<TextView
+				android:id="@+id/widgetLeaveInText"
+				android:layout_width="170dp"
+				android:layout_height="wrap_content"
 				android:typeface="sans"
-		        android:textColor="@color/white"
-		        android:textStyle="bold"
-		        android:textSize="18sp"
-		        android:gravity="left|center_vertical"
+				android:textColor="@color/white"
+				android:textStyle="bold"
+				android:textSize="18sp"
+				android:gravity="left|center_vertical"
 				android:layout_gravity="center_vertical"
-			    android:background="@null"/>
-			<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-			    android:id="@+id/widgetEventDetail"
-			    android:layout_width="170dp"
-			    android:layout_height="wrap_content"
+				android:background="@null" />
+			<TextView
+				android:id="@+id/widgetEventDetail"
+				android:layout_width="170dp"
+				android:layout_height="wrap_content"
 				android:typeface="serif"
-		        android:textColor="@color/white"
-		        android:textStyle="bold"
-		        android:gravity="left|center_vertical"
-				android:layout_gravity="center_vertical"	
-		        android:textSize="15sp"
-			    android:background="@null"/>
-			<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-			    android:id="@+id/widgetEventTime"
-			    android:layout_width="170dp"
-			    android:layout_height="wrap_content"
+				android:textColor="@color/white"
+				android:textStyle="bold"
+				android:gravity="left|center_vertical"
+				android:layout_gravity="center_vertical"
+				android:textSize="15sp"
+				android:background="@null" />
+			<TextView
+				android:id="@+id/widgetEventTime"
+				android:layout_width="170dp"
+				android:layout_height="wrap_content"
 				android:typeface="serif"
-		        android:textColor="@color/blue3"
-		        android:textStyle="bold"
-		        android:gravity="left|center_vertical"
-				android:layout_gravity="center_vertical"	
-		        android:textSize="12sp"
-			    android:background="@null"/>
+				android:textColor="@color/blue3"
+				android:textStyle="bold"
+				android:gravity="left|center_vertical"
+				android:layout_gravity="center_vertical"
+				android:textSize="12sp"
+				android:background="@null" />
 		</LinearLayout>
-		<ImageButton android:id="@+id/widgetTransportButton"
-		    android:layout_width="wrap_content"
-		    android:layout_height="fill_parent"
-		    android:gravity="right"
-		    android:layout_gravity="center_vertical|right"
-		    android:src="@drawable/car_white72"
-		    android:background="@null"/>
-	 </LinearLayout>    
-	 <ImageButton android:id="@+id/widgetNavigationButton"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:gravity="right"
-        android:layout_marginLeft="7dp"
-	    android:layout_gravity="center_vertical|right"
-        android:background="@drawable/custom_widget_nav_button"/>
-</LinearLayout>   
-
-
+		<ImageButton
+			android:id="@+id/widgetTransportButton"
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:gravity="right"
+			android:layout_gravity="center_vertical|right"
+			android:src="@drawable/car_white72"
+			android:background="@null" />
+	</LinearLayout>
+	<ImageButton
+		android:id="@+id/widgetNavigationButton"
+		android:layout_width="wrap_content"
+		android:layout_height="48dp"
+		android:gravity="right"
+		android:layout_marginLeft="7dp"
+		android:layout_gravity="center_vertical|right"
+		android:background="@drawable/custom_widget_nav_button" />
+</LinearLayout>

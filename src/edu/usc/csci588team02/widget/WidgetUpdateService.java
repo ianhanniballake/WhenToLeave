@@ -2,6 +2,7 @@ package edu.usc.csci588team02.widget;
 
 import java.io.IOException;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
@@ -9,12 +10,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
 import edu.usc.csci588team02.R;
 import edu.usc.csci588team02.activity.LocationAware;
 import edu.usc.csci588team02.activity.Refreshable;
+import edu.usc.csci588team02.activity.TabbedInterface;
+import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
@@ -75,6 +79,12 @@ public class WidgetUpdateService extends Service implements LocationAware,
 		// RemoteView here, reducing unnecessary work on the system
 		final RemoteViews views = new RemoteViews(getApplicationContext()
 				.getPackageName(), R.layout.widget_provider);
+		final Intent app = new Intent(getBaseContext(), TabbedInterface.class);
+		final PendingIntent launchApp = PendingIntent.getActivity(
+				getBaseContext(), 0,
+				app.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+				PendingIntent.FLAG_UPDATE_CURRENT);
+		views.setOnClickPendingIntent(R.id.widgetClickableLayout, launchApp);
 		if (!service.isAuthenticated())
 		{
 			views.setTextViewText(R.id.widgetLeaveInText,
@@ -112,6 +122,19 @@ public class WidgetUpdateService extends Service implements LocationAware,
 					travelType = TravelType.WALKING;
 				final long leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
 						currentLocation, travelType);
+				final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
+				if (leaveInMinutes < notifyTimeInMin * .33333)
+					views.setInt(R.id.widgetBackgroudLayout,
+							"setBackgroundResource",
+							R.drawable.custom_widget_background_red);
+				else if (leaveInMinutes < notifyTimeInMin * .6666)
+					views.setInt(R.id.widgetBackgroudLayout,
+							"setBackgroundResource",
+							R.drawable.custom_widget_background_orange);
+				else
+					views.setInt(R.id.widgetBackgroudLayout,
+							"setBackgroundResource",
+							R.drawable.custom_widget_background_green);
 				final String formattedTime = EventEntry
 						.formatWhenToLeave(leaveInMinutes);
 				if (leaveInMinutes < 0)
@@ -131,12 +154,23 @@ public class WidgetUpdateService extends Service implements LocationAware,
 			views.setTextViewText(R.id.widgetLeaveInText, leaveIn);
 			views.setTextViewText(R.id.widgetEventDetail, eventTitle);
 			views.setTextViewText(R.id.widgetEventTime, eventTime);
+			final Intent nav = new Intent(
+					Intent.ACTION_VIEW,
+					Uri.parse("google.navigation:q="
+							+ RouteInformation
+									.formatAddress(nextEvent.where.valueString)));
+			final PendingIntent launchNav = PendingIntent.getActivity(
+					getBaseContext(), 0, nav, 0);
+			views.setOnClickPendingIntent(R.id.widgetNavigationButton,
+					launchNav);
 		} catch (final IOException e)
 		{
+			Log.e(TAG, "refreshData Error", e);
 			views.setTextViewText(R.id.widgetLeaveInText, "");
 			views.setTextViewText(R.id.widgetEventDetail,
 					"Error reading in next event");
 			views.setTextViewText(R.id.widgetEventTime, e.toString());
+			views.setOnClickPendingIntent(R.id.widgetNavigationButton, null);
 		} finally
 		{
 			updateAllWidgets(appWidgetManager, views);
