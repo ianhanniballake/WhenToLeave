@@ -169,11 +169,12 @@ public class AppService extends Service implements LocationListener
 			// TODO: Add this as a preference later so that a user can specify
 			// this
 			if (leaveInMinutes <= 5)
-			{
 				mNotificationUtility.createSimpleNotification(nextEvent.title,
 						nextEvent, leaveInMinutes, notifyTimeInMin);
-			}
 		} catch (final IOException e)
+		{
+			Log.e(TAG, "Error checking for notifications", e);
+		} catch (final IllegalStateException e)
 		{
 			Log.e(TAG, "Error checking for notifications", e);
 		}
@@ -212,14 +213,11 @@ public class AppService extends Service implements LocationListener
 		final List<CalendarEntry> calendars = getCalendars();
 		for (final CalendarEntry calendar : calendars)
 		{
-			final CalendarUrl eventFeedUrl = new CalendarUrl(calendar
-					.getEventFeedLink()
-					+ "?start-min="
-					+ new DateTime(start)
-					+ "&start-max="
-					+ new DateTime(end)
-					+ "&orderby=starttime"
-					+ "&singleevents=true");
+			final CalendarUrl eventFeedUrl = new CalendarUrl(
+					calendar.getEventFeedLink() + "?start-min="
+							+ new DateTime(start) + "&start-max="
+							+ new DateTime(end) + "&orderby=starttime"
+							+ "&singleevents=true");
 			final EventFeed eventFeed = EventFeed.executeGet(transport,
 					eventFeedUrl);
 			events.addAll(eventFeed.getEntries());
@@ -307,8 +305,8 @@ public class AppService extends Service implements LocationListener
 		{
 			Log.d("Service LOCATION CHANGED", "Lat:  " + location.getLatitude()
 					+ "");
-			Log.d("Service LOCATION CHANGED", "Long: "
-					+ location.getLongitude() + "");
+			Log.d("Service LOCATION CHANGED",
+					"Long: " + location.getLongitude() + "");
 			currentLocation = location;
 			checkNotifications();
 			for (final LocationAware listener : locationListenerList)
