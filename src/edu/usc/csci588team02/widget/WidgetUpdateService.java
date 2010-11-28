@@ -135,13 +135,11 @@ public class WidgetUpdateService extends Service implements LocationAware,
 					views.setInt(R.id.widgetBackgroudLayout,
 							"setBackgroundResource",
 							R.drawable.custom_widget_background_green);
-				final String formattedTime = EventEntry
-						.formatWhenToLeave(leaveInMinutes);
 				if (leaveInMinutes < 0)
-					leaveIn = "Running " + formattedTime
-							+ " behind - Leave now!";
+					leaveIn = "Leave now!";
 				else
-					leaveIn = "Leave in " + formattedTime;
+					leaveIn = "Leave in "
+							+ EventEntry.formatWhenToLeave(leaveInMinutes);
 			}
 			final CharSequence eventTitle = nextEvent.title;
 			final String truncatedWhere = nextEvent.where.valueString.length() > 13 ? nextEvent.where.valueString
@@ -163,10 +161,6 @@ public class WidgetUpdateService extends Service implements LocationAware,
 					getBaseContext(), 0, nav, 0);
 			views.setOnClickPendingIntent(R.id.widgetNavigationButton,
 					launchNav);
-		} catch (final IllegalStateException e)
-		{
-			Log.e(TAG, "Error getting next event in the widget update service",
-					e);
 		} catch (final IOException e)
 		{
 			Log.e(TAG, "refreshData Error", e);

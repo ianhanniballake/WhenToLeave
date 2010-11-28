@@ -329,11 +329,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			} catch (final IOException e)
 			{
 				Log.e(TAG, "onLocationChanged IO Error", e);
-			} catch (final IllegalStateException e)
-			{
-				Log.e(TAG,
-						"Error getting next event in map tab on location change for route information",
-						e);
 			}
 		}
 	}
@@ -389,315 +384,294 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 				mapOverlays.add(mapOverlay);
 			}
 			final SharedPreferences settings = getSharedPreferences(PREF, 0);
-			EventEntry nextEvent = null;
-			try
-			{
-				nextEvent = service.getNextEventWithLocation();
-			} catch (final IllegalStateException e)
-			{
-				Log.e(TAG, "Error getting next event in map tab", e);
-			}
+			final EventEntry nextEvent = service.getNextEventWithLocation();
 			long leaveInMinutes = 0;
 			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
 			COLOR iconColor = COLOR.GREEN;
-			try
+			if (mGpsLocation != null && nextEvent != null)
 			{
-				final Location loc = mGpsLocation;
-				if (loc != null && nextEvent != null)
-				{
-					TravelType travelType = TravelType.DRIVING;
-					final String travelTypePref = settings.getString(
-							"TransportPreference", "DRIVING");
-					if (travelTypePref.equals("BICYCLING"))
-						travelType = TravelType.BICYCLING;
-					else if (travelTypePref.equals("WALKING"))
-						travelType = TravelType.WALKING;
-					leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(loc,
-							travelType);
-					Log.d(TAG, "getting leaveInMinutes: " + leaveInMinutes);
-				}
-			} catch (final IllegalStateException e)
-			{
-				Log.e(TAG, "Error checking location in map refresh", e);
+				TravelType travelType = TravelType.DRIVING;
+				final String travelTypePref = settings.getString(
+						"TransportPreference", "DRIVING");
+				if (travelTypePref.equals("BICYCLING"))
+					travelType = TravelType.BICYCLING;
+				else if (travelTypePref.equals("WALKING"))
+					travelType = TravelType.WALKING;
+				leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
+						mGpsLocation, travelType);
+				Log.d(TAG, "getting leaveInMinutes: " + leaveInMinutes);
 			}
-			try
+			// Plot events for the day
+			// Create time window between midnight of this day and midnight
+			// of next day
+			final Calendar calendarToday = Calendar.getInstance();
+			calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
+					.getHours());
+			final Calendar calendarLaterToday = Calendar.getInstance();
+			calendarLaterToday.add(Calendar.HOUR_OF_DAY,
+					24 - calendarLaterToday.getTime().getHours());
+			final Set<EventEntry> events = service.getEvents(
+					calendarToday.getTime(), calendarLaterToday.getTime());
+			int h = 0;
+			calendarEvents = new String[events.size()];
+			Log.v(TAG, "refreshData: size of events = " + events.size());
+			GeoPoint nextEventPoint = null;
+			for (final EventEntry event : events)
 			{
-				// Plot events for the day
-				// Create time window between midnight of this day and midnight
-				// of next day
-				final Calendar calendarToday = Calendar.getInstance();
-				calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday
-						.getTime().getHours());
-				final Calendar calendarLaterToday = Calendar.getInstance();
-				calendarLaterToday.add(Calendar.HOUR_OF_DAY,
-						24 - calendarLaterToday.getTime().getHours());
-				final Set<EventEntry> events = service.getEvents(
-						calendarToday.getTime(), calendarLaterToday.getTime());
-				int h = 0;
-				calendarEvents = new String[events.size()];
-				Log.v(TAG, "refreshData: size of events = " + events.size());
-				GeoPoint nextEventPoint = null;
-				for (final EventEntry event : events)
+				// Close enough evaluation...
+				if (nextEvent != null)
 				{
-					// Close enough evaluation...
-					if (nextEvent != null)
+					if (nextEvent.title.equals(event.title)
+							&& nextEvent.when.startTime
+									.equals(event.when.startTime))
 					{
-						if (nextEvent.title.equals(event.title)
-								&& nextEvent.when.startTime
-										.equals(event.when.startTime))
-						{
-							if (leaveInMinutes < notifyTimeInMin * .33333)
-								iconColor = COLOR.RED;
-							else if (leaveInMinutes < notifyTimeInMin * .6666)
-								iconColor = COLOR.ORANGE;
-							Log.d(TAG, "next event found - leavin: "
-									+ leaveInMinutes);
-						}
-						else
-							iconColor = COLOR.GREY;
+						if (leaveInMinutes < notifyTimeInMin * .33333)
+							iconColor = COLOR.RED;
+						else if (leaveInMinutes < notifyTimeInMin * .6666)
+							iconColor = COLOR.ORANGE;
+						Log.d(TAG, "next event found - leavin: "
+								+ leaveInMinutes);
 					}
 					else
 						iconColor = COLOR.GREY;
-					calendarEvents[h++] = event.title;
-					if (event.where != null && event.where.valueString != null
-							&& !event.where.valueString.equals(""))
-					{
-						calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
-								+ event.where.valueString;
-						switch (h - 1)
-						{
-							case 0:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare1);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare1);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare1);
-										break;
-									default:
-										plotEvent(event, greySquare1);
-										break;
-								}
-								break;
-							case 1:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare2);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare2);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare2);
-										break;
-									default:
-										plotEvent(event, greySquare2);
-										break;
-								}
-								break;
-							case 2:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare3);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare3);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare3);
-										break;
-									default:
-										plotEvent(event, greySquare3);
-										break;
-								}
-								break;
-							case 3:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare4);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare4);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare4);
-										break;
-									default:
-										plotEvent(event, greySquare4);
-										break;
-								}
-								break;
-							case 4:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare5);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare5);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare5);
-										break;
-									default:
-										plotEvent(event, greySquare5);
-										break;
-								}
-								break;
-							case 5:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare6);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare6);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare6);
-										break;
-									default:
-										plotEvent(event, greySquare6);
-										break;
-								}
-								break;
-							case 6:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare7);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare7);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare7);
-										break;
-									default:
-										plotEvent(event, greySquare7);
-										break;
-								}
-								break;
-							case 7:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare8);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare8);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare8);
-										break;
-									default:
-										plotEvent(event, greySquare8);
-										break;
-								}
-								break;
-							case 8:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare9);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare9);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare9);
-										break;
-									default:
-										plotEvent(event, greySquare9);
-										break;
-								}
-								break;
-							case 9:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare10);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare10);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare10);
-										break;
-									default:
-										plotEvent(event, greySquare10);
-										break;
-								}
-								break;
-							default:
-								switch (iconColor)
-								{
-									case GREEN:
-										nextEventPoint = plotEvent(event,
-												greenSquare);
-										break;
-									case ORANGE:
-										nextEventPoint = plotEvent(event,
-												orangeSquare);
-										break;
-									case RED:
-										nextEventPoint = plotEvent(event,
-												redSquare);
-										break;
-									default:
-										plotEvent(event, greySquare);
-										break;
-								}
-								break;
-						}
-						Log.v(TAG, "refreshData: Plotting Event: " + h);
-					}
 				}
-				if (nextEventPoint != null)
-					zoomTo(nextEventPoint);
-				eventList.clear();
-				eventList.addAll(events);
-			} catch (final IllegalStateException e)
-			{
-				Log.e(TAG, "Error plotting map icons", e);
+				else
+					iconColor = COLOR.GREY;
+				calendarEvents[h++] = event.title;
+				if (event.where != null && event.where.valueString != null
+						&& !event.where.valueString.equals(""))
+				{
+					calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
+							+ event.where.valueString;
+					switch (h - 1)
+					{
+						case 0:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare1);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare1);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare1);
+									break;
+								default:
+									plotEvent(event, greySquare1);
+									break;
+							}
+							break;
+						case 1:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare2);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare2);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare2);
+									break;
+								default:
+									plotEvent(event, greySquare2);
+									break;
+							}
+							break;
+						case 2:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare3);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare3);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare3);
+									break;
+								default:
+									plotEvent(event, greySquare3);
+									break;
+							}
+							break;
+						case 3:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare4);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare4);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare4);
+									break;
+								default:
+									plotEvent(event, greySquare4);
+									break;
+							}
+							break;
+						case 4:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare5);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare5);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare5);
+									break;
+								default:
+									plotEvent(event, greySquare5);
+									break;
+							}
+							break;
+						case 5:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare6);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare6);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare6);
+									break;
+								default:
+									plotEvent(event, greySquare6);
+									break;
+							}
+							break;
+						case 6:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare7);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare7);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare7);
+									break;
+								default:
+									plotEvent(event, greySquare7);
+									break;
+							}
+							break;
+						case 7:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare8);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare8);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare8);
+									break;
+								default:
+									plotEvent(event, greySquare8);
+									break;
+							}
+							break;
+						case 8:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare9);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare9);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare9);
+									break;
+								default:
+									plotEvent(event, greySquare9);
+									break;
+							}
+							break;
+						case 9:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare10);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare10);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event,
+											redSquare10);
+									break;
+								default:
+									plotEvent(event, greySquare10);
+									break;
+							}
+							break;
+						default:
+							switch (iconColor)
+							{
+								case GREEN:
+									nextEventPoint = plotEvent(event,
+											greenSquare);
+									break;
+								case ORANGE:
+									nextEventPoint = plotEvent(event,
+											orangeSquare);
+									break;
+								case RED:
+									nextEventPoint = plotEvent(event, redSquare);
+									break;
+								default:
+									plotEvent(event, greySquare);
+									break;
+							}
+							break;
+					}
+					Log.v(TAG, "refreshData: Plotting Event: " + h);
+				}
 			}
+			if (nextEventPoint != null)
+				zoomTo(nextEventPoint);
+			eventList.clear();
+			eventList.addAll(events);
 			// Add GPS location overlay if we have our location set
 			if (mGpsLocationPoint != null)
 			{

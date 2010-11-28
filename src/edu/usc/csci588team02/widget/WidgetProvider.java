@@ -22,7 +22,6 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 
 public class WidgetProvider extends AppWidgetProvider
@@ -63,18 +62,14 @@ public class WidgetProvider extends AppWidgetProvider
 		super.onReceive(context, intent);
 		if (WIDGET_UPDATE_ACTION.equals(intent.getAction()))
 		{
-			final Bundle extras = intent.getExtras();
-			if (extras != null)
-			{
-				final AppWidgetManager appWidgetManager = AppWidgetManager
-						.getInstance(context);
-				final ComponentName thisAppWidget = new ComponentName(
-						context.getPackageName(),
-						WidgetProvider.class.getName());
-				final int[] appWidgetIds = appWidgetManager
-						.getAppWidgetIds(thisAppWidget);
-				onUpdate(context, appWidgetManager, appWidgetIds);
-			}
+			Log.d(TAG, "onReceive " + WIDGET_UPDATE_ACTION);
+			final AppWidgetManager appWidgetManager = AppWidgetManager
+					.getInstance(context);
+			final ComponentName thisAppWidget = new ComponentName(
+					context.getPackageName(), WidgetProvider.class.getName());
+			final int[] appWidgetIds = appWidgetManager
+					.getAppWidgetIds(thisAppWidget);
+			onUpdate(context, appWidgetManager, appWidgetIds);
 		}
 	}
 

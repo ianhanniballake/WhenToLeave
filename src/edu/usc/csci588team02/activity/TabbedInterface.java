@@ -363,35 +363,24 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 		// Can't show WhenToLeave if we don't know where we are
 		if (currentLocation == null)
 			return;
-		// Only things on the UI thread can update the Views
-		runOnUiThread(new Runnable()
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		TravelType travelType = TravelType.DRIVING;
+		final String travelTypePref = settings.getString("TransportPreference",
+				"DRIVING");
+		if (travelTypePref.equals("BICYCLING"))
+			travelType = TravelType.BICYCLING;
+		else if (travelTypePref.equals("WALKING"))
+			travelType = TravelType.WALKING;
+		try
 		{
-			@Override
-			public void run()
-			{
-				final SharedPreferences settings = getSharedPreferences(PREF, 0);
-				TravelType travelType = TravelType.DRIVING;
-				final String travelTypePref = settings.getString(
-						"TransportPreference", "DRIVING");
-				if (travelTypePref.equals("BICYCLING"))
-					travelType = TravelType.BICYCLING;
-				else if (travelTypePref.equals("WALKING"))
-					travelType = TravelType.WALKING;
-				try
-				{
-					final EventEntry ee = service.getNextEventWithLocation();
-					final int notifyTimeInMin = settings.getInt("NotifyTime",
-							3600) / 60;
-					actionBar.setTextAndColor(ee.getWhenToLeaveInMinutes(
-							currentLocation, travelType), notifyTimeInMin);
-				} catch (final IOException e)
-				{
-					Log.e(TAG, "Error updating actionBar", e);
-				} catch (final IllegalStateException e)
-				{
-					Log.e(TAG, "Error updating actionBar", e);
-				}
-			}
-		});
+			final EventEntry ee = service.getNextEventWithLocation();
+			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
+			actionBar.setTextAndColor(
+					ee.getWhenToLeaveInMinutes(currentLocation, travelType),
+					notifyTimeInMin);
+		} catch (final IOException e)
+		{
+			Log.e(TAG, "Error updating actionBar", e);
+		}
 	}
 }

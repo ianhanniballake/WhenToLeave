@@ -6,11 +6,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeSet;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -113,6 +113,9 @@ public class AppService extends Service implements LocationListener
 		}
 	}
 
+	private static AlarmManager alarmManager;
+	private static final String NOTIFICATION_ACTION = "WHENTOLEAVE_NOTIFICATION_ACTION";
+	private static PendingIntent pendingIntent;
 	private static final String PREF = "MyPrefs";
 	private static final String TAG = "AppService";
 	private final IBinder binder = new AppServiceBinder();
@@ -122,7 +125,6 @@ public class AppService extends Service implements LocationListener
 	private LocationManager locationManager;
 	private NotificationUtility mNotificationUtility = null;
 	private final ArrayList<Refreshable> refreshOnTimerListenerList = new ArrayList<Refreshable>();
-	private final Timer timer = new Timer();
 	private HttpTransport transport;
 
 	public void addLocationListener(final LocationAware listener)
@@ -174,9 +176,6 @@ public class AppService extends Service implements LocationListener
 				mNotificationUtility.createSimpleNotification(nextEvent.title,
 						nextEvent, leaveInMinutes, notifyTimeInMin);
 		} catch (final IOException e)
-		{
-			Log.e(TAG, "Error checking for notifications", e);
-		} catch (final IllegalStateException e)
 		{
 			Log.e(TAG, "Error checking for notifications", e);
 		}
@@ -295,7 +294,16 @@ public class AppService extends Service implements LocationListener
 		final AtomParser parser = new AtomParser();
 		parser.namespaceDictionary = Namespace.DICTIONARY;
 		transport.addParser(parser);
-		startUpService();
+		// Setup GPS callbacks
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		int interval = settings.getInt("RefreshInterval", 5);
+		interval = interval * 1000;
+		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+				interval, 0, this);
+		// Setup Notification Utility Manager
+		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		mNotificationUtility = new NotificationUtility(this, nm);
 	}
 
 	@Override
@@ -303,7 +311,8 @@ public class AppService extends Service implements LocationListener
 	{
 		Log.d(TAG, "onDestroy");
 		locationManager.removeUpdates(this);
-		timer.cancel();
+		if (alarmManager != null)
+			alarmManager.cancel(pendingIntent);
 	}
 
 	@Override
@@ -339,6 +348,26 @@ public class AppService extends Service implements LocationListener
 			final int startId)
 	{
 		Log.d(TAG, "onStart");
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		if (intent != null && NOTIFICATION_ACTION.equals(intent.getAction()))
+		{
+			checkNotifications();
+			for (final Refreshable refreshable : refreshOnTimerListenerList)
+				refreshable.refreshData();
+		}
+		else if (settings.getBoolean("EnableNotifications", true))
+		{
+			final Context context = getBaseContext();
+			alarmManager = (AlarmManager) context
+					.getSystemService(Context.ALARM_SERVICE);
+			final Intent alarmIntent = new Intent(context, AppService.class);
+			alarmIntent.setAction(NOTIFICATION_ACTION);
+			pendingIntent = PendingIntent
+					.getService(context, 0, alarmIntent, 0);
+			// Set up the alarm to trigger every minute
+			alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+					System.currentTimeMillis() + 30000, 60000, pendingIntent);
+		}
 		return START_STICKY;
 	}
 
@@ -363,31 +392,5 @@ public class AppService extends Service implements LocationListener
 	{
 		((GoogleHeaders) transport.defaultHeaders).setGoogleLogin(authToken);
 		isAuthenticated = true;
-	}
-
-	private void startUpService()
-	{
-		// Setup GPS callbacks
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		int interval = settings.getInt("RefreshInterval", 5);
-		interval = interval * 1000;
-		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				interval, 0, this);
-		// Setup Notification Utility Manager
-		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		mNotificationUtility = new NotificationUtility(this, nm);
-		if (settings.getBoolean("EnableNotifications", true))
-			timer.scheduleAtFixedRate(new TimerTask()
-			{
-				// this activity will run every defined interval.
-				@Override
-				public void run()
-				{
-					checkNotifications();
-					for (final Refreshable refreshable : refreshOnTimerListenerList)
-						refreshable.refreshData();
-				}
-			}, 0, 60000);
 	}
 }
