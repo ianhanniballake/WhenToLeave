@@ -86,6 +86,11 @@ public class AppService extends Service implements LocationListener
 		{
 			return AppService.this.getNextEventWithLocation();
 		}
+		
+		public Location getCurrentLocation()
+		{
+			return AppService.this.currentLocation;
+		}
 
 		public void invalidateAuthToken()
 		{
@@ -170,10 +175,8 @@ public class AppService extends Service implements LocationListener
 					currentLocation, travelType);
 			Log.v(TAG, "Leave in " + leaveInMinutes + " minutes");
 			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
-			// Send the notification if within 5 minutes of when to leave
-			// TODO: Add this as a preference later so that a user can specify
-			// this
-			if (leaveInMinutes <= 5)
+			Log.v(TAG, "Notification Pref:" + notifyTimeInMin);
+			if (leaveInMinutes <= notifyTimeInMin)
 				mNotificationUtility.createSimpleNotification(nextEvent.title,
 						nextEvent, leaveInMinutes, notifyTimeInMin);
 		} catch (final IOException e)
@@ -218,11 +221,14 @@ public class AppService extends Service implements LocationListener
 		final List<CalendarEntry> calendars = getCalendars();
 		for (final CalendarEntry calendar : calendars)
 		{
-			final CalendarUrl eventFeedUrl = new CalendarUrl(
-					calendar.getEventFeedLink() + "?start-min="
-							+ new DateTime(start) + "&start-max="
-							+ new DateTime(end) + "&orderby=starttime"
-							+ "&singleevents=true");
+			final CalendarUrl eventFeedUrl = new CalendarUrl(calendar
+					.getEventFeedLink()
+					+ "?start-min="
+					+ new DateTime(start)
+					+ "&start-max="
+					+ new DateTime(end)
+					+ "&orderby=starttime"
+					+ "&singleevents=true");
 			final EventFeed eventFeed = EventFeed.executeGet(transport,
 					eventFeedUrl);
 			events.addAll(eventFeed.getEntries());
@@ -314,10 +320,9 @@ public class AppService extends Service implements LocationListener
 	{
 		if (location != null)
 		{
-			Log.d(TAG,
-					"Service LOCATION CHANGED: + (Lat/Long): ("
-							+ location.getLatitude() + ", "
-							+ location.getLongitude() + ")");
+			Log.d(TAG, "Service LOCATION CHANGED: + (Lat/Long): ("
+					+ location.getLatitude() + ", " + location.getLongitude()
+					+ ")");
 			currentLocation = location;
 			checkNotifications();
 			for (final LocationAware listener : locationListenerList)

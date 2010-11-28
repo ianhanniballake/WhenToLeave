@@ -163,6 +163,10 @@ public class WidgetUpdateService extends Service implements LocationAware,
 					getBaseContext(), 0, nav, 0);
 			views.setOnClickPendingIntent(R.id.widgetNavigationButton,
 					launchNav);
+		
+		} catch (final IllegalStateException e)
+		{
+			Log.e(TAG, "Error getting next event in the widget update service", e);
 		} catch (final IOException e)
 		{
 			Log.e(TAG, "refreshData Error", e);
