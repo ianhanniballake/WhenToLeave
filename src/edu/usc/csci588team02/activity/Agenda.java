@@ -81,8 +81,6 @@ public class Agenda extends Activity implements Refreshable
 		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);
 		lastRefreshed.setText(getText(R.string.whileRefreshing));
 		// Load the data
-		// final ListView mainList = (ListView) findViewById(R.id.agendaList);
-		// String[] calendarEvents;
 		eventHashMapList.clear();
 		try
 		{

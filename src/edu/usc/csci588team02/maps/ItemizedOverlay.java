@@ -89,16 +89,6 @@ public class ItemizedOverlay extends
 		return true;
 	}
 
-	// TODO Delete
-	// @Override
-	// public boolean onTap(GeoPoint p, MapView mapView)
-	// {
-	// final Intent detailsIntent = new Intent(this.mContext,
-	// EventDetails.class);
-	// detailsIntent.putExtra("eventUrl", this.event.getSelfLink());
-	// this.mContext.startActivity(detailsIntent);
-	// return true;
-	// }
 	/**
 	 * Sets the Drawable marker for an {@link OverlayItem} i.
 	 * 

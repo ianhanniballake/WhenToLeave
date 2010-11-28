@@ -135,18 +135,23 @@ public class RouteInformation
 			final String jsontext = new String(sb.toString());
 			final JSONObject googleMapJSONEntireObject = (JSONObject) new JSONTokener(
 					jsontext).nextValue();
-			final JSONObject googleMapJSONLocation = ((JSONArray) googleMapJSONEntireObject
-					.get("results")).getJSONObject(0).getJSONObject("geometry")
+			final JSONArray googleMapJSONResultArray = (JSONArray) googleMapJSONEntireObject
+					.get("results");
+			if (googleMapJSONResultArray.length() == 0)
+			{
+				Log.v(TAG, "No route found for " + address);
+				return null;
+			}
+			final JSONObject googleMapJSONLocation = googleMapJSONResultArray
+					.getJSONObject(0).getJSONObject("geometry")
 					.getJSONObject("location");
 			final double lat = googleMapJSONLocation.getDouble("lat");
 			final double lng = googleMapJSONLocation.getDouble("lng");
 			return new GeoPoint((int) (lat * 1E6), (int) (lng * 1E6));
 		} catch (final Exception e)
 		{
-			Log.e(TAG, "getLocation Error - most likely event location could not be found");
-			//Log.e(TAG, "getLocation Error " + e.getMessage(), e);
+			Log.e(TAG, "getLocation Error", e);
 		}
-		//return new GeoPoint(0, 0);
 		return null;
 	}
 }

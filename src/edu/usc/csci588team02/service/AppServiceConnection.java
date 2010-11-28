@@ -7,7 +7,6 @@ import java.util.Set;
 
 import android.content.ComponentName;
 import android.content.ServiceConnection;
-import android.location.Location;
 import android.os.IBinder;
 import edu.usc.csci588team02.activity.LocationAware;
 import edu.usc.csci588team02.activity.Refreshable;
@@ -72,7 +71,7 @@ public class AppServiceConnection implements ServiceConnection
 	{
 		return service.getEvents(new Date(), end);
 	}
-	
+
 	public EventEntry getNextEventWithLocation() throws IOException
 	{
 		return service.getNextEventWithLocation();
@@ -119,9 +118,5 @@ public class AppServiceConnection implements ServiceConnection
 	public void setAuthToken(final String authToken)
 	{
 		service.setAuthToken(authToken);
-	}
-
-	public Location getCurrentLocation() {
-		return service.getCurrentLocation();
 	}
 }

@@ -86,11 +86,6 @@ public class AppService extends Service implements LocationListener
 		{
 			return AppService.this.getNextEventWithLocation();
 		}
-		
-		public Location getCurrentLocation()
-		{
-			return AppService.this.currentLocation;
-		}
 
 		public void invalidateAuthToken()
 		{
@@ -130,7 +125,6 @@ public class AppService extends Service implements LocationListener
 	private final Timer timer = new Timer();
 	private HttpTransport transport;
 
-	// private final AppServiceConnection service = new AppServiceConnection();
 	public void addLocationListener(final LocationAware listener)
 	{
 		locationListenerList.add(listener);
@@ -221,14 +215,11 @@ public class AppService extends Service implements LocationListener
 		final List<CalendarEntry> calendars = getCalendars();
 		for (final CalendarEntry calendar : calendars)
 		{
-			final CalendarUrl eventFeedUrl = new CalendarUrl(calendar
-					.getEventFeedLink()
-					+ "?start-min="
-					+ new DateTime(start)
-					+ "&start-max="
-					+ new DateTime(end)
-					+ "&orderby=starttime"
-					+ "&singleevents=true");
+			final CalendarUrl eventFeedUrl = new CalendarUrl(
+					calendar.getEventFeedLink() + "?start-min="
+							+ new DateTime(start) + "&start-max="
+							+ new DateTime(end) + "&orderby=starttime"
+							+ "&singleevents=true");
 			final EventFeed eventFeed = EventFeed.executeGet(transport,
 					eventFeedUrl);
 			events.addAll(eventFeed.getEntries());
@@ -320,9 +311,10 @@ public class AppService extends Service implements LocationListener
 	{
 		if (location != null)
 		{
-			Log.d(TAG, "Service LOCATION CHANGED: + (Lat/Long): ("
-					+ location.getLatitude() + ", " + location.getLongitude()
-					+ ")");
+			Log.d(TAG,
+					"Service LOCATION CHANGED: + (Lat/Long): ("
+							+ location.getLatitude() + ", "
+							+ location.getLongitude() + ")");
 			currentLocation = location;
 			checkNotifications();
 			for (final LocationAware listener : locationListenerList)
