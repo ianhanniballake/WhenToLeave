@@ -43,87 +43,242 @@ import edu.usc.csci588team02.model.EventFeed;
 import edu.usc.csci588team02.model.Namespace;
 import edu.usc.csci588team02.utility.NotificationUtility;
 
+/**
+ * Application service, managing all Google account access and authentication,
+ * as well as notifications
+ */
 public class AppService extends Service implements LocationListener
 {
+	/**
+	 * Service binding exposed interface, used when Activities or other services
+	 * bind to this Service
+	 */
 	public class AppServiceBinder extends Binder
 	{
+		/**
+		 * Register a new LocationAware listener to get location change
+		 * notifications. Note that if a GPS location had ever been found, the
+		 * listener's onLocationChanged is called with this latest location as
+		 * part of this method
+		 * 
+		 * @param listener
+		 *            LocationAware listener to register
+		 */
 		public void addLocationListener(final LocationAware listener)
 		{
 			AppService.this.addLocationListener(listener);
 		}
 
+		/**
+		 * Register a new Refreshable listener to get alarm timer notifications.
+		 * Note that the listener's refreshData is called as part of this method
+		 * 
+		 * @param listener
+		 *            Refreshable listener to register
+		 */
 		public void addRefreshOnTimerListener(final Refreshable listener)
 		{
 			AppService.this.addRefreshOnTimerListener(listener);
 		}
 
+		/**
+		 * Gets a list of all of the authenticated user's calendars. Assumes
+		 * that the service is already authenticated
+		 * 
+		 * @return the list of all calendars the user has access to
+		 * @throws IOException
+		 *             on IO error
+		 */
 		public List<CalendarEntry> getCalendars() throws IOException
 		{
 			return AppService.this.getCalendars();
 		}
 
+		/**
+		 * Gets a particular EventEntry given its URL. Assumes that the service
+		 * is already authenticated
+		 * 
+		 * @param eventUrl
+		 *            the URL of the EventEntry to return
+		 * @return the EventEntry represented by the given URL
+		 * @throws IOException
+		 *             on IO error
+		 */
 		public EventEntry getEvent(final String eventUrl) throws IOException
 		{
 			return AppService.this.getEvent(eventUrl);
 		}
 
+		/**
+		 * Gets all events in a given Date range. Assumes that the service is
+		 * already authenticated
+		 * 
+		 * @param start
+		 *            start date
+		 * @param end
+		 *            end date
+		 * @return all events from all calendars in the Date range, ordered by
+		 *         start time
+		 * @throws IOException
+		 *             on IO error
+		 */
 		public Set<EventEntry> getEvents(final Date start, final Date end)
 				throws IOException
 		{
 			return AppService.this.getEvents(start, end);
 		}
 
+		/**
+		 * Gets all events between now (new Date()) and the given end Date.
+		 * Assumes that the service is already authenticated
+		 * 
+		 * @param end
+		 *            end date
+		 * @return all events from all calendars from now until the given end
+		 *         date, ordered by start time
+		 * @throws IOException
+		 *             on IO error
+		 */
 		public Set<EventEntry> getEventsStartingNow(final Date end)
 				throws IOException
 		{
 			return AppService.this.getEvents(new Date(), end);
 		}
 
+		/**
+		 * Finds the next event across all calendars (chronologically) that has
+		 * a location. Searches in an exponentially larger date range until it
+		 * finds an event (first 1 day, then 2, then 4, etc). Assumes that the
+		 * service is already authenticated
+		 * 
+		 * @return the next event that has a location, null if no events with a
+		 *         location are found
+		 * @throws IOException
+		 *             on IO error
+		 */
 		public EventEntry getNextEventWithLocation() throws IOException
 		{
 			return AppService.this.getNextEventWithLocation();
 		}
 
+		/**
+		 * Effectively logs the user out, invalidating their authentication
+		 * token. Note that all queries done between now and future
+		 * authentication will fail
+		 */
 		public void invalidateAuthToken()
 		{
 			AppService.this.invalidateAuthToken();
 		}
 
+		/**
+		 * Getter for whether the service is authenticated
+		 * 
+		 * @return if the service is authenticated
+		 */
 		public boolean isAuthenticated()
 		{
 			return AppService.this.isAuthenticated();
 		}
 
+		/**
+		 * Removes a LocationAware listener, stopping any location update
+		 * notifications
+		 * 
+		 * @param listener
+		 *            listener to remove
+		 */
 		public void removeLocationListener(final LocationAware listener)
 		{
 			AppService.this.removeLocationListener(listener);
 		}
 
+		/**
+		 * Removes a Refreshable listener, stopping any alarm notifications
+		 * 
+		 * @param listener
+		 *            listener to remove
+		 */
 		public void removeRefreshOnTimerListener(final Refreshable listener)
 		{
 			AppService.this.removeRefreshOnTimerListener(listener);
 		}
 
+		/**
+		 * Authorizes the service with the given authToken
+		 * 
+		 * @param authToken
+		 *            authToken used to authenticate any Google API queries
+		 */
 		public void setAuthToken(final String authToken)
 		{
 			AppService.this.setAuthToken(authToken);
 		}
 	}
 
+	/**
+	 * AlarmManager used to create repeated notification checks
+	 */
 	private static AlarmManager alarmManager;
+	/**
+	 * Action used to distinguish notification alarm service starts from regular
+	 * service starts
+	 */
 	private static final String NOTIFICATION_ACTION = "WHENTOLEAVE_NOTIFICATION_ACTION";
+	/**
+	 * PendingIntent triggered by the alarm manager
+	 */
 	private static PendingIntent pendingIntent;
+	/**
+	 * Preferences name to load settings from
+	 */
 	private static final String PREF = "MyPrefs";
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "AppService";
+	/**
+	 * Single binder instance to return on service connection requests
+	 */
 	private final IBinder binder = new AppServiceBinder();
+	/**
+	 * Current location of the device
+	 */
 	private Location currentLocation = null;
+	/**
+	 * Whether the Google HttpTransport is authenticated or not
+	 */
 	private boolean isAuthenticated = false;
+	/**
+	 * List of LocationAware listeners to notify of location changes
+	 */
 	private final ArrayList<LocationAware> locationListenerList = new ArrayList<LocationAware>();
+	/**
+	 * LocationManager to start and stop receiving location updates from
+	 */
 	private LocationManager locationManager;
+	/**
+	 * NotificationUtility used to send out notifications
+	 */
 	private NotificationUtility mNotificationUtility = null;
+	/**
+	 * List of Refreshable listeners to notify on alarm timer ticks
+	 */
 	private final ArrayList<Refreshable> refreshOnTimerListenerList = new ArrayList<Refreshable>();
+	/**
+	 * HttpTransport used for Google API queries
+	 */
 	private HttpTransport transport;
 
+	/**
+	 * Register a new LocationAware listener to get location change
+	 * notifications. Note that if a GPS location had ever been found, the
+	 * listener's onLocationChanged is called with this latest location as part
+	 * of this method
+	 * 
+	 * @param listener
+	 *            LocationAware listener to register
+	 */
 	public void addLocationListener(final LocationAware listener)
 	{
 		locationListenerList.add(listener);
@@ -133,12 +288,22 @@ public class AppService extends Service implements LocationListener
 			listener.onLocationChanged(lastKnownLocation);
 	}
 
+	/**
+	 * Register a new Refreshable listener to get alarm timer notifications.
+	 * Note that the listener's refreshData is called as part of this method
+	 * 
+	 * @param listener
+	 *            Refreshable listener to register
+	 */
 	public void addRefreshOnTimerListener(final Refreshable listener)
 	{
 		refreshOnTimerListenerList.add(listener);
 		listener.refreshData();
 	}
 
+	/**
+	 * Check for notifications, sending them out if required
+	 */
 	private void checkNotifications()
 	{
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
@@ -178,6 +343,14 @@ public class AppService extends Service implements LocationListener
 		}
 	}
 
+	/**
+	 * Gets a list of all of the authenticated user's calendars. Assumes that
+	 * the service is already authenticated
+	 * 
+	 * @return the list of all calendars the user has access to
+	 * @throws IOException
+	 *             on IO error
+	 */
 	public List<CalendarEntry> getCalendars() throws IOException
 	{
 		final ArrayList<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
@@ -196,6 +369,16 @@ public class AppService extends Service implements LocationListener
 		return calendars;
 	}
 
+	/**
+	 * Gets a particular EventEntry given its URL. Assumes that the service is
+	 * already authenticated
+	 * 
+	 * @param eventUrl
+	 *            the URL of the EventEntry to return
+	 * @return the EventEntry represented by the given URL
+	 * @throws IOException
+	 *             on IO error
+	 */
 	public EventEntry getEvent(final String eventUrl) throws IOException
 	{
 		final EventEntry event = EventEntry.executeGet(transport,
@@ -203,6 +386,19 @@ public class AppService extends Service implements LocationListener
 		return event;
 	}
 
+	/**
+	 * Gets all events in a given Date range. Assumes that the service is
+	 * already authenticated
+	 * 
+	 * @param start
+	 *            start date
+	 * @param end
+	 *            end date
+	 * @return all events from all calendars in the Date range, ordered by start
+	 *         time
+	 * @throws IOException
+	 *             on IO error
+	 */
 	public Set<EventEntry> getEvents(final Date start, final Date end)
 			throws IOException
 	{
@@ -223,6 +419,17 @@ public class AppService extends Service implements LocationListener
 		return events;
 	}
 
+	/**
+	 * Gets all events between now (new Date()) and the given end Date. Assumes
+	 * that the service is already authenticated
+	 * 
+	 * @param end
+	 *            end date
+	 * @return all events from all calendars from now until the given end date,
+	 *         ordered by start time
+	 * @throws IOException
+	 *             on IO error
+	 */
 	public Set<EventEntry> getEventsStartingNow(final Date end)
 			throws IOException
 	{
@@ -230,14 +437,15 @@ public class AppService extends Service implements LocationListener
 	}
 
 	/**
-	 * Finds the next event (chronologically) that has a location. Searches in
-	 * an exponentially larger date range until it finds an event (first 1 day,
-	 * then 2, then 4, etc)
+	 * Finds the next event across all calendars (chronologically) that has a
+	 * location. Searches in an exponentially larger date range until it finds
+	 * an event (first 1 day, then 2, then 4, etc). Assumes that the service is
+	 * already authenticated
 	 * 
 	 * @return the next event that has a location, null if no events with a
 	 *         location are found
 	 * @throws IOException
-	 *             on error
+	 *             on IO error
 	 */
 	public EventEntry getNextEventWithLocation() throws IOException
 	{
@@ -261,17 +469,30 @@ public class AppService extends Service implements LocationListener
 		return null;
 	}
 
+	/**
+	 * Effectively logs the user out, invalidating their authentication token.
+	 * Note that all queries done between now and future authentication will
+	 * fail
+	 */
 	public void invalidateAuthToken()
 	{
 		((GoogleHeaders) transport.defaultHeaders).remove("Authorization");
 		isAuthenticated = false;
 	}
 
+	/**
+	 * Getter for whether the service is authenticated
+	 * 
+	 * @return if the service is authenticated
+	 */
 	public boolean isAuthenticated()
 	{
 		return isAuthenticated;
 	}
 
+	/**
+	 * Called when an Activity or Service binds to this Service
+	 */
 	@Override
 	public IBinder onBind(final Intent intent)
 	{
@@ -279,6 +500,11 @@ public class AppService extends Service implements LocationListener
 		return binder;
 	}
 
+	/**
+	 * Called when this service is first started. Sets up Google API queries as
+	 * well as registering this service for GPS location updates. Note that the
+	 * service is NOT authenticated until setAuthToken is called.
+	 */
 	@Override
 	public void onCreate()
 	{
@@ -303,6 +529,9 @@ public class AppService extends Service implements LocationListener
 		mNotificationUtility = new NotificationUtility(this, nm);
 	}
 
+	/**
+	 * Called when this service is ended. Cleans up location updates and alarms
+	 */
 	@Override
 	public void onDestroy()
 	{
@@ -340,6 +569,12 @@ public class AppService extends Service implements LocationListener
 		// Nothing to do
 	}
 
+	/**
+	 * Called when this service is started. Handles both initial set up and,
+	 * when passed a NOTIFICATION_ACTION Intent, notification checking as well
+	 * as updating any Refreshable listeners. Note that the service is NOT
+	 * authenticated until setAuthToken is called.
+	 */
 	@Override
 	public int onStartCommand(final Intent intent, final int flags,
 			final int startId)
@@ -375,16 +610,35 @@ public class AppService extends Service implements LocationListener
 		// Nothing to do
 	}
 
+	/**
+	 * Removes a LocationAware listener, stopping any location update
+	 * notifications
+	 * 
+	 * @param listener
+	 *            listener to remove
+	 */
 	public void removeLocationListener(final LocationAware listener)
 	{
 		locationListenerList.remove(listener);
 	}
 
+	/**
+	 * Removes a Refreshable listener, stopping any alarm notifications
+	 * 
+	 * @param listener
+	 *            listener to remove
+	 */
 	public void removeRefreshOnTimerListener(final Refreshable listener)
 	{
 		refreshOnTimerListenerList.remove(listener);
 	}
 
+	/**
+	 * Authorizes the service with the given authToken
+	 * 
+	 * @param authToken
+	 *            authToken used to authenticate any Google API queries
+	 */
 	public void setAuthToken(final String authToken)
 	{
 		((GoogleHeaders) transport.defaultHeaders).setGoogleLogin(authToken);

@@ -11,41 +11,67 @@ import edu.usc.csci588team02.activity.TabbedInterface;
 import edu.usc.csci588team02.model.EventEntry;
 
 /**
- * @author Stephen Barnes
+ * Utility class to manage Notifications
  */
 public class NotificationUtility
 {
+	/**
+	 * Enum for the color of the Notification
+	 */
 	public enum COLOR {
-		GREEN, ORANGE, RED
+		/**
+		 * Green = Greater than 66% of Notify Time preference remaining
+		 */
+		GREEN, /**
+		 * Orange = 33% - 66% of Notify Time preference remaining
+		 */
+		ORANGE, /**
+		 * Red = <33% of Notify Time preference remaining
+		 */
+		RED
 	}
 
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "NotificationUtility";
+	/**
+	 * NotificationManager service
+	 */
 	private final NotificationManager mNotificationManager;
+	/**
+	 * Context to use for notifications and activity launching
+	 */
 	private final Context myContext;
 
+	/**
+	 * Basic constructor
+	 * 
+	 * @param context
+	 *            Context to use for notifications and activity launching
+	 * @param nm
+	 *            NotificationManager service
+	 */
 	public NotificationUtility(final Context context,
 			final NotificationManager nm)
 	{
-		// Setup the home activity
 		myContext = context;
-		// Get the notification manager serivce.
 		mNotificationManager = nm;
 	}
 
-	public void createSimpleNotification(final String message)
-	{
-		final Notification notification = new Notification(
-				R.drawable.ic_green_square, message, System.currentTimeMillis());
-		// Set the info for the views that show in the notification panel.
-		notification.setLatestEventInfo(myContext, message, "",
-				makeNotificationIntent());
-		// Send the notification.
-		// We use a layout id because it is a unique number. We use it later to
-		// cancel.
-		mNotificationManager.notify(R.layout.status_bar_notifications,
-				notification);
-	}
-
+	/**
+	 * Create a simple notification for the given message and Event, along with
+	 * pre-computed leaveInMinutes and notifyTimeInMin
+	 * 
+	 * @param message
+	 *            Notification tickerText to use
+	 * @param ee
+	 *            EventEntry to pull event information from
+	 * @param leaveInMinutes
+	 *            how many minutes until user needs to leave for this event
+	 * @param notifyTimeInMin
+	 *            user preference on when they would like to be notified
+	 */
 	public void createSimpleNotification(final String message,
 			final EventEntry ee, final long leaveInMinutes,
 			final int notifyTimeInMin)
@@ -76,6 +102,8 @@ public class NotificationUtility
 						message, System.currentTimeMillis());
 				break;
 		}
+		// Auto cancels the notification when clicked
+		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 		final CharSequence time = android.text.format.DateFormat.format(
 				"hh:mma", ee.when.startTime.value);
 		// Set the info for the views that show in the notification panel.
@@ -95,6 +123,12 @@ public class NotificationUtility
 				notification);
 	}
 
+	/**
+	 * Creates the PendingIntent used to launch the application when the
+	 * notification is clicked
+	 * 
+	 * @return PendingIntent to launch when the notification is clicked
+	 */
 	private PendingIntent makeNotificationIntent()
 	{
 		// The PendingIntent to launch our activity if the user selects this

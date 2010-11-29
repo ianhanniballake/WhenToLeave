@@ -24,12 +24,29 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+/**
+ * WidgetProvider used to handle all Widget updates. Creates a
+ * WidgetUpdateService to handle every minute updates to the widget(s) (as
+ * AppWidgetProviders cannot bind to services such as our AppService). Note that
+ * all widgets will show the same information
+ */
 public class WidgetProvider extends AppWidgetProvider
 {
+	/**
+	 * AlarmManager used to update widget
+	 */
 	private static AlarmManager alarmManager;
+	/**
+	 * PendingIntent triggered by the alarm manager
+	 */
 	private static PendingIntent pendingIntent;
-	// log tag
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "WidgetProvider";
+	/**
+	 * Action used to distinguish alarm actions from other intents received
+	 */
 	private static final String WIDGET_UPDATE_ACTION = "WHENTOLEAVE_WIDGET_UPDATE_ACTION";
 
 	@Override
@@ -56,6 +73,10 @@ public class WidgetProvider extends AppWidgetProvider
 				pendingIntent);
 	}
 
+	/**
+	 * If the intent's action is WIDGET_UPDATE_ACTION, then call the onUpdate
+	 * method
+	 */
 	@Override
 	public void onReceive(final Context context, final Intent intent)
 	{
@@ -73,6 +94,9 @@ public class WidgetProvider extends AppWidgetProvider
 		}
 	}
 
+	/**
+	 * Starts the WidgetUpdateService to handle the widget update
+	 */
 	@Override
 	public void onUpdate(final Context context,
 			final AppWidgetManager appWidgetManager, final int[] appWidgetIds)

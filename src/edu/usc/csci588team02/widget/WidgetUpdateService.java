@@ -24,12 +24,27 @@ import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
+/**
+ * Service used to update all Widgets.
+ */
 public class WidgetUpdateService extends Service implements LocationAware,
 		Refreshable
 {
+	/**
+	 * Preferences name to load settings from
+	 */
 	private static final String PREF = "MyPrefs";
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "WidgetUpdateService";
+	/**
+	 * Current location of the device
+	 */
 	private Location currentLocation = null;
+	/**
+	 * Connection to the AppService
+	 */
 	private final AppServiceConnection service = new AppServiceConnection(this,
 			this);
 
@@ -70,6 +85,9 @@ public class WidgetUpdateService extends Service implements LocationAware,
 		return START_STICKY;
 	}
 
+	/**
+	 * Updates all widgets
+	 */
 	@Override
 	public void refreshData()
 	{
@@ -175,6 +193,14 @@ public class WidgetUpdateService extends Service implements LocationAware,
 		}
 	}
 
+	/**
+	 * Updates all widgets with the given views
+	 * 
+	 * @param appWidgetManager
+	 *            Widget Manager
+	 * @param views
+	 *            RemoteViews to set to update all widgets with
+	 */
 	private void updateAllWidgets(final AppWidgetManager appWidgetManager,
 			final RemoteViews views)
 	{
