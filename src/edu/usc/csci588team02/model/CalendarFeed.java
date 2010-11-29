@@ -1,53 +1,56 @@
-/*
- * Copyright (c) 2010 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package edu.usc.csci588team02.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.api.client.googleapis.xml.atom.GData;
-import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.Key;
 
 /**
- * @author Yaniv Inbar
+ * Represents a Google Calendar Feed
+ * 
+ * Modified from <a href=
+ * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/model/CalendarFeed.java?repo=samples"
+ * /> by Yaniv Inbar
  */
-public class CalendarFeed
+public class CalendarFeed extends Feed
 {
+	/**
+	 * Builds and executes the HTTP request to get the Google Calendar feed
+	 * 
+	 * @param transport
+	 *            the authorized HttpTransport to use
+	 * @param url
+	 *            URL of the Calendar
+	 * @return the CalendarFeed associated with the given URL
+	 * @throws IOException
+	 *             on IO error
+	 */
 	public static CalendarFeed executeGet(final HttpTransport transport,
 			final CalendarUrl url) throws IOException
 	{
-		url.fields = GData.getFieldsFor(CalendarFeed.class);
-		final HttpRequest request = transport.buildGetRequest();
-		request.url = url;
-		return RedirectHandler.execute(request).parseAs(CalendarFeed.class);
+		return (CalendarFeed) Feed.executeGet(transport, url,
+				CalendarFeed.class);
 	}
 
+	/**
+	 * List of calendars, auto filled from 'entry' field
+	 */
 	@Key("entry")
 	public List<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
-	@Key("link")
-	public List<Link> links;
 
-	public String getBatchLink()
+	@Override
+	public List<CalendarEntry> getEntries()
 	{
-		return Link.find(links, "http://schemas.google.com/g/2005#batch");
+		return calendars;
 	}
 
+	/**
+	 * Gets the URL of the next Calendar in the feed
+	 * 
+	 * @return the URL of the next Calendar in the feed
+	 */
 	public String getNextLink()
 	{
 		return Link.find(links, "next");

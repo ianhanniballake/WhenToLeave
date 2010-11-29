@@ -2,8 +2,17 @@ package edu.usc.csci588team02.model;
 
 import java.util.Comparator;
 
+/**
+ * Comparator to compare EventEntry's first based on start time, breaking ties
+ * by title
+ */
 public class EventEntryComparator implements Comparator<EventEntry>
 {
+	/**
+	 * Compares two EventEntry's, first by start time (when.startTime.value),
+	 * breaking ties by title if they have the exact same time or if both have
+	 * no start time
+	 */
 	@Override
 	public int compare(final EventEntry event1, final EventEntry event2)
 	{
@@ -24,9 +33,6 @@ public class EventEntryComparator implements Comparator<EventEntry>
 		}
 		// Either both are null or they have the same time.
 		// In those cases, compare by title
-		final int titleCompare = event1.title.compareTo(event2.title);
-		if (titleCompare != 0)
-			return titleCompare;
-		return 0;
+		return event1.title.compareTo(event2.title);
 	}
 }

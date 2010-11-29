@@ -1,18 +1,3 @@
-/*
- * Copyright (c) 2010 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package edu.usc.csci588team02.model;
 
 import java.io.IOException;
@@ -25,19 +10,32 @@ import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpTransport;
 
 /**
- * @author Yaniv Inbar
+ * Handle required redirects to allow Google to add sessionid. See <a
+ * href="http://code.google.com/apis/calendar/faq.html#redirect_handling" >How
+ * do I handle redirects...?</a>.
+ * 
+ * Modified from <a href=
+ * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/model/Namespace.java?repo=samples"
+ * /> by Yaniv Inbar
  */
 public class RedirectHandler
 {
 	/**
-	 * See <a
-	 * href="http://code.google.com/apis/calendar/faq.html#redirect_handling"
-	 * >How do I handle redirects...?</a>.
+	 * Intercepts redirects needed by Google
 	 */
 	private static class SessionIntercepter implements HttpExecuteIntercepter
 	{
+		/**
+		 * The Google Session ID
+		 */
 		private final String gsessionid;
 
+		/**
+		 * Constructor for the SessionIntercepter
+		 * 
+		 * @param locationUrl
+		 *            url to intercept
+		 */
 		private SessionIntercepter(final GoogleUrl locationUrl)
 		{
 			gsessionid = (String) locationUrl.getFirst("gsessionid");
@@ -49,6 +47,12 @@ public class RedirectHandler
 			request.url.set("gsessionid", gsessionid);
 		}
 
+		/**
+		 * Registers this intercepter with the given HttpTransport
+		 * 
+		 * @param transport
+		 *            HttpTransport to register this Intercepter with
+		 */
 		public void register(final HttpTransport transport)
 		{
 			transport.removeIntercepters(SessionIntercepter.class);
@@ -56,6 +60,15 @@ public class RedirectHandler
 		}
 	}
 
+	/**
+	 * Executes the given request, handling redirects as needed
+	 * 
+	 * @param request
+	 *            request to execute
+	 * @return the response of the request
+	 * @throws IOException
+	 *             on IO error
+	 */
 	static HttpResponse execute(final HttpRequest request) throws IOException
 	{
 		try

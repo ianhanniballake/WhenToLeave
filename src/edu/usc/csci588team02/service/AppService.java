@@ -26,6 +26,7 @@ import android.util.Log;
 import com.google.api.client.apache.ApacheHttpTransport;
 import com.google.api.client.googleapis.GoogleHeaders;
 import com.google.api.client.googleapis.GoogleTransport;
+import com.google.api.client.googleapis.GoogleUrl;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.xml.atom.AtomParser;
@@ -39,13 +40,9 @@ import edu.usc.csci588team02.model.CalendarUrl;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.model.EventEntryComparator;
 import edu.usc.csci588team02.model.EventFeed;
-import edu.usc.csci588team02.model.EventUrl;
 import edu.usc.csci588team02.model.Namespace;
 import edu.usc.csci588team02.utility.NotificationUtility;
 
-/**
- * @author Kevin Kirkpatrick
- */
 public class AppService extends Service implements LocationListener
 {
 	public class AppServiceBinder extends Binder
@@ -201,8 +198,8 @@ public class AppService extends Service implements LocationListener
 
 	public EventEntry getEvent(final String eventUrl) throws IOException
 	{
-		final EventEntry event = EventEntry.executeGet(transport, new EventUrl(
-				eventUrl));
+		final EventEntry event = EventEntry.executeGet(transport,
+				new GoogleUrl(eventUrl));
 		return event;
 	}
 
@@ -214,7 +211,7 @@ public class AppService extends Service implements LocationListener
 		final List<CalendarEntry> calendars = getCalendars();
 		for (final CalendarEntry calendar : calendars)
 		{
-			final CalendarUrl eventFeedUrl = new CalendarUrl(
+			final GoogleUrl eventFeedUrl = new GoogleUrl(
 					calendar.getEventFeedLink() + "?start-min="
 							+ new DateTime(start) + "&start-max="
 							+ new DateTime(end) + "&orderby=starttime"
