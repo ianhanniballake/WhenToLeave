@@ -26,13 +26,41 @@ import edu.usc.csci588team02.service.AppServiceConnection;
  */
 public class Login extends Activity implements Refreshable
 {
+	/**
+	 * Authorization token type for Google Calendar access
+	 */
 	private static final String AUTH_TOKEN_TYPE = "cl";
+	/**
+	 * Dialog ID for account selection dialog box
+	 */
 	private static final int DIALOG_ACCOUNTS = 99;
+	/**
+	 * Preferences name to load settings from
+	 */
 	private static final String PREF = "MyPrefs";
+	/**
+	 * Activity request code corresponding with requesting authentication
+	 */
 	public static final int REQUEST_AUTHENTICATE = 99;
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "Login";
+	/**
+	 * Connection to the persistent, to be authorized service
+	 */
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
+	/**
+	 * Logs in to the given account, returning the authorization token
+	 * 
+	 * @param manager
+	 *            Account Manager who owns the authorization tokens
+	 * @param account
+	 *            the account to get the authorization token for
+	 * @return the authorization token of the now authenticated user or null on
+	 *         error
+	 */
 	private String getAuthToken(final AccountManager manager,
 			final Account account)
 	{
@@ -82,6 +110,17 @@ public class Login extends Activity implements Refreshable
 		return authToken;
 	}
 
+	/**
+	 * Logs in to the requested account, storing the account name and
+	 * authorization token in the preferences to mark that we are now
+	 * authenticated. Also authenticates the service with the same authorization
+	 * token before calling finish() on this activity.
+	 * 
+	 * @param manager
+	 *            Account Manager who owns the authorization tokens
+	 * @param account
+	 *            the account to log into
+	 */
 	private void gotAccount(final AccountManager manager, final Account account)
 	{
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
@@ -103,6 +142,13 @@ public class Login extends Activity implements Refreshable
 		}.start();
 	}
 
+	/**
+	 * Attempts to determine if the user is already logged in. If they are,
+	 * optionally expire their token and attempt to authorize the user.
+	 * 
+	 * @param tokenExpired
+	 *            whether the authorization token is expired
+	 */
 	private void gotAccount(final boolean tokenExpired)
 	{
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
@@ -144,6 +190,8 @@ public class Login extends Activity implements Refreshable
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		// As we must authenticate a connected service, we kick off the Login
+		// process after we are connected
 		bindService(new Intent(this, AppService.class), service,
 				Context.BIND_AUTO_CREATE);
 	}
@@ -185,6 +233,9 @@ public class Login extends Activity implements Refreshable
 		unbindService(service);
 	}
 
+	/**
+	 * Kick off the login process as we now know we are connected to the service
+	 */
 	@Override
 	public void refreshData()
 	{

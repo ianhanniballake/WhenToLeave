@@ -9,6 +9,7 @@ import java.util.Set;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -34,199 +35,231 @@ import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
- * @author Stephanie Trudeau
+ * Activity showing a map of all of the current day's events with locations. If
+ * a GPS location is available, shows the current location and a route to the
+ * next event. Works optimally as a tab for TabbedInterface.
+ * 
+ * @see TabbedInterface
  */
 public class Map extends MapActivity implements Refreshable, LocationAware
 {
+	/**
+	 * Possible Event Icon colors
+	 */
 	public enum COLOR {
-		GREEN, GREY, ORANGE, RED
+		/**
+		 * Green = Greater than 66% of Notify Time preference remaining for next
+		 * upcoming event
+		 */
+		GREEN, /**
+		 * Grey = Color for any other event
+		 */
+		GREY, /**
+		 * Orange = 33% - 66% of Notify Time preference remaining for next
+		 * upcoming event
+		 */
+		ORANGE, /**
+		 * Red = <33% of Notify Time preference remaining for next
+		 * upcoming event
+		 */
+		RED
 	}
 
+	/**
+	 * Preferences name to load settings from
+	 */
 	private static final String PREF = "MyPrefs";
+	/**
+	 * Logging activity
+	 */
 	private static final String TAG = "MapActivity";
-	// Holds the list of all the events currently displayed on the map
+	/**
+	 * Holds the list of all the events currently displayed on the map
+	 */
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
-	// Place markers in memory
-	Drawable gpsLocationIcon;
-	Drawable greenSquare;
-	Drawable greenSquare1;
-	Drawable greenSquare10;
-	Drawable greenSquare2;
-	Drawable greenSquare3;
-	Drawable greenSquare4;
-	Drawable greenSquare5;
-	Drawable greenSquare6;
-	Drawable greenSquare7;
-	Drawable greenSquare8;
-	Drawable greenSquare9;
-	Drawable greySquare;
-	Drawable greySquare1;
-	Drawable greySquare10;
-	Drawable greySquare2;
-	Drawable greySquare3;
-	Drawable greySquare4;
-	Drawable greySquare5;
-	Drawable greySquare6;
-	Drawable greySquare7;
-	Drawable greySquare8;
-	Drawable greySquare9;
-	private ItemizedOverlay itemizedOverlay;
-	// List of all overlays on the map
+	/**
+	 * Icon representing the current GPS location
+	 */
+	private Drawable gpsLocationIcon;
+	/**
+	 * Default (non-numbered) green square
+	 */
+	private Drawable greenSquareDefault;
+	/**
+	 * Numbered green squares where their number = index+1 (i.e., [0] == number
+	 * 1)
+	 */
+	private Drawable greenSquaresNumbered[];
+	/**
+	 * Default (non-numbered) grey square
+	 */
+	private Drawable greySquareDefault;
+	/**
+	 * Numbered grey squares where their number = index+1 (i.e., [0] == number
+	 * 1)
+	 */
+	private Drawable greySquaresNumbered[];
+	/**
+	 * List of all overlays on the map
+	 */
 	private List<Overlay> mapOverlays;
+	/**
+	 * The Map View that constitutes this activity
+	 */
 	private MapView mapView;
-	Location mGpsLocation;
-	GeoPoint mGpsLocationPoint;
-	// Global references to the GPS location overlay and it's GeoPoint
-	OverlayItem mGpsOverlayItem;
-	Road mRoad = null;
-	// Nory's route/road provider
-	RoadProvider mRoadProvider;
-	Drawable orangeSquare;
-	Drawable orangeSquare1;
-	Drawable orangeSquare10;
-	Drawable orangeSquare2;
-	Drawable orangeSquare3;
-	Drawable orangeSquare4;
-	Drawable orangeSquare5;
-	Drawable orangeSquare6;
-	Drawable orangeSquare7;
-	Drawable orangeSquare8;
-	Drawable orangeSquare9;
-	Drawable redSquare;
-	Drawable redSquare1;
-	Drawable redSquare10;
-	Drawable redSquare2;
-	Drawable redSquare3;
-	Drawable redSquare4;
-	Drawable redSquare5;
-	Drawable redSquare6;
-	Drawable redSquare7;
-	Drawable redSquare8;
-	Drawable redSquare9;
-	// Connection to the persistent service
+	/**
+	 * Current location of the device
+	 */
+	private Location mGpsLocation;
+	/**
+	 * Global references to the GPS location overlay and it's GeoPoint
+	 */
+	private OverlayItem mGpsOverlayItem;
+	/**
+	 * Route to our next destination from our current location, if it exists
+	 */
+	private Road mRoad = null;
+	/**
+	 * Default (non-numbered) orange square
+	 */
+	private Drawable orangeSquareDefault;
+	/**
+	 * Numbered orange squares where their number = index+1 (i.e., [0] == number
+	 * 1)
+	 */
+	private Drawable orangeSquaresNumbered[];
+	/**
+	 * Default (non-numbered) red square
+	 */
+	private Drawable redSquareDefault;
+	/**
+	 * Numbered red squares where their number = index+1 (i.e., [0] == number 1)
+	 */
+	private Drawable redSquaresNumbered[];
+	/**
+	 * Connection to the persistent, authorized service
+	 */
 	private final AppServiceConnection service = new AppServiceConnection(this,
 			this);
 
+	/**
+	 * Generates all of the icons that could be used in this
+	 */
 	private void generateDrawables()
 	{
+		final Resources resources = getResources();
 		// GPS and Colored Square Resources
-		gpsLocationIcon = getResources()
-				.getDrawable(R.drawable.ic_gps_location);
+		gpsLocationIcon = resources.getDrawable(R.drawable.ic_gps_location);
 		// Green Numbered Square Resources
-		greenSquare = getResources().getDrawable(R.drawable.ic_green_square);
-		greenSquare1 = getResources().getDrawable(R.drawable.ic_green_square_1);
-		greenSquare2 = getResources().getDrawable(R.drawable.ic_green_square_2);
-		greenSquare3 = getResources().getDrawable(R.drawable.ic_green_square_3);
-		greenSquare4 = getResources().getDrawable(R.drawable.ic_green_square_4);
-		greenSquare5 = getResources().getDrawable(R.drawable.ic_green_square_5);
-		greenSquare6 = getResources().getDrawable(R.drawable.ic_green_square_6);
-		greenSquare7 = getResources().getDrawable(R.drawable.ic_green_square_7);
-		greenSquare8 = getResources().getDrawable(R.drawable.ic_green_square_8);
-		greenSquare9 = getResources().getDrawable(R.drawable.ic_green_square_9);
-		greenSquare10 = getResources().getDrawable(
-				R.drawable.ic_green_square_10);
+		greenSquareDefault = resources.getDrawable(R.drawable.ic_green_square);
+		greenSquaresNumbered = new Drawable[10];
+		greenSquaresNumbered[0] = resources
+				.getDrawable(R.drawable.ic_green_square_1);
+		greenSquaresNumbered[1] = resources
+				.getDrawable(R.drawable.ic_green_square_2);
+		greenSquaresNumbered[2] = resources
+				.getDrawable(R.drawable.ic_green_square_3);
+		greenSquaresNumbered[3] = resources
+				.getDrawable(R.drawable.ic_green_square_4);
+		greenSquaresNumbered[4] = resources
+				.getDrawable(R.drawable.ic_green_square_5);
+		greenSquaresNumbered[5] = resources
+				.getDrawable(R.drawable.ic_green_square_6);
+		greenSquaresNumbered[6] = resources
+				.getDrawable(R.drawable.ic_green_square_7);
+		greenSquaresNumbered[7] = resources
+				.getDrawable(R.drawable.ic_green_square_8);
+		greenSquaresNumbered[8] = resources
+				.getDrawable(R.drawable.ic_green_square_9);
+		greenSquaresNumbered[9] = resources
+				.getDrawable(R.drawable.ic_green_square_10);
 		// Orange Numbered Square Resources
-		orangeSquare = getResources().getDrawable(R.drawable.ic_orange_square);
-		orangeSquare1 = getResources().getDrawable(
-				R.drawable.ic_orange_square_1);
-		orangeSquare1 = getResources().getDrawable(
-				R.drawable.ic_orange_square_1);
-		orangeSquare2 = getResources().getDrawable(
-				R.drawable.ic_orange_square_2);
-		orangeSquare3 = getResources().getDrawable(
-				R.drawable.ic_orange_square_3);
-		orangeSquare4 = getResources().getDrawable(
-				R.drawable.ic_orange_square_4);
-		orangeSquare5 = getResources().getDrawable(
-				R.drawable.ic_orange_square_5);
-		orangeSquare6 = getResources().getDrawable(
-				R.drawable.ic_orange_square_6);
-		orangeSquare7 = getResources().getDrawable(
-				R.drawable.ic_orange_square_7);
-		orangeSquare8 = getResources().getDrawable(
-				R.drawable.ic_orange_square_8);
-		orangeSquare9 = getResources().getDrawable(
-				R.drawable.ic_orange_square_9);
-		orangeSquare10 = getResources().getDrawable(
-				R.drawable.ic_orange_square_10);
+		orangeSquareDefault = resources
+				.getDrawable(R.drawable.ic_orange_square);
+		orangeSquaresNumbered = new Drawable[10];
+		orangeSquaresNumbered[0] = resources
+				.getDrawable(R.drawable.ic_orange_square_1);
+		orangeSquaresNumbered[1] = resources
+				.getDrawable(R.drawable.ic_orange_square_2);
+		orangeSquaresNumbered[2] = resources
+				.getDrawable(R.drawable.ic_orange_square_3);
+		orangeSquaresNumbered[3] = resources
+				.getDrawable(R.drawable.ic_orange_square_4);
+		orangeSquaresNumbered[4] = resources
+				.getDrawable(R.drawable.ic_orange_square_5);
+		orangeSquaresNumbered[5] = resources
+				.getDrawable(R.drawable.ic_orange_square_6);
+		orangeSquaresNumbered[6] = resources
+				.getDrawable(R.drawable.ic_orange_square_7);
+		orangeSquaresNumbered[7] = resources
+				.getDrawable(R.drawable.ic_orange_square_8);
+		orangeSquaresNumbered[8] = resources
+				.getDrawable(R.drawable.ic_orange_square_9);
+		orangeSquaresNumbered[9] = resources
+				.getDrawable(R.drawable.ic_orange_square_10);
 		// Red Numbered Square Resources
-		redSquare = getResources().getDrawable(R.drawable.ic_red_square);
-		redSquare1 = getResources().getDrawable(R.drawable.ic_red_square_1);
-		redSquare2 = getResources().getDrawable(R.drawable.ic_red_square_2);
-		redSquare3 = getResources().getDrawable(R.drawable.ic_red_square_3);
-		redSquare4 = getResources().getDrawable(R.drawable.ic_red_square_4);
-		redSquare5 = getResources().getDrawable(R.drawable.ic_red_square_5);
-		redSquare6 = getResources().getDrawable(R.drawable.ic_red_square_6);
-		redSquare7 = getResources().getDrawable(R.drawable.ic_red_square_7);
-		redSquare8 = getResources().getDrawable(R.drawable.ic_red_square_8);
-		redSquare9 = getResources().getDrawable(R.drawable.ic_red_square_9);
-		redSquare10 = getResources().getDrawable(R.drawable.ic_red_square_10);
+		redSquareDefault = resources.getDrawable(R.drawable.ic_red_square);
+		redSquaresNumbered = new Drawable[10];
+		redSquaresNumbered[0] = resources
+				.getDrawable(R.drawable.ic_red_square_1);
+		redSquaresNumbered[1] = resources
+				.getDrawable(R.drawable.ic_red_square_2);
+		redSquaresNumbered[2] = resources
+				.getDrawable(R.drawable.ic_red_square_3);
+		redSquaresNumbered[3] = resources
+				.getDrawable(R.drawable.ic_red_square_4);
+		redSquaresNumbered[4] = resources
+				.getDrawable(R.drawable.ic_red_square_5);
+		redSquaresNumbered[5] = resources
+				.getDrawable(R.drawable.ic_red_square_6);
+		redSquaresNumbered[6] = resources
+				.getDrawable(R.drawable.ic_red_square_7);
+		redSquaresNumbered[7] = resources
+				.getDrawable(R.drawable.ic_red_square_8);
+		redSquaresNumbered[8] = resources
+				.getDrawable(R.drawable.ic_red_square_9);
+		redSquaresNumbered[9] = resources
+				.getDrawable(R.drawable.ic_red_square_10);
 		// Grey Numbered Square Resources
-		greySquare = getResources().getDrawable(R.drawable.ic_grey_square);
-		greySquare1 = getResources().getDrawable(R.drawable.ic_grey_square_1);
-		greySquare2 = getResources().getDrawable(R.drawable.ic_grey_square_2);
-		greySquare3 = getResources().getDrawable(R.drawable.ic_grey_square_3);
-		greySquare4 = getResources().getDrawable(R.drawable.ic_grey_square_4);
-		greySquare5 = getResources().getDrawable(R.drawable.ic_grey_square_5);
-		greySquare6 = getResources().getDrawable(R.drawable.ic_grey_square_6);
-		greySquare7 = getResources().getDrawable(R.drawable.ic_grey_square_7);
-		greySquare8 = getResources().getDrawable(R.drawable.ic_grey_square_8);
-		greySquare9 = getResources().getDrawable(R.drawable.ic_grey_square_9);
-		greySquare10 = getResources().getDrawable(R.drawable.ic_grey_square_10);
+		greySquareDefault = resources.getDrawable(R.drawable.ic_grey_square);
+		greySquaresNumbered = new Drawable[10];
+		greySquaresNumbered[0] = resources
+				.getDrawable(R.drawable.ic_grey_square_1);
+		greySquaresNumbered[1] = resources
+				.getDrawable(R.drawable.ic_grey_square_2);
+		greySquaresNumbered[2] = resources
+				.getDrawable(R.drawable.ic_grey_square_3);
+		greySquaresNumbered[3] = resources
+				.getDrawable(R.drawable.ic_grey_square_4);
+		greySquaresNumbered[4] = resources
+				.getDrawable(R.drawable.ic_grey_square_5);
+		greySquaresNumbered[5] = resources
+				.getDrawable(R.drawable.ic_grey_square_6);
+		greySquaresNumbered[6] = resources
+				.getDrawable(R.drawable.ic_grey_square_7);
+		greySquaresNumbered[7] = resources
+				.getDrawable(R.drawable.ic_grey_square_8);
+		greySquaresNumbered[8] = resources
+				.getDrawable(R.drawable.ic_grey_square_9);
+		greySquaresNumbered[9] = resources
+				.getDrawable(R.drawable.ic_grey_square_10);
 		// Set bounds for the icons since mapview doesn't like to place them
 		// without explicit bounds
 		gpsLocationIcon.setBounds(0, 0, 36, 36);
-		greenSquare.setBounds(0, 0, 36, 36);
-		greenSquare1.setBounds(0, 0, 36, 36);
-		greenSquare2.setBounds(0, 0, 36, 36);
-		greenSquare3.setBounds(0, 0, 36, 36);
-		greenSquare4.setBounds(0, 0, 36, 36);
-		greenSquare5.setBounds(0, 0, 36, 36);
-		greenSquare6.setBounds(0, 0, 36, 36);
-		greenSquare7.setBounds(0, 0, 36, 36);
-		greenSquare8.setBounds(0, 0, 36, 36);
-		greenSquare9.setBounds(0, 0, 36, 36);
-		greenSquare10.setBounds(0, 0, 36, 36);
-		orangeSquare.setBounds(0, 0, 36, 36);
-		orangeSquare1.setBounds(0, 0, 36, 36);
-		orangeSquare2.setBounds(0, 0, 36, 36);
-		orangeSquare3.setBounds(0, 0, 36, 36);
-		orangeSquare4.setBounds(0, 0, 36, 36);
-		orangeSquare5.setBounds(0, 0, 36, 36);
-		orangeSquare6.setBounds(0, 0, 36, 36);
-		orangeSquare7.setBounds(0, 0, 36, 36);
-		orangeSquare8.setBounds(0, 0, 36, 36);
-		orangeSquare9.setBounds(0, 0, 36, 36);
-		orangeSquare10.setBounds(0, 0, 36, 36);
-		redSquare.setBounds(0, 0, 36, 36);
-		redSquare1.setBounds(0, 0, 36, 36);
-		redSquare2.setBounds(0, 0, 36, 36);
-		redSquare3.setBounds(0, 0, 36, 36);
-		redSquare4.setBounds(0, 0, 36, 36);
-		redSquare5.setBounds(0, 0, 36, 36);
-		redSquare6.setBounds(0, 0, 36, 36);
-		redSquare7.setBounds(0, 0, 36, 36);
-		redSquare8.setBounds(0, 0, 36, 36);
-		redSquare9.setBounds(0, 0, 36, 36);
-		redSquare10.setBounds(0, 0, 36, 36);
-		greySquare1.setBounds(0, 0, 36, 36);
-		greySquare2.setBounds(0, 0, 36, 36);
-		greySquare3.setBounds(0, 0, 36, 36);
-		greySquare4.setBounds(0, 0, 36, 36);
-		greySquare5.setBounds(0, 0, 36, 36);
-		greySquare6.setBounds(0, 0, 36, 36);
-		greySquare7.setBounds(0, 0, 36, 36);
-		greySquare8.setBounds(0, 0, 36, 36);
-		greySquare9.setBounds(0, 0, 36, 36);
-		greySquare10.setBounds(0, 0, 36, 36);
-		mGpsLocationPoint = null;
+		greenSquareDefault.setBounds(0, 0, 36, 36);
+		for (final Drawable greenSquare : greenSquaresNumbered)
+			greenSquare.setBounds(0, 0, 36, 36);
+		orangeSquareDefault.setBounds(0, 0, 36, 36);
+		for (final Drawable orangeSquare : orangeSquaresNumbered)
+			orangeSquare.setBounds(0, 0, 36, 36);
+		redSquareDefault.setBounds(0, 0, 36, 36);
+		for (final Drawable redSquare : redSquaresNumbered)
+			redSquare.setBounds(0, 0, 36, 36);
+		greySquareDefault.setBounds(0, 0, 36, 36);
+		for (final Drawable greySquare : greySquaresNumbered)
+			greySquare.setBounds(0, 0, 36, 36);
 		mGpsLocation = null;
 		mGpsOverlayItem = null;
-	}
-
-	public ArrayList<EventEntry> getEventList()
-	{
-		return eventList;
 	}
 
 	@Override
@@ -250,7 +283,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		// Need to use getApplicationContext as this activity is used as a Tab
 		getApplicationContext().bindService(new Intent(this, AppService.class),
 				service, Context.BIND_AUTO_CREATE);
-		mRoadProvider = new RoadProvider();
 	}
 
 	@Override
@@ -266,10 +298,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		if (location != null)
 		{
 			Log.d(TAG, "onLocationChanged");
-			final GeoPoint point = new GeoPoint(
-					(int) (location.getLatitude() * 1000000),
-					(int) (location.getLongitude() * 1000000));
-			mGpsLocationPoint = point;
 			mGpsLocation = location;
 			try
 			{
@@ -303,7 +331,8 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		{
 			// Create a marker for the point
 			// TODO Move this to only create one ItemizedOverlay
-			itemizedOverlay = new ItemizedOverlay(icon, mapView.getContext());
+			final ItemizedOverlay itemizedOverlay = new ItemizedOverlay(icon,
+					this);
 			final OverlayItem overlayItem = new OverlayItem(geoPoint,
 					"Appointment", "Appointment");
 			overlayItem.setMarker(icon);
@@ -394,228 +423,44 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 				{
 					calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
 							+ event.where.valueString;
-					switch (h - 1)
-					{
-						case 0:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare1);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare1);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare1);
-									break;
-								default:
-									plotEvent(event, greySquare1);
-									break;
-							}
-							break;
-						case 1:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare2);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare2);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare2);
-									break;
-								default:
-									plotEvent(event, greySquare2);
-									break;
-							}
-							break;
-						case 2:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare3);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare3);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare3);
-									break;
-								default:
-									plotEvent(event, greySquare3);
-									break;
-							}
-							break;
-						case 3:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare4);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare4);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare4);
-									break;
-								default:
-									plotEvent(event, greySquare4);
-									break;
-							}
-							break;
-						case 4:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare5);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare5);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare5);
-									break;
-								default:
-									plotEvent(event, greySquare5);
-									break;
-							}
-							break;
-						case 5:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare6);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare6);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare6);
-									break;
-								default:
-									plotEvent(event, greySquare6);
-									break;
-							}
-							break;
-						case 6:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare7);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare7);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare7);
-									break;
-								default:
-									plotEvent(event, greySquare7);
-									break;
-							}
-							break;
-						case 7:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare8);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare8);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare8);
-									break;
-								default:
-									plotEvent(event, greySquare8);
-									break;
-							}
-							break;
-						case 8:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare9);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare9);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare9);
-									break;
-								default:
-									plotEvent(event, greySquare9);
-									break;
-							}
-							break;
-						case 9:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare10);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare10);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event,
-											redSquare10);
-									break;
-								default:
-									plotEvent(event, greySquare10);
-									break;
-							}
-							break;
-						default:
-							switch (iconColor)
-							{
-								case GREEN:
-									nextEventPoint = plotEvent(event,
-											greenSquare);
-									break;
-								case ORANGE:
-									nextEventPoint = plotEvent(event,
-											orangeSquare);
-									break;
-								case RED:
-									nextEventPoint = plotEvent(event, redSquare);
-									break;
-								default:
-									plotEvent(event, greySquare);
-									break;
-							}
-							break;
-					}
+					if (h <= 10)
+						switch (iconColor)
+						{
+							case GREEN:
+								nextEventPoint = plotEvent(event,
+										greenSquaresNumbered[h - 1]);
+								break;
+							case ORANGE:
+								nextEventPoint = plotEvent(event,
+										orangeSquaresNumbered[h - 1]);
+								break;
+							case RED:
+								nextEventPoint = plotEvent(event,
+										redSquaresNumbered[h - 1]);
+								break;
+							default:
+								plotEvent(event, greySquaresNumbered[h - 1]);
+								break;
+						}
+					else
+						switch (iconColor)
+						{
+							case GREEN:
+								nextEventPoint = plotEvent(event,
+										greenSquareDefault);
+								break;
+							case ORANGE:
+								nextEventPoint = plotEvent(event,
+										orangeSquareDefault);
+								break;
+							case RED:
+								nextEventPoint = plotEvent(event,
+										redSquareDefault);
+								break;
+							default:
+								plotEvent(event, greySquareDefault);
+								break;
+						}
 					Log.v(TAG, "refreshData: Plotting Event: " + h);
 				}
 			}
@@ -624,12 +469,15 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			eventList.clear();
 			eventList.addAll(events);
 			// Add GPS location overlay if we have our location set
-			if (mGpsLocationPoint != null)
+			if (mGpsLocation != null)
 			{
-				mGpsOverlayItem = new OverlayItem(mGpsLocationPoint, "", "");
+				final GeoPoint gpsLocationPoint = new GeoPoint(
+						(int) (mGpsLocation.getLatitude() * 1000000),
+						(int) (mGpsLocation.getLongitude() * 1000000));
+				mGpsOverlayItem = new OverlayItem(gpsLocationPoint, "", "");
 				mGpsOverlayItem.setMarker(gpsLocationIcon);
-				itemizedOverlay = new ItemizedOverlay(gpsLocationIcon,
-						mapView.getContext());
+				final ItemizedOverlay itemizedOverlay = new ItemizedOverlay(
+						gpsLocationIcon, this);
 				itemizedOverlay.addOverlay(mGpsOverlayItem, "");
 				mapOverlays.add(itemizedOverlay);
 			}

@@ -17,46 +17,16 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import edu.usc.csci588team02.R;
 
+/**
+ * Activity to manage user preferences
+ */
 public class Preferences extends Activity
 {
-	public class notifyTimeListener implements OnItemSelectedListener
+	/**
+	 * Listener for when users select a new notification time setting
+	 */
+	private class NotifyTimeListener implements OnItemSelectedListener
 	{
-		ArrayAdapter<CharSequence> mLocalAdapter;
-		Activity mLocalContext;
-
-		/**
-		 * Constructor
-		 * 
-		 * @param c
-		 *            - The activity that displays the Spinner.
-		 * @param ad
-		 *            - The Adapter view that controls the Spinner. Instantiate
-		 *            a new listener object.
-		 */
-		public notifyTimeListener(final Activity c,
-				final ArrayAdapter<CharSequence> ad)
-		{
-			mLocalContext = c;
-			mLocalAdapter = ad;
-		}
-
-		/**
-		 * When the user selects an item in the spinner, this method is invoked
-		 * by the callback chain. Android calls the item selected listener for
-		 * the spinner, which invokes the onItemSelected method.
-		 * 
-		 * @see android.widget.AdapterView.OnItemSelectedListener#onItemSelected(android.widget.AdapterView,
-		 *      android.view.View, int, long)
-		 * @param parent
-		 *            - the AdapterView for this listener
-		 * @param v
-		 *            - the View for this listener
-		 * @param pos
-		 *            - the 0-based position of the selection in the
-		 *            mLocalAdapter
-		 * @param row
-		 *            - the 0-based row number of the selection in the View
-		 */
 		@Override
 		public void onItemSelected(final AdapterView<?> parent, final View v,
 				final int pos, final long row)
@@ -80,44 +50,11 @@ public class Preferences extends Activity
 		}
 	}
 
-	public class refreshTimeListener implements OnItemSelectedListener
+	/**
+	 * Listener for when users select a new refresh interval setting
+	 */
+	private class RefreshTimeListener implements OnItemSelectedListener
 	{
-		ArrayAdapter<CharSequence> mLocalAdapter;
-		Activity mLocalContext;
-
-		/**
-		 * Constructor
-		 * 
-		 * @param c
-		 *            - The activity that displays the Spinner.
-		 * @param ad
-		 *            - The Adapter view that controls the Spinner. Instantiate
-		 *            a new listener object.
-		 */
-		public refreshTimeListener(final Activity c,
-				final ArrayAdapter<CharSequence> ad)
-		{
-			mLocalContext = c;
-			mLocalAdapter = ad;
-		}
-
-		/**
-		 * When the user selects an item in the spinner, this method is invoked
-		 * by the callback chain. Android calls the item selected listener for
-		 * the spinner, which invokes the onItemSelected method.
-		 * 
-		 * @see android.widget.AdapterView.OnItemSelectedListener#onItemSelected(android.widget.AdapterView,
-		 *      android.view.View, int, long)
-		 * @param parent
-		 *            - the AdapterView for this listener
-		 * @param v
-		 *            - the View for this listener
-		 * @param pos
-		 *            - the 0-based position of the selection in the
-		 *            mLocalAdapter
-		 * @param row
-		 *            - the 0-based row number of the selection in the View
-		 */
 		@Override
 		public void onItemSelected(final AdapterView<?> parent, final View v,
 				final int pos, final long row)
@@ -141,10 +78,14 @@ public class Preferences extends Activity
 		}
 	}
 
-	protected static final String PREF = "MyPrefs";
+	/**
+	 * Preferences name to load settings from
+	 */
+	private static final String PREF = "MyPrefs";
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "PreferencesActivity";
-	protected ArrayAdapter<CharSequence> mAdapter;
-	protected int mPos;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -165,13 +106,11 @@ public class Preferences extends Activity
 				"EventDetails");
 		// Setup refresh spinner data and callback
 		final Spinner refreshTime = (Spinner) findViewById(R.id.spinnerRefreshTime);
-		mAdapter = ArrayAdapter.createFromResource(this, R.array.intervals,
-				android.R.layout.simple_spinner_item);
+		ArrayAdapter<CharSequence> mAdapter = ArrayAdapter.createFromResource(
+				this, R.array.intervals, android.R.layout.simple_spinner_item);
 		mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		refreshTime.setAdapter(mAdapter);
-		final OnItemSelectedListener spinnerListener = new refreshTimeListener(
-				this, mAdapter);
-		refreshTime.setOnItemSelectedListener(spinnerListener);
+		refreshTime.setOnItemSelectedListener(new RefreshTimeListener());
 		// set initial value to current preference for spinner
 		refreshTime.setSelection(
 				java.util.Arrays.binarySearch(iValues, interval), false);
@@ -181,15 +120,13 @@ public class Preferences extends Activity
 				android.R.layout.simple_spinner_item);
 		mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		notifyTimeSpinner.setAdapter(mAdapter);
-		final OnItemSelectedListener notifySpinnerListener = new notifyTimeListener(
-				this, mAdapter);
-		notifyTimeSpinner.setOnItemSelectedListener(notifySpinnerListener);
+		notifyTimeSpinner.setOnItemSelectedListener(new NotifyTimeListener());
 		// set initial value to current preference for spinner
 		notifyTimeSpinner.setSelection(
 				java.util.Arrays.binarySearch(notifyValues, notifyTime), false);
 		// Setup radio button data and callbacks
-		final RadioButton r1 = (RadioButton) findViewById(R.id.rbActionButtonPrefDetails);
-		r1.setOnClickListener(new OnClickListener()
+		final RadioButton rbActionButtonPrefDetails = (RadioButton) findViewById(R.id.rbActionButtonPrefDetails);
+		rbActionButtonPrefDetails.setOnClickListener(new OnClickListener()
 		{
 			@Override
 			public void onClick(final View view)
@@ -199,13 +136,13 @@ public class Preferences extends Activity
 				editor.putString("ActionBarPreference", "EventDetails");
 				editor.commit();
 				Log.v(TAG,
-						"Should have commit r1: "
+						"Should have commit rbActionButtonPrefDetails: "
 								+ settings.getString("ActionBarPreference",
 										"EventDetails"));
 			}
 		});
-		final RadioButton r2 = (RadioButton) findViewById(R.id.rbActionButtonPrefMap);
-		r2.setOnClickListener(new OnClickListener()
+		final RadioButton rbActionButtonPrefMap = (RadioButton) findViewById(R.id.rbActionButtonPrefMap);
+		rbActionButtonPrefMap.setOnClickListener(new OnClickListener()
 		{
 			@Override
 			public void onClick(final View view)
@@ -214,14 +151,12 @@ public class Preferences extends Activity
 				final SharedPreferences.Editor editor = settings.edit();
 				editor.putString("ActionBarPreference", "Map");
 				editor.commit();
-				Log.v(TAG,
-						"Should have commit r2: "
-								+ settings.getString("ActionBarPreference",
-										"Map"));
+				Log.v(TAG, "Should have commit rbActionButtonPrefMap: "
+						+ settings.getString("ActionBarPreference", "Map"));
 			}
 		});
-		final RadioButton r3 = (RadioButton) findViewById(R.id.rbActionButtonPrefNav);
-		r3.setOnClickListener(new OnClickListener()
+		final RadioButton rbActionButtonPrefNav = (RadioButton) findViewById(R.id.rbActionButtonPrefNav);
+		rbActionButtonPrefNav.setOnClickListener(new OnClickListener()
 		{
 			@Override
 			public void onClick(final View view)
@@ -230,21 +165,19 @@ public class Preferences extends Activity
 				final SharedPreferences.Editor editor = settings.edit();
 				editor.putString("ActionBarPreference", "Navigate");
 				editor.commit();
-				Log.v(TAG,
-						"Should have commit r3: "
-								+ settings.getString("ActionBarPreference",
-										"Navigate"));
+				Log.v(TAG, "Should have commit rbActionButtonPrefNav: "
+						+ settings.getString("ActionBarPreference", "Navigate"));
 			}
 		});
 		// Setup radio button initial configuration
 		if (actionBarPref.equals("EventDetails"))
-			r1.setChecked(true);
+			rbActionButtonPrefDetails.setChecked(true);
 		else if (actionBarPref.equals("Map"))
-			r2.setChecked(true);
+			rbActionButtonPrefMap.setChecked(true);
 		else if (actionBarPref.equals("Navigate"))
-			r3.setChecked(true);
+			rbActionButtonPrefNav.setChecked(true);
 		else
-			r1.setChecked(true);
+			rbActionButtonPrefDetails.setChecked(true);
 		// Setup Notifications Enabled checkbox
 		final CheckBox cbEnableNotifications = (CheckBox) findViewById(R.id.cbEnableNotifications);
 		cbEnableNotifications.setChecked(enableNotifications);

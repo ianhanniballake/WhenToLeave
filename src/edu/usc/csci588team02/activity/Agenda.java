@@ -24,11 +24,29 @@ import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
+/**
+ * Activity which shows a list of all events in the next two weeks. Works
+ * optimally as a tab for TabbedInterface.
+ * 
+ * @see TabbedInterface
+ */
 public class Agenda extends Activity implements Refreshable
 {
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "Agenda";
+	/**
+	 * Formatted list of events used to create ListView adapter
+	 */
 	private final ArrayList<HashMap<String, String>> eventHashMapList = new ArrayList<HashMap<String, String>>();
+	/**
+	 * List of events
+	 */
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
+	/**
+	 * Connection to the persistent, authorized service
+	 */
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	/** Called when the activity is first created. */

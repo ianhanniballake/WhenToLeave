@@ -15,21 +15,27 @@ import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
- * Sample for Google Calendar Data API using the Atom wire format. It shows how
- * to authenticate, get calendars, add a new calendar, update it, and delete it.
- * <p>
- * To enable logging of HTTP requests/responses, run this command: {@code adb
- * shell setprop log.tag.HttpTransport DEBUG}. Then press-and-hold a calendar,
- * and enable "Logging".
- * </p>
+ * Sample for Google Calendar Data API using the Atom wire format to retrieve a
+ * list of the user's calendars<br />
+ * <br />
  * 
- * @author Yaniv Inbar
- * @author Ian Lake
+ * Modified from <a href=
+ * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/CalendarAndroidSample.java?repo=samples"
+ * >the google-api-java-client sample</a> by Yaniv Inbar
  */
 public final class Calendars extends ListActivity implements Refreshable
 {
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "Calendars";
+	/**
+	 * List of the calendars the user has access to
+	 */
 	private List<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
+	/**
+	 * Connection to the persistent, authorized service
+	 */
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	@Override

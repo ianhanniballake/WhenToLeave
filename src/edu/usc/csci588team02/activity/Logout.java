@@ -6,12 +6,27 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
+/**
+ * Activity which logs the user out and returns to the calling activity
+ */
 public class Logout extends Activity implements Refreshable
 {
+	/**
+	 * Preferences name to load settings from
+	 */
 	private static final String PREF = "MyPrefs";
+	/**
+	 * Activity request code corresponding with requesting logging out
+	 */
 	public static final int REQUEST_LOGOUT = 100;
+	/**
+	 * Connection to the persistent, authorized service
+	 */
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
+	/**
+	 * Logs the user out and calls finish() on this activity
+	 */
 	@Override
 	public void refreshData()
 	{

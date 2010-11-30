@@ -27,15 +27,35 @@ import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
+/**
+ * Activity which serves as the main hub of the application, containing the
+ * Home, Agenda, and Map Activities as tabs and a persistent Action Bar
+ */
 public class TabbedInterface extends TabActivity implements Refreshable,
 		LocationAware
 {
-	public class ActionBar
+	/**
+	 * Class which handles the persistent Action Bar located above the tabs
+	 */
+	private class ActionBar
 	{
+		/**
+		 * Main button for the Action Bar, usually containing when the user
+		 * should leave
+		 */
 		private final Button actionBarButton;
+		/**
+		 * Button to manually trigger the data to be refreshed
+		 */
 		private final ImageButton refreshButton;
+		/**
+		 * Button to trigger the transportation mode dialog
+		 */
 		private final ImageButton transportButton;
 
+		/**
+		 * Creates and sets up the Action Bar
+		 */
 		public ActionBar()
 		{
 			final SharedPreferences settings = getSharedPreferences(PREF, 0);
@@ -74,6 +94,12 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 			});
 		}
 
+		/**
+		 * Sets the color of the Action Bar
+		 * 
+		 * @param c
+		 *            the color to set
+		 */
 		public void setColor(final COLOR c)
 		{
 			final Resources res = getResources();
@@ -106,11 +132,26 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 			}
 		}
 
+		/**
+		 * Sets the text on the actionBarButton
+		 * 
+		 * @param text
+		 *            text to display
+		 */
 		public void setText(final String text)
 		{
 			actionBarButton.setText(text);
 		}
 
+		/**
+		 * Sets the text and color of the Action Bar
+		 * 
+		 * @param leaveInMinutes
+		 *            time until the user must leave
+		 * @param notifyTimeInMin
+		 *            user preference on when to be notified, used to determine
+		 *            color
+		 */
 		public void setTextAndColor(final long leaveInMinutes,
 				final int notifyTimeInMin)
 		{
@@ -126,6 +167,12 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 					+ (leaveInMinutes > 0 ? "in " + formattedTime : "Now"));
 		}
 
+		/**
+		 * Sets the transportation mode icon
+		 * 
+		 * @param tt
+		 *            the transportation mode to set
+		 */
 		public void setTransportMode(final TravelType tt)
 		{
 			final Resources res = getResources();
@@ -147,18 +194,57 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 		}
 	}
 
+	/**
+	 * Possible Action Bar colors
+	 */
 	public enum COLOR {
-		GREEN, ORANGE, RED
+		/**
+		 * Green = Greater than 66% of Notify Time preference remaining
+		 */
+		GREEN, /**
+		 * Orange = 33% - 66% of Notify Time preference remaining
+		 */
+		ORANGE, /**
+		 * Red = <33% of Notify Time preference remaining
+		 */
+		RED
 	}
 
+	/**
+	 * Dialog ID for transportation mode dialog box
+	 */
 	private static final int DIALOG_TRANSPORTATION = 100;
+	/**
+	 * Menu ID for loading the Logout activity
+	 */
 	private static final int MENU_LOGOUT = 1;
+	/**
+	 * Menu ID for loading the Preferences activity
+	 */
 	private static final int MENU_PREFERENCES = 2;
+	/**
+	 * Menu ID for loading the Calendars activity
+	 */
 	private static final int MENU_VIEW_CALENDARS = 0;
+	/**
+	 * Preferences name to load settings from
+	 */
 	private static final String PREF = "MyPrefs";
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "TabbedInterfaceActivity";
-	public ActionBar actionBar;
+	/**
+	 * Action Bar controller
+	 */
+	private ActionBar actionBar;
+	/**
+	 * Current location of the device
+	 */
 	private Location currentLocation = null;
+	/**
+	 * Connection to the persistent, authorized service
+	 */
 	private final AppServiceConnection service = new AppServiceConnection(this,
 			this, true);
 

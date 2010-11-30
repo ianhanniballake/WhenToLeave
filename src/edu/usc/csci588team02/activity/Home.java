@@ -17,21 +17,42 @@ import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
+/**
+ * Activity which shows the next event with a location, along with quick glance
+ * information and buttons to get more details, get a map of the event, and
+ * navigate to the event. Works optimally as a tab for TabbedInterface.
+ * 
+ * @see TabbedInterface
+ */
 public class Home extends Activity implements Refreshable
 {
-	public enum EventActionType {
-		EVENT_DETAIL, EVENT_LEFT, EVENT_RIGHT, MAP_LAUNCHER, NAV_LAUNCHER
-	}
-
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "Home";
+	/**
+	 * The current event
+	 */
 	private EventEntry currentEvent;
+	/**
+	 * TextView for the event's description
+	 */
 	private TextView eventDescription;
+	/**
+	 * TextView for the event's location
+	 */
 	private TextView eventLocation;
+	/**
+	 * TextView for the event's title
+	 */
 	private TextView eventName;
+	/**
+	 * TextView for the event's start time
+	 */
 	private TextView eventWhen;
-	private Button infoButton;
-	private Button mapButton;
-	private Button navButton;
+	/**
+	 * Connection to the persistent, authorized service
+	 */
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	/** Called when the activity is first created. */
@@ -45,9 +66,9 @@ public class Home extends Activity implements Refreshable
 		eventLocation = (TextView) findViewById(R.id.eventLocation);
 		eventDescription = (TextView) findViewById(R.id.eventDescription);
 		eventWhen = (TextView) findViewById(R.id.eventWhen);
-		mapButton = (Button) findViewById(R.id.mapButton);
-		navButton = (Button) findViewById(R.id.navButton);
-		infoButton = (Button) findViewById(R.id.infoButton);
+		final Button mapButton = (Button) findViewById(R.id.mapButton);
+		final Button navButton = (Button) findViewById(R.id.navButton);
+		final Button infoButton = (Button) findViewById(R.id.infoButton);
 		infoButton.setOnClickListener(new OnClickListener()
 		{
 			@Override

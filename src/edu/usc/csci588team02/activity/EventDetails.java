@@ -21,9 +21,20 @@ import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
 
+/**
+ * Activity showing the details of a passed in event (via
+ * <code>intent.putExtra("eventUrl", event.getSelfLink());</code>) as a custom
+ * pop up
+ */
 public class EventDetails extends Activity implements Refreshable
 {
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "EventDetails";
+	/**
+	 * Connection to the persistent, authorized service
+	 */
 	private final AppServiceConnection service = new AppServiceConnection(this);
 
 	/** Called when the activity is first created. */
