@@ -186,7 +186,6 @@ public class WidgetUpdateService extends Service implements LocationAware,
 			views.setTextViewText(R.id.widgetEventDetail,
 					"Error reading in next event");
 			views.setTextViewText(R.id.widgetEventTime, e.toString());
-			views.setOnClickPendingIntent(R.id.widgetNavigationButton, null);
 		} finally
 		{
 			updateAllWidgets(appWidgetManager, views);
