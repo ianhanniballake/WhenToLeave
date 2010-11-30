@@ -512,7 +512,7 @@ public class AppService extends Service implements LocationListener
 		HttpTransport.setLowLevelHttpTransport(ApacheHttpTransport.INSTANCE);
 		transport = GoogleTransport.create();
 		final GoogleHeaders headers = (GoogleHeaders) transport.defaultHeaders;
-		headers.setApplicationName("google-calendarandroidsample-1.0");
+		headers.setApplicationName("usccsci588team2-whentoleave-1.0");
 		headers.gdataVersion = "2";
 		final AtomParser parser = new AtomParser();
 		parser.namespaceDictionary = Namespace.DICTIONARY;
@@ -527,6 +527,16 @@ public class AppService extends Service implements LocationListener
 		// Setup Notification Utility Manager
 		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		mNotificationUtility = new NotificationUtility(this, nm);
+		// Set up notification alarm
+		final Context context = getBaseContext();
+		alarmManager = (AlarmManager) context
+				.getSystemService(Context.ALARM_SERVICE);
+		final Intent alarmIntent = new Intent(context, AppService.class);
+		alarmIntent.setAction(NOTIFICATION_ACTION);
+		pendingIntent = PendingIntent.getService(context, 0, alarmIntent, 0);
+		// Set up the alarm to trigger every minute
+		alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+				System.currentTimeMillis() + 30000, 60000, pendingIntent);
 	}
 
 	/**
@@ -580,25 +590,11 @@ public class AppService extends Service implements LocationListener
 			final int startId)
 	{
 		Log.d(TAG, "onStart");
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
 		if (intent != null && NOTIFICATION_ACTION.equals(intent.getAction()))
 		{
 			checkNotifications();
 			for (final Refreshable refreshable : refreshOnTimerListenerList)
 				refreshable.refreshData();
-		}
-		else if (settings.getBoolean("EnableNotifications", true))
-		{
-			final Context context = getBaseContext();
-			alarmManager = (AlarmManager) context
-					.getSystemService(Context.ALARM_SERVICE);
-			final Intent alarmIntent = new Intent(context, AppService.class);
-			alarmIntent.setAction(NOTIFICATION_ACTION);
-			pendingIntent = PendingIntent
-					.getService(context, 0, alarmIntent, 0);
-			// Set up the alarm to trigger every minute
-			alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-					System.currentTimeMillis() + 30000, 60000, pendingIntent);
 		}
 		return START_STICKY;
 	}
