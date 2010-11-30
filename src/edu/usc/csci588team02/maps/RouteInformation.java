@@ -23,22 +23,6 @@ import com.google.android.maps.GeoPoint;
 public class RouteInformation
 {
 	/**
-	 * Enum representing the various methods of transportation
-	 */
-	public enum TravelType {
-		/**
-		 * Instructs Google Maps to use Bicycling directions/durations
-		 */
-		BICYCLING, /**
-		 * Instructs Google Maps to use Driving directions/durations
-		 */
-		DRIVING, /**
-		 * Instructs Google Maps to use Walking directions/durations
-		 */
-		WALKING
-	}
-
-	/**
 	 * Logging tag
 	 */
 	private static final String TAG = "RouteInformation";
@@ -100,7 +84,7 @@ public class RouteInformation
 	 * @return travel time to the destination in minutes
 	 */
 	public static int getDuration(final Location location,
-			final String destination, final TravelType travelType)
+			final String destination, final String travelType)
 	{
 		InputStream is = null;
 		int durationSec = 0;
@@ -117,13 +101,11 @@ public class RouteInformation
 			urlString.append(from);
 			urlString.append("&destination=");// to
 			urlString.append(to);
-			urlString.append("&sensor=true");
-			if (travelType == TravelType.BICYCLING)
-				urlString.append("&mode=bicycling");
-			else if (travelType == TravelType.WALKING)
-				urlString.append("&mode=walking");
-			else
-				urlString.append("&mode=driving");
+			urlString.append("&sensor=true&mode=");
+			urlString.append(travelType);
+			// urlString.append("&mode=bicycling");
+			// urlString.append("&mode=walking");
+			// urlString.append("&mode=driving");
 			final String url = urlString.toString();
 			Log.v(TAG, "getDuration URL: " + url);
 			is = getConnection(url);

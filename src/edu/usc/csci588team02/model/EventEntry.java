@@ -10,7 +10,6 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.Key;
 
 import edu.usc.csci588team02.maps.RouteInformation;
-import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 
 /**
  * Represents a Google Calendar Event Entry<br />
@@ -107,7 +106,7 @@ public class EventEntry extends Entry
 	 * @return how much time is remaining before one would need to leave
 	 */
 	public long getWhenToLeaveInMinutes(final Location location,
-			final TravelType travelType)
+			final String travelType)
 	{
 		final int minutesToEvent = RouteInformation.getDuration(location,
 				where.valueString, travelType);

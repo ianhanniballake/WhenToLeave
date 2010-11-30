@@ -29,7 +29,6 @@ import edu.usc.csci588team02.maps.MapRouteOverlay;
 import edu.usc.csci588team02.maps.Road;
 import edu.usc.csci588team02.maps.RoadProvider;
 import edu.usc.csci588team02.maps.RouteInformation;
-import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
@@ -370,13 +369,8 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			COLOR iconColor = COLOR.GREEN;
 			if (mGpsLocation != null && nextEvent != null)
 			{
-				TravelType travelType = TravelType.DRIVING;
-				final String travelTypePref = settings.getString(
-						"TransportPreference", "DRIVING");
-				if (travelTypePref.equals("BICYCLING"))
-					travelType = TravelType.BICYCLING;
-				else if (travelTypePref.equals("WALKING"))
-					travelType = TravelType.WALKING;
+				final String travelType = settings.getString(
+						"TransportPreference", "driving");
 				leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
 						mGpsLocation, travelType);
 				Log.d(TAG, "getting leaveInMinutes: " + leaveInMinutes);

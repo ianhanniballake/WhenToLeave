@@ -1,6 +1,5 @@
 package edu.usc.csci588team02.maps;
 
-//modified from http://code.google.com/p/j2memaprouteprovider/source/browse/#svn/trunk/J2MEMapRouteAndroidEx
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -21,7 +20,11 @@ import android.util.Log;
 import com.google.android.maps.GeoPoint;
 
 /**
- * Handles the parsing of a KML file representing a route
+ * Handles the parsing of a KML file representing a route<br />
+ * <br />
+ * Modified from <a href=
+ * "http://code.google.com/p/j2memaprouteprovider/source/browse/trunk/J2MEMapRouteAndroidEx/src/org/ci/geo/route/RoadProvider.java"
+ * >the J2MEMapRoute Example for Android</a> by Max Gontar
  */
 class KMLHandler extends DefaultHandler
 {
@@ -124,7 +127,11 @@ class KMLHandler extends DefaultHandler
 
 /**
  * Provides the mechanism to get directions from our current location to a
- * destination
+ * destination<br />
+ * <br />
+ * Modified from <a href=
+ * "http://code.google.com/p/j2memaprouteprovider/source/browse/trunk/J2MEMapRouteAndroidEx/src/org/ci/geo/route/RoadProvider.java"
+ * >the J2MEMapRoute Example for Android</a> by Max Gontar
  */
 public class RoadProvider
 {
