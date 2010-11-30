@@ -5,11 +5,12 @@ import java.util.List;
 import com.google.api.client.util.Key;
 
 /**
- * Represents a link from one Google object to another
+ * Represents a link from one Google object to another<br />
+ * <br />
  * 
  * Modified from <a href=
  * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/model/Link.java?repo=samples"
- * /> by Yaniv Inbar
+ * >the google-api-java-client sample</a> by Yaniv Inbar
  */
 public class Link
 {

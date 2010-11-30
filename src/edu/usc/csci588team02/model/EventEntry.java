@@ -13,11 +13,12 @@ import edu.usc.csci588team02.maps.RouteInformation;
 import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 
 /**
- * Represents a Google Calendar Event Entry
+ * Represents a Google Calendar Event Entry<br />
+ * <br />
  * 
  * Modified from <a href=
  * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-oauth-sample/src/com/google/api/client/sample/calendar/v2/model/EventEntry.java?repo=samples"
- * /> by Yaniv Inbar
+ * >the google-api-java-client sample</a> by Yaniv Inbar
  */
 public class EventEntry extends Entry
 {

@@ -9,11 +9,12 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.Key;
 
 /**
- * Represents a Google Calendar Event Feed
+ * Represents a Google Calendar Event Feed<br />
+ * <br />
  * 
  * Modified from <a href=
  * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-oauth-sample/src/com/google/api/client/sample/calendar/v2/model/EventFeed.java?repo=samples"
- * /> by Yaniv Inbar
+ * >the google-api-java-client sample</a> by Yaniv Inbar
  */
 public class EventFeed extends Feed
 {

@@ -12,11 +12,12 @@ import com.google.api.client.http.HttpTransport;
 /**
  * Handle required redirects to allow Google to add sessionid. See <a
  * href="http://code.google.com/apis/calendar/faq.html#redirect_handling" >How
- * do I handle redirects...?</a>.
+ * do I handle redirects...?</a>.<br />
+ * <br />
  * 
  * Modified from <a href=
  * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/model/Namespace.java?repo=samples"
- * /> by Yaniv Inbar
+ * >the google-api-java-client sample</a> by Yaniv Inbar
  */
 public class RedirectHandler
 {

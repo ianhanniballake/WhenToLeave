@@ -5,11 +5,12 @@ import java.util.Map;
 import com.google.api.client.xml.XmlNamespaceDictionary;
 
 /**
- * XML Namespace Dictionary Storage
+ * XML Namespace Dictionary Storage<br />
+ * <br />
  * 
  * Modified from <a href=
  * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/model/Namespace.java?repo=samples"
- * /> by Yaniv Inbar
+ * >the google-api-java-client sample</a> by Yaniv Inbar
  */
 public class Namespace
 {

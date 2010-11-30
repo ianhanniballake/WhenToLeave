@@ -1,11 +1,12 @@
 package edu.usc.csci588team02.model;
 
 /**
- * Represents a Google Calendar Entry
+ * Represents a Google Calendar Entry<br />
+ * <br />
  * 
  * Modified from <a href=
  * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/model/CalendarEntry.java?repo=samples"
- * /> by Yaniv Inbar
+ * >the google-api-java-client sample</a> by Yaniv Inbar
  */
 public class CalendarEntry extends Entry
 {

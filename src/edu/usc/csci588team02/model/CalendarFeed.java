@@ -8,11 +8,12 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.Key;
 
 /**
- * Represents a Google Calendar Feed
+ * Represents a Google Calendar Feed<br />
+ * <br />
  * 
  * Modified from <a href=
  * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/model/CalendarFeed.java?repo=samples"
- * /> by Yaniv Inbar
+ * >the google-api-java-client sample</a> by Yaniv Inbar
  */
 public class CalendarFeed extends Feed
 {
