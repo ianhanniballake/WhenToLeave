@@ -33,7 +33,6 @@ import com.google.api.client.xml.atom.AtomParser;
 
 import edu.usc.csci588team02.activity.LocationAware;
 import edu.usc.csci588team02.activity.Refreshable;
-import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.CalendarEntry;
 import edu.usc.csci588team02.model.CalendarFeed;
 import edu.usc.csci588team02.model.CalendarUrl;
@@ -322,13 +321,8 @@ public class AppService extends Service implements LocationListener
 			// No current location = no when to leave
 			if (currentLocation == null)
 				return;
-			TravelType travelType = TravelType.DRIVING;
-			final String travelTypePref = settings.getString(
-					"TransportPreference", "DRIVING");
-			if (travelTypePref.equals("BICYCLING"))
-				travelType = TravelType.BICYCLING;
-			else if (travelTypePref.equals("WALKING"))
-				travelType = TravelType.WALKING;
+			final String travelType = settings.getString("TransportPreference",
+					"driving");
 			final long leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
 					currentLocation, travelType);
 			Log.v(TAG, "Leave in " + leaveInMinutes + " minutes");

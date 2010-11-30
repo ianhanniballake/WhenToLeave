@@ -22,7 +22,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TabHost;
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
@@ -59,13 +58,8 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 		public ActionBar()
 		{
 			final SharedPreferences settings = getSharedPreferences(PREF, 0);
-			TravelType tt = TravelType.DRIVING;
-			final String travelTypePref = settings.getString(
-					"TransportPreference", "DRIVING");
-			if (travelTypePref.equals("BICYCLING"))
-				tt = TravelType.BICYCLING;
-			else if (travelTypePref.equals("WALKING"))
-				tt = TravelType.WALKING;
+			final String travelType = settings.getString("TransportPreference",
+					"driving");
 			// Setup Listeners for the ActionBar Buttons
 			actionBarButton = (Button) findViewById(R.id.actionBar);
 			transportButton = (ImageButton) findViewById(R.id.transportModeButton);
@@ -77,7 +71,7 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 					showDialog(DIALOG_TRANSPORTATION);
 				}
 			});
-			setTransportMode(tt);
+			setTransportMode(travelType);
 			refreshButton = (ImageButton) findViewById(R.id.refreshButton);
 			refreshButton.setOnClickListener(new OnClickListener()
 			{
@@ -170,27 +164,21 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 		/**
 		 * Sets the transportation mode icon
 		 * 
-		 * @param tt
+		 * @param travelType
 		 *            the transportation mode to set
 		 */
-		public void setTransportMode(final TravelType tt)
+		public void setTransportMode(final String travelType)
 		{
 			final Resources res = getResources();
-			switch (tt)
-			{
-				case DRIVING:
-					transportButton.setImageDrawable(res
-							.getDrawable(R.drawable.car_white55));
-					break;
-				case BICYCLING:
-					transportButton.setImageDrawable(res
-							.getDrawable(R.drawable.bicycle_white55));
-					break;
-				case WALKING:
-					transportButton.setImageDrawable(res
-							.getDrawable(R.drawable.person_white55));
-					break;
-			}
+			if (travelType.equals("driving"))
+				transportButton.setImageDrawable(res
+						.getDrawable(R.drawable.car_white55));
+			else if (travelType.equals("bicycling"))
+				transportButton.setImageDrawable(res
+						.getDrawable(R.drawable.bicycle_white55));
+			else if (travelType.equals("walking"))
+				transportButton.setImageDrawable(res
+						.getDrawable(R.drawable.person_white55));
 		}
 	}
 
@@ -341,14 +329,14 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 						final SharedPreferences settings = getSharedPreferences(
 								PREF, 0);
 						final SharedPreferences.Editor editor = settings.edit();
-						editor.putString("TransportPreference", "DRIVING");
+						editor.putString("TransportPreference", "driving");
 						editor.commit();
-						actionBar.setTransportMode(TravelType.DRIVING);
+						actionBar.setTransportMode("driving");
 						Log.v(TAG,
 								"Committed travel pref: "
 										+ settings.getString(
 												"TransportPreference",
-												"DRIVING"));
+												"driving"));
 						transportDialog.dismiss();
 					}
 				});
@@ -362,14 +350,14 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 						final SharedPreferences settings = getSharedPreferences(
 								PREF, 0);
 						final SharedPreferences.Editor editor = settings.edit();
-						editor.putString("TransportPreference", "BICYCLING");
+						editor.putString("TransportPreference", "bicycling");
 						editor.commit();
-						actionBar.setTransportMode(TravelType.BICYCLING);
+						actionBar.setTransportMode("bicycling");
 						Log.v(TAG,
 								"Committed travel pref: "
 										+ settings.getString(
 												"TransportPreference",
-												"BICYCLING"));
+												"bicycling"));
 						transportDialog.dismiss();
 					}
 				});
@@ -383,14 +371,14 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 						final SharedPreferences settings = getSharedPreferences(
 								PREF, 0);
 						final SharedPreferences.Editor editor = settings.edit();
-						editor.putString("TransportPreference", "WALKING");
+						editor.putString("TransportPreference", "walking");
 						editor.commit();
-						actionBar.setTransportMode(TravelType.WALKING);
+						actionBar.setTransportMode("walking");
 						Log.v(TAG,
 								"Committed travel pref: "
 										+ settings.getString(
 												"TransportPreference",
-												"WALKING"));
+												"walking"));
 						transportDialog.dismiss();
 					}
 				});
@@ -450,13 +438,8 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 		if (currentLocation == null)
 			return;
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		TravelType travelType = TravelType.DRIVING;
-		final String travelTypePref = settings.getString("TransportPreference",
-				"DRIVING");
-		if (travelTypePref.equals("BICYCLING"))
-			travelType = TravelType.BICYCLING;
-		else if (travelTypePref.equals("WALKING"))
-			travelType = TravelType.WALKING;
+		final String travelType = settings.getString("TransportPreference",
+				"driving");
 		try
 		{
 			final EventEntry ee = service.getNextEventWithLocation();

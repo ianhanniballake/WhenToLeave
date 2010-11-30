@@ -19,7 +19,6 @@ import edu.usc.csci588team02.activity.LocationAware;
 import edu.usc.csci588team02.activity.Refreshable;
 import edu.usc.csci588team02.activity.TabbedInterface;
 import edu.usc.csci588team02.maps.RouteInformation;
-import edu.usc.csci588team02.maps.RouteInformation.TravelType;
 import edu.usc.csci588team02.model.EventEntry;
 import edu.usc.csci588team02.service.AppService;
 import edu.usc.csci588team02.service.AppServiceConnection;
@@ -131,13 +130,8 @@ public class WidgetUpdateService extends Service implements LocationAware,
 			else
 			{
 				final SharedPreferences settings = getSharedPreferences(PREF, 0);
-				TravelType travelType = TravelType.DRIVING;
-				final String travelTypePref = settings.getString(
-						"TransportPreference", "DRIVING");
-				if (travelTypePref.equals("BICYCLING"))
-					travelType = TravelType.BICYCLING;
-				else if (travelTypePref.equals("WALKING"))
-					travelType = TravelType.WALKING;
+				final String travelType = settings.getString(
+						"TransportPreference", "driving");
 				final long leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
 						currentLocation, travelType);
 				final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;

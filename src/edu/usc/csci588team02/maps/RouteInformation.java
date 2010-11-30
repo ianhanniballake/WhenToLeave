@@ -103,9 +103,6 @@ public class RouteInformation
 			urlString.append(to);
 			urlString.append("&sensor=true&mode=");
 			urlString.append(travelType);
-			// urlString.append("&mode=bicycling");
-			// urlString.append("&mode=walking");
-			// urlString.append("&mode=driving");
 			final String url = urlString.toString();
 			Log.v(TAG, "getDuration URL: " + url);
 			is = getConnection(url);
