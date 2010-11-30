@@ -1,10 +1,6 @@
 package edu.usc.csci588team02.activity;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -228,44 +224,15 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		mGpsOverlayItem = null;
 	}
 
-	private InputStream getConnection(final String url)
-	{
-		InputStream is = null;
-		try
-		{
-			final URLConnection conn = new URL(url).openConnection();
-			is = conn.getInputStream();
-		} catch (final MalformedURLException e)
-		{
-			Log.e(TAG, "getConnection: Invalid URL", e);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "getConnection: IO Error", e);
-		}
-		return is;
-	}
-
 	public ArrayList<EventEntry> getEventList()
 	{
 		return eventList;
 	}
 
-	/**
-	 * Gets the latitude and longitude based off an address.
-	 * 
-	 * @param eventLocation
-	 *            The address of the event to be plotted
-	 * @return the point on the map based on the address
-	 */
-	private GeoPoint getLatLon(final String eventLocation)
-	{
-		return RouteInformation.getLocation(eventLocation);
-	}
-
 	@Override
 	protected boolean isRouteDisplayed()
 	{
-		return false;
+		return mRoad != null;
 	}
 
 	/** Called when the activity is first created. */
@@ -298,6 +265,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	{
 		if (location != null)
 		{
+			Log.d(TAG, "onLocationChanged");
 			final GeoPoint point = new GeoPoint(
 					(int) (location.getLatitude() * 1000000),
 					(int) (location.getLongitude() * 1000000));
@@ -307,25 +275,8 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			{
 				final EventEntry ee = service.getNextEventWithLocation();
 				if (ee != null)
-					if (ee.where != null)
-						new Thread()
-						{
-							@Override
-							public void run()
-							{
-								final GeoPoint gpCurrentEvent = getLatLon(ee.where.valueString);
-								final String url = RoadProvider
-										.getUrlFromLatLong(
-												location.getLatitude(),
-												location.getLongitude(),
-												gpCurrentEvent.getLatitudeE6() / 1E6,
-												gpCurrentEvent.getLongitudeE6() / 1E6);
-								Log.v(TAG, "onLocationChanged URL: " + url);
-								final InputStream is = getConnection(url);
-								if (is != null)
-									mRoad = RoadProvider.getRoute(is);
-							}
-						}.start();
+					mRoad = RoadProvider.getRoute(location,
+							ee.where.valueString);
 			} catch (final IOException e)
 			{
 				Log.e(TAG, "onLocationChanged IO Error", e);
@@ -347,7 +298,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	{
 		// Obtain the latitude and longitude
 		final String eventLocation = event.where.valueString;
-		final GeoPoint geoPoint = getLatLon(eventLocation);
+		final GeoPoint geoPoint = RouteInformation.getLocation(eventLocation);
 		if (geoPoint != null)
 		{
 			// Create a marker for the point

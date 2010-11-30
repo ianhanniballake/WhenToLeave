@@ -13,21 +13,25 @@ import com.google.android.maps.OverlayItem;
 import edu.usc.csci588team02.activity.EventDetails;
 
 /**
- * Manages a set of {@link OverlayItem}s, which can be added to a map. <br>
- * <br>
- * Note: This class was based on the tutorial found at:
- * <ul>
- * http://developer.android.com/guide/tutorials/views/hello-mapview.html
- * </ul>
- * 
- * @author Stephanie Trudeau
+ * Manages a set of {@link OverlayItem}s, which can be added to a map. <br />
+ * <br />
+ * Note: This class was based on the tutorial found at: <a href=
+ * "http://developer.android.com/guide/tutorials/views/hello-mapview.html"</a>
  */
 public class ItemizedOverlay extends
 		com.google.android.maps.ItemizedOverlay<OverlayItem>
 {
+	/**
+	 * Context to launch activities
+	 */
 	private final Context mContext;
+	/**
+	 * Event URLs corresponding with each OverlayItem
+	 */
 	private final ArrayList<String> mEventURLs = new ArrayList<String>();
-	// Holds each of the OverlayItems objects that we want on our map
+	/**
+	 * Holds each of the OverlayItems objects that we want on our map
+	 */
 	private final ArrayList<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
 
 	/**
@@ -77,6 +81,9 @@ public class ItemizedOverlay extends
 		super.draw(pCanvas, pMapView, false);
 	}
 
+	/**
+	 * Launches the EventDetails activity for the tapped event
+	 */
 	@Override
 	protected boolean onTap(final int index)
 	{

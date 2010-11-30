@@ -3,7 +3,9 @@ package edu.usc.csci588team02.maps;
 //modified from http://code.google.com/p/j2memaprouteprovider/source/browse/#svn/trunk/J2MEMapRouteAndroidEx
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Stack;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -13,39 +15,48 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import android.location.Location;
 import android.util.Log;
 
+import com.google.android.maps.GeoPoint;
+
+/**
+ * Handles the parsing of a KML file representing a route
+ */
 class KMLHandler extends DefaultHandler
 {
-	boolean isItemIcon;
-	boolean isPlacemark;
-	boolean isRoute;
-	private final Stack<String> mCurrentElement = new Stack<String>();
-	Road mRoad;
-	private String mString;
-
-	public KMLHandler()
-	{
-		mRoad = new Road();
-	}
-
-	public Point[] addPoint(final Point[] points)
-	{
-		final Point[] result = new Point[points.length + 1];
-		for (int i = 0; i < points.length; i++)
-			result[i] = points[i];
-		result[points.length] = new Point();
-		return result;
-	}
+	/**
+	 * Whether we are currently in a 'Placemark' tag
+	 */
+	private boolean isPlacemark;
+	/**
+	 * Whether we are currently looking at a Route
+	 */
+	private boolean isRoute;
+	/**
+	 * The content of the current element
+	 */
+	private String mElementContent;
+	/**
+	 * Road which serves as the output of this Handler
+	 */
+	final Road mRoad = new Road();
 
 	@Override
 	public void characters(final char[] ch, final int start, final int length)
 			throws SAXException
 	{
 		final String chars = new String(ch, start, length).trim();
-		mString = mString.concat(chars);
+		mElementContent = mElementContent.concat(chars);
 	}
 
+	/**
+	 * Formats and cleans up a description, removing select HTML elements.
+	 * 
+	 * @param value
+	 *            string to clean up
+	 * @return cleaned up string
+	 */
 	private String cleanup(final String value)
 	{
 		String newValue = value;
@@ -69,114 +80,95 @@ class KMLHandler extends DefaultHandler
 	public void endElement(final String uri, final String localName,
 			final String name) throws SAXException
 	{
-		if (mString.length() > 0)
+		if (mElementContent.length() > 0)
 			if (localName.equalsIgnoreCase("name"))
 			{
 				if (isPlacemark)
-				{
-					isRoute = mString.equalsIgnoreCase("Route");
-					if (!isRoute)
-						mRoad.mPoints[mRoad.mPoints.length - 1].mName = mString;
-				}
+					isRoute = mElementContent.equalsIgnoreCase("Route");
 				else
-					mRoad.mName = mString;
+					mRoad.mName = mElementContent;
 			}
-			else if (localName.equalsIgnoreCase("color") && !isPlacemark)
-				mRoad.mColor = Integer.parseInt(mString, 16);
-			else if (localName.equalsIgnoreCase("width") && !isPlacemark)
-				mRoad.mWidth = Integer.parseInt(mString);
-			else if (localName.equalsIgnoreCase("description"))
+			else if (localName.equalsIgnoreCase("description") && isPlacemark
+					&& isRoute)
+				mRoad.mDescription = cleanup(mElementContent);
+			else if (localName.equalsIgnoreCase("coordinates") && isPlacemark
+					&& isRoute)
 			{
-				if (isPlacemark)
+				final String[] coordinatesParsed = mElementContent.split(" ");
+				for (final String coordinatePair : coordinatesParsed)
 				{
-					final String description = cleanup(mString);
-					if (!isRoute)
-						mRoad.mPoints[mRoad.mPoints.length - 1].mDescription = description;
-					else
-						mRoad.mDescription = description;
+					final String[] xyParsed = coordinatePair.split(",");
+					// Convert the lat and long to Microseconds format, used by
+					// GeoPoint
+					final int lonE6 = (int) (Double.parseDouble(xyParsed[0]) * 1e6);
+					final int latE6 = (int) (Double.parseDouble(xyParsed[1]) * 1e6);
+					mRoad.mRoute.add(new GeoPoint(latE6, lonE6));
 				}
 			}
-			else if (localName.equalsIgnoreCase("href"))
-			{
-				if (isItemIcon)
-					mRoad.mPoints[mRoad.mPoints.length - 1].mIconUrl = mString;
-			}
-			else if (localName.equalsIgnoreCase("coordinates"))
-				if (isPlacemark)
-					if (!isRoute)
-					{
-						final String[] xyParsed = mString.split(",");
-						final double lon = Double.parseDouble(xyParsed[0]);
-						final double lat = Double.parseDouble(xyParsed[1]);
-						mRoad.mPoints[mRoad.mPoints.length - 1].mLatitude = lat;
-						mRoad.mPoints[mRoad.mPoints.length - 1].mLongitude = lon;
-					}
-					else
-					{
-						final String[] coodrinatesParsed = mString.split(" ");
-						int mRouteOffset = 0;
-						// if a partial route is already there, append to it.
-						if (mRoad.mRoute != null)
-						{
-							final double[][] mRouteOrig = mRoad.mRoute;
-							final int mRouteOrigLength = mRoad.mRoute.length;
-							mRouteOffset = mRouteOrigLength;
-							// create bigger array
-							mRoad.mRoute = new double[mRouteOrigLength
-									+ coodrinatesParsed.length][2];
-							// copy existing contents in new array
-							for (int i = 0; i < mRouteOrigLength; i++)
-							{
-								mRoad.mRoute[i][0] = mRouteOrig[i][0];
-								mRoad.mRoute[i][1] = mRouteOrig[i][1];
-							}
-						}
-						else
-							mRoad.mRoute = new double[coodrinatesParsed.length][2];
-						for (int i = 0; i < coodrinatesParsed.length; i++)
-						{
-							final String[] xyParsed = coodrinatesParsed[i]
-									.split(",");
-							for (int j = 0; j < 2 && j < xyParsed.length; j++)
-								mRoad.mRoute[i + mRouteOffset][j] = Double
-										.parseDouble(xyParsed[j]);
-						}
-					}
-		mCurrentElement.pop();
 		if (localName.equalsIgnoreCase("Placemark"))
 		{
 			isPlacemark = false;
-			if (isRoute)
-				isRoute = false;
+			isRoute = false;
 		}
-		else if (localName.equalsIgnoreCase("ItemIcon"))
-			if (isItemIcon)
-				isItemIcon = false;
 	}
 
 	@Override
 	public void startElement(final String uri, final String localName,
 			final String name, final Attributes attributes) throws SAXException
 	{
-		mCurrentElement.push(localName);
 		if (localName.equalsIgnoreCase("Placemark"))
-		{
 			isPlacemark = true;
-			mRoad.mPoints = addPoint(mRoad.mPoints);
-		}
-		else if (localName.equalsIgnoreCase("ItemIcon"))
-			if (isPlacemark)
-				isItemIcon = true;
-		mString = new String();
+		mElementContent = new String();
 	}
 }
 
+/**
+ * Provides the mechanism to get directions from our current location to a
+ * destination
+ */
 public class RoadProvider
 {
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "RoadProvider";
 
-	public static Road getRoute(final InputStream is)
+	/**
+	 * Finds a route from the start location to the destination
+	 * 
+	 * @param start
+	 *            location to start from
+	 * @param destination
+	 *            destination address
+	 * @return the route or null if no route was found
+	 */
+	public static Road getRoute(final Location start, final String destination)
 	{
+		final StringBuffer urlString = new StringBuffer();
+		urlString.append("http://maps.google.com/maps?f=d&hl=en");
+		urlString.append("&saddr=");// from
+		urlString.append(Double.toString(start.getLatitude()));
+		urlString.append(",");
+		urlString.append(Double.toString(start.getLongitude()));
+		urlString.append("&daddr=");// to
+		urlString.append(RouteInformation.formatAddress(destination));
+		urlString.append("&ie=UTF8&0&om=0&output=kml");
+		final String url = urlString.toString();
+		Log.v(TAG, "URL: " + url);
+		InputStream is = null;
+		try
+		{
+			final URLConnection conn = new URL(url).openConnection();
+			is = conn.getInputStream();
+		} catch (final MalformedURLException e)
+		{
+			Log.e(TAG, "getConnection: Invalid URL", e);
+			return null;
+		} catch (final IOException e)
+		{
+			Log.e(TAG, "getConnection: IO Error", e);
+			return null;
+		}
 		final KMLHandler handler = new KMLHandler();
 		try
 		{
@@ -186,42 +178,25 @@ public class RoadProvider
 		} catch (final ParserConfigurationException e)
 		{
 			Log.e(TAG, "SAX Configuration Error", e);
+			return null;
 		} catch (final SAXException e)
 		{
 			Log.e(TAG, "SAX Error", e);
+			return null;
 		} catch (final IOException e)
 		{
 			Log.e(TAG, "IO Error", e);
+			return null;
+		} finally
+		{
+			try
+			{
+				is.close();
+			} catch (final IOException e)
+			{
+				Log.w(TAG, "Error closing InputStream", e);
+			}
 		}
 		return handler.mRoad;
-	}
-
-	public static String getUrlFromLatLong(final double fromLat,
-			final double fromLon, final double toLat, final double toLon)
-	{// connect to map web service
-		final StringBuffer urlString = new StringBuffer();
-		urlString.append("http://maps.google.com/maps?f=d&hl=en");
-		urlString.append("&saddr=");// from
-		urlString.append(Double.toString(fromLat));
-		urlString.append(",");
-		urlString.append(Double.toString(fromLon));
-		urlString.append("&daddr=");// to
-		urlString.append(Double.toString(toLat));
-		urlString.append(",");
-		urlString.append(Double.toString(toLon));
-		urlString.append("&ie=UTF8&0&om=0&output=kml");
-		return urlString.toString();
-	}
-
-	public static String getUrlFromString(final String from, final String to)
-	{// connect to map web service
-		final StringBuffer urlString = new StringBuffer();
-		urlString.append("http://maps.google.com/maps?f=d&hl=en");
-		urlString.append("&saddr=");// from
-		urlString.append(from);
-		urlString.append("&daddr=");// to
-		urlString.append(to);
-		urlString.append("&ie=UTF8&0&om=0&output=kml");
-		return urlString.toString();
 	}
 }

@@ -1,12 +1,28 @@
 package edu.usc.csci588team02.maps;
 
-//modified from http://code.google.com/p/j2memaprouteprovider/source/browse/#svn/trunk/J2MEMapRouteAndroidEx
+import java.util.ArrayList;
+
+import com.google.android.maps.GeoPoint;
+
+/**
+ * Represents a Road or route on a map.<br />
+ * <br />
+ * Modified from <a href=
+ * "http://code.google.com/p/j2memaprouteprovider/source/browse/trunk/J2MEMapRouteAndroidEx/src/org/ci/geo/route/Road.java"
+ * >the J2MEMapRoute Example for Android</a> by Max Gontar
+ */
 public class Road
 {
-	public int mColor;
+	/**
+	 * Description of the Road
+	 */
 	public String mDescription;
+	/**
+	 * Name or title of the Road
+	 */
 	public String mName;
-	public Point[] mPoints = new Point[] {};
-	public double[][] mRoute = new double[][] {};
-	public int mWidth;
+	/**
+	 * Lat/Long pairs representing the points in the Road
+	 */
+	public ArrayList<GeoPoint> mRoute = new ArrayList<GeoPoint>();
 }

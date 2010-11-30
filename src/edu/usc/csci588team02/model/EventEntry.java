@@ -109,9 +109,7 @@ public class EventEntry extends Entry
 	public long getWhenToLeaveInMinutes(final Location location,
 			final TravelType travelType)
 	{
-		final String locationString = location.getLatitude() + ","
-				+ location.getLongitude();
-		final int minutesToEvent = RouteInformation.getDuration(locationString,
+		final int minutesToEvent = RouteInformation.getDuration(location,
 				where.valueString, travelType);
 		final long minutesUntilEvent = (when.startTime.value - new Date()
 				.getTime()) / 60000;

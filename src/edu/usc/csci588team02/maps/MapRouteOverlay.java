@@ -1,56 +1,58 @@
 package edu.usc.csci588team02.maps;
 
-import java.util.ArrayList;
-
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.Log;
 
-import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
+import com.google.android.maps.Overlay;
 
-public class MapRouteOverlay extends com.google.android.maps.Overlay
+/**
+ * Overlay representing a route to a destination
+ */
+public class MapRouteOverlay extends Overlay
 {
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "MapRouteOverlay";
-	ArrayList<GeoPoint> mPoints;
-	Road mRoad;
+	/**
+	 * The route to draw
+	 */
+	private final Road mRoad;
 
+	/**
+	 * Basic constructor for drawing a given road onto a Google Map
+	 * 
+	 * @param road
+	 *            The route to draw
+	 */
 	public MapRouteOverlay(final Road road)
 	{
 		mRoad = road;
-		if (road.mRoute.length > 0)
-		{
-			mPoints = new ArrayList<GeoPoint>();
-			Log.v(TAG, "Route Length " + road.mRoute.length);
-			for (final double[] element : road.mRoute)
-				mPoints.add(new GeoPoint((int) (element[1] * 1000000),
-						(int) (element[0] * 1000000)));
-		}
+		Log.v(TAG, "Route Length " + road.mRoute.size());
 	}
 
+	/**
+	 * Draws the route
+	 */
 	@Override
 	public boolean draw(final Canvas canvas, final MapView mv,
 			final boolean shadow, final long when)
 	{
 		super.draw(canvas, mv, shadow);
-		drawPath(mv, canvas);
-		return true;
-	}
-
-	public void drawPath(final MapView mv, final Canvas canvas)
-	{
-		if (mRoad.mRoute.length > 0)
+		if (!mRoad.mRoute.isEmpty())
 		{
 			int x1 = -1, y1 = -1, x2 = -1, y2 = -1;
 			final Paint paint = new Paint();
 			paint.setColor(0xff48b4fe); // @color/blue with extra 0xff for alpha
 			paint.setStyle(Paint.Style.STROKE);
 			paint.setStrokeWidth(4);
-			for (int i = 0; i < mPoints.size(); i++)
+			for (int i = 0; i < mRoad.mRoute.size(); i++)
 			{
 				final Point point = new Point();
-				mv.getProjection().toPixels(mPoints.get(i), point);
+				mv.getProjection().toPixels(mRoad.mRoute.get(i), point);
 				x2 = point.x;
 				y2 = point.y;
 				if (i > 0)
@@ -59,5 +61,6 @@ public class MapRouteOverlay extends com.google.android.maps.Overlay
 				y1 = y2;
 			}
 		}
+		return true;
 	}
 }

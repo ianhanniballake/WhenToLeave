@@ -12,18 +12,46 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import android.location.Location;
 import android.util.Log;
 
 import com.google.android.maps.GeoPoint;
 
+/**
+ * Helper class providing route and address information
+ */
 public class RouteInformation
 {
+	/**
+	 * Enum representing the various methods of transportation
+	 */
 	public enum TravelType {
-		BICYCLING, DRIVING, WALKING
+		/**
+		 * Instructs Google Maps to use Bicycling directions/durations
+		 */
+		BICYCLING, /**
+		 * Instructs Google Maps to use Driving directions/durations
+		 */
+		DRIVING, /**
+		 * Instructs Google Maps to use Walking directions/durations
+		 */
+		WALKING
 	}
 
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "RouteInformation";
 
+	/**
+	 * Formats the given address, replacing whitespace with plus signs, allowing
+	 * the address to be used in web queries and external intent launches (such
+	 * as Maps or Navigation)
+	 * 
+	 * @param address
+	 *            address to format
+	 * @return formatted address
+	 */
 	public static String formatAddress(final String address)
 	{
 		String formattedAddress = address;
@@ -34,6 +62,14 @@ public class RouteInformation
 		return formattedAddress;
 	}
 
+	/**
+	 * Gets a URLConnection to the given url. Note that it is up to the caller
+	 * to close the stream!
+	 * 
+	 * @param url
+	 *            URL to connect to
+	 * @return An open input stream to the url
+	 */
 	private static InputStream getConnection(final String url)
 	{
 		InputStream is = null;
@@ -51,14 +87,29 @@ public class RouteInformation
 		return is;
 	}
 
-	public static int getDuration(final String fromAddress,
-			final String toAddress, final TravelType travelType)
+	/**
+	 * Gets the travel time from the current location to the destination address
+	 * with a given travel type
+	 * 
+	 * @param location
+	 *            current starting location
+	 * @param destination
+	 *            destination address
+	 * @param travelType
+	 *            transportation mode to use
+	 * @return travel time to the destination in minutes
+	 */
+	public static int getDuration(final Location location,
+			final String destination, final TravelType travelType)
 	{
+		InputStream is = null;
 		int durationSec = 0;
 		try
 		{
-			final String from = formatAddress(fromAddress);
-			final String to = formatAddress(toAddress);
+			final String locationString = location.getLatitude() + ","
+					+ location.getLongitude();
+			final String from = formatAddress(locationString);
+			final String to = formatAddress(destination);
 			final StringBuffer urlString = new StringBuffer();
 			urlString
 					.append("http://maps.googleapis.com/maps/api/directions/json");
@@ -66,7 +117,7 @@ public class RouteInformation
 			urlString.append(from);
 			urlString.append("&destination=");// to
 			urlString.append(to);
-			urlString.append("&sensor=false");
+			urlString.append("&sensor=true");
 			if (travelType == TravelType.BICYCLING)
 				urlString.append("&mode=bicycling");
 			else if (travelType == TravelType.WALKING)
@@ -75,7 +126,9 @@ public class RouteInformation
 				urlString.append("&mode=driving");
 			final String url = urlString.toString();
 			Log.v(TAG, "getDuration URL: " + url);
-			final InputStream is = getConnection(url);
+			is = getConnection(url);
+			if (is == null)
+				return 0;
 			final BufferedReader br = new BufferedReader(new InputStreamReader(
 					is));
 			final StringBuilder sb = new StringBuilder();
@@ -107,12 +160,31 @@ public class RouteInformation
 		} catch (final Exception je)
 		{
 			Log.e(TAG, "getDuration Error " + je.getMessage(), je);
+		} finally
+		{
+			if (is != null)
+				try
+				{
+					is.close();
+				} catch (final IOException e)
+				{
+					Log.w(TAG, "Error closing InputStream", e);
+				}
 		}
 		return durationSec / 60;
 	}
 
+	/**
+	 * 'Geocodes' the given address, producing a GeoPoint at the best guess
+	 * location
+	 * 
+	 * @param address
+	 *            address to geocode
+	 * @return GeoPoint representing the best guess lat/long for the address
+	 */
 	public static GeoPoint getLocation(final String address)
 	{
+		InputStream is = null;
 		try
 		{
 			final String formattedAddress = formatAddress(address);
@@ -124,7 +196,9 @@ public class RouteInformation
 			urlString.append("&sensor=false");
 			Log.v(TAG, "getLocation URL: " + urlString.toString());
 			final String url = urlString.toString();
-			final InputStream is = getConnection(url);
+			is = getConnection(url);
+			if (is == null)
+				return null;
 			final BufferedReader br = new BufferedReader(new InputStreamReader(
 					is));
 			final StringBuilder sb = new StringBuilder();
@@ -139,7 +213,7 @@ public class RouteInformation
 					.get("results");
 			if (googleMapJSONResultArray.length() == 0)
 			{
-				Log.v(TAG, "No route found for " + address);
+				Log.v(TAG, "No location found for " + address);
 				return null;
 			}
 			final JSONObject googleMapJSONLocation = googleMapJSONResultArray
@@ -151,6 +225,16 @@ public class RouteInformation
 		} catch (final Exception e)
 		{
 			Log.e(TAG, "getLocation Error", e);
+		} finally
+		{
+			if (is != null)
+				try
+				{
+					is.close();
+				} catch (final IOException e)
+				{
+					Log.w(TAG, "Error closing InputStream", e);
+				}
 		}
 		return null;
 	}
