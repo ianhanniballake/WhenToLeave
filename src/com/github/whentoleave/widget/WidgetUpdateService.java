@@ -23,7 +23,7 @@ import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
 
-import edu.usc.csci588team02.R;
+import com.github.whentoleave.R;
 
 /**
  * Service used to update all Widgets.

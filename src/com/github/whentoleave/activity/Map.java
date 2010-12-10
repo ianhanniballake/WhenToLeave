@@ -31,7 +31,7 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
-import edu.usc.csci588team02.R;
+import com.github.whentoleave.R;
 
 /**
  * Activity showing a map of all of the current day's events with locations. If

@@ -19,7 +19,7 @@ import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
 import com.google.android.maps.GeoPoint;
 
-import edu.usc.csci588team02.R;
+import com.github.whentoleave.R;
 
 /**
  * Activity showing the details of a passed in event (via

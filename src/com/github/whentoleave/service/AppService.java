@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.github.whentoleave.R;
 import com.github.whentoleave.activity.LocationAware;
 import com.github.whentoleave.activity.Refreshable;
 import com.github.whentoleave.model.CalendarEntry;
@@ -505,7 +506,7 @@ public class AppService extends Service implements LocationListener
 		HttpTransport.setLowLevelHttpTransport(ApacheHttpTransport.INSTANCE);
 		transport = GoogleTransport.create();
 		final GoogleHeaders headers = (GoogleHeaders) transport.defaultHeaders;
-		headers.setApplicationName("usccsci588team2-whentoleave-1.0");
+		headers.setApplicationName(R.string.app_name + "-" + R.string.version);
 		headers.gdataVersion = "2";
 		final AtomParser parser = new AtomParser();
 		parser.namespaceDictionary = Namespace.DICTIONARY;

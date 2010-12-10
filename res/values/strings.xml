@@ -2,6 +2,8 @@
 <resources>
 	<string
 		name="app_name">WhenToLeave</string>
+    <string
+        name="version">1.0</string>
 	<string
 		name="agendaTitle">Agenda</string>
 	<string

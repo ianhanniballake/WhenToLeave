@@ -15,7 +15,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.RadioButton;
 import android.widget.Spinner;
-import edu.usc.csci588team02.R;
+import com.github.whentoleave.R;
 
 /**
  * Activity to manage user preferences

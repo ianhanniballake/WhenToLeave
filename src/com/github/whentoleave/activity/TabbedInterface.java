@@ -26,7 +26,7 @@ import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
 
-import edu.usc.csci588team02.R;
+import com.github.whentoleave.R;
 
 /**
  * Activity which serves as the main hub of the application, containing the

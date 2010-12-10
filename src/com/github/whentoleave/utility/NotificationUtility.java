@@ -10,7 +10,7 @@ import android.util.Log;
 import com.github.whentoleave.activity.TabbedInterface;
 import com.github.whentoleave.model.EventEntry;
 
-import edu.usc.csci588team02.R;
+import com.github.whentoleave.R;
 
 /**
  * Utility class to manage Notifications
