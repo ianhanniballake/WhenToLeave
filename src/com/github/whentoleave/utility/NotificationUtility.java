@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.utility;
+package com.github.whentoleave.utility;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -6,9 +6,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+
+import com.github.whentoleave.activity.TabbedInterface;
+import com.github.whentoleave.model.EventEntry;
+
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.activity.TabbedInterface;
-import edu.usc.csci588team02.model.EventEntry;
 
 /**
  * Utility class to manage Notifications

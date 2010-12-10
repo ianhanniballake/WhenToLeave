@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.widget;
+package com.github.whentoleave.widget;
 
 import java.io.IOException;
 
@@ -14,14 +14,16 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
+
+import com.github.whentoleave.activity.LocationAware;
+import com.github.whentoleave.activity.Refreshable;
+import com.github.whentoleave.activity.TabbedInterface;
+import com.github.whentoleave.maps.RouteInformation;
+import com.github.whentoleave.model.EventEntry;
+import com.github.whentoleave.service.AppService;
+import com.github.whentoleave.service.AppServiceConnection;
+
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.activity.LocationAware;
-import edu.usc.csci588team02.activity.Refreshable;
-import edu.usc.csci588team02.activity.TabbedInterface;
-import edu.usc.csci588team02.maps.RouteInformation;
-import edu.usc.csci588team02.model.EventEntry;
-import edu.usc.csci588team02.service.AppService;
-import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
  * Service used to update all Widgets.

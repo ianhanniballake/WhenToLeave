@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.activity;
+package com.github.whentoleave.activity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,9 +10,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
-import edu.usc.csci588team02.model.CalendarEntry;
-import edu.usc.csci588team02.service.AppService;
-import edu.usc.csci588team02.service.AppServiceConnection;
+
+import com.github.whentoleave.model.CalendarEntry;
+import com.github.whentoleave.service.AppService;
+import com.github.whentoleave.service.AppServiceConnection;
 
 /**
  * Sample for Google Calendar Data API using the Atom wire format to retrieve a

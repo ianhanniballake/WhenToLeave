@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.activity;
+package com.github.whentoleave.activity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,6 +16,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.github.whentoleave.maps.ItemizedOverlay;
+import com.github.whentoleave.maps.MapRouteOverlay;
+import com.github.whentoleave.maps.Road;
+import com.github.whentoleave.maps.RoadProvider;
+import com.github.whentoleave.maps.RouteInformation;
+import com.github.whentoleave.model.EventEntry;
+import com.github.whentoleave.service.AppService;
+import com.github.whentoleave.service.AppServiceConnection;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
@@ -24,14 +32,6 @@ import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.maps.ItemizedOverlay;
-import edu.usc.csci588team02.maps.MapRouteOverlay;
-import edu.usc.csci588team02.maps.Road;
-import edu.usc.csci588team02.maps.RoadProvider;
-import edu.usc.csci588team02.maps.RouteInformation;
-import edu.usc.csci588team02.model.EventEntry;
-import edu.usc.csci588team02.service.AppService;
-import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
  * Activity showing a map of all of the current day's events with locations. If

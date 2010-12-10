@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.service;
+package com.github.whentoleave.service;
 
 import java.io.IOException;
 import java.util.Date;
@@ -8,11 +8,12 @@ import java.util.Set;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import edu.usc.csci588team02.activity.LocationAware;
-import edu.usc.csci588team02.activity.Refreshable;
-import edu.usc.csci588team02.model.CalendarEntry;
-import edu.usc.csci588team02.model.EventEntry;
-import edu.usc.csci588team02.service.AppService.AppServiceBinder;
+
+import com.github.whentoleave.activity.LocationAware;
+import com.github.whentoleave.activity.Refreshable;
+import com.github.whentoleave.model.CalendarEntry;
+import com.github.whentoleave.model.EventEntry;
+import com.github.whentoleave.service.AppService.AppServiceBinder;
 
 /**
  * Serves as the primary connection to the AppService when an Activity or

@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.activity;
+package com.github.whentoleave.activity;
 
 import java.io.IOException;
 
@@ -21,10 +21,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TabHost;
+
+import com.github.whentoleave.model.EventEntry;
+import com.github.whentoleave.service.AppService;
+import com.github.whentoleave.service.AppServiceConnection;
+
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.model.EventEntry;
-import edu.usc.csci588team02.service.AppService;
-import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
  * Activity which serves as the main hub of the application, containing the

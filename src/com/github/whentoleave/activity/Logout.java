@@ -1,10 +1,11 @@
-package edu.usc.csci588team02.activity;
+package com.github.whentoleave.activity;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.SharedPreferences;
-import edu.usc.csci588team02.service.AppServiceConnection;
+
+import com.github.whentoleave.service.AppServiceConnection;
 
 /**
  * Activity which logs the user out and returns to the calling activity

@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.activity;
+package com.github.whentoleave.activity;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -19,10 +19,12 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
+import com.github.whentoleave.model.EventEntry;
+import com.github.whentoleave.service.AppService;
+import com.github.whentoleave.service.AppServiceConnection;
+
 import edu.usc.csci588team02.R;
-import edu.usc.csci588team02.model.EventEntry;
-import edu.usc.csci588team02.service.AppService;
-import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
  * Activity which shows a list of all events in the next two weeks. Works

@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.service;
+package com.github.whentoleave.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +23,16 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.github.whentoleave.activity.LocationAware;
+import com.github.whentoleave.activity.Refreshable;
+import com.github.whentoleave.model.CalendarEntry;
+import com.github.whentoleave.model.CalendarFeed;
+import com.github.whentoleave.model.CalendarUrl;
+import com.github.whentoleave.model.EventEntry;
+import com.github.whentoleave.model.EventEntryComparator;
+import com.github.whentoleave.model.EventFeed;
+import com.github.whentoleave.model.Namespace;
+import com.github.whentoleave.utility.NotificationUtility;
 import com.google.api.client.apache.ApacheHttpTransport;
 import com.google.api.client.googleapis.GoogleHeaders;
 import com.google.api.client.googleapis.GoogleTransport;
@@ -30,17 +40,6 @@ import com.google.api.client.googleapis.GoogleUrl;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.xml.atom.AtomParser;
-
-import edu.usc.csci588team02.activity.LocationAware;
-import edu.usc.csci588team02.activity.Refreshable;
-import edu.usc.csci588team02.model.CalendarEntry;
-import edu.usc.csci588team02.model.CalendarFeed;
-import edu.usc.csci588team02.model.CalendarUrl;
-import edu.usc.csci588team02.model.EventEntry;
-import edu.usc.csci588team02.model.EventEntryComparator;
-import edu.usc.csci588team02.model.EventFeed;
-import edu.usc.csci588team02.model.Namespace;
-import edu.usc.csci588team02.utility.NotificationUtility;
 
 /**
  * Application service, managing all Google account access and authentication,

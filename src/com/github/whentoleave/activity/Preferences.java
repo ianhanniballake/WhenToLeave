@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.activity;
+package com.github.whentoleave.activity;
 
 import android.app.Activity;
 import android.content.SharedPreferences;

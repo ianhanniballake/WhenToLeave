@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.activity;
+package com.github.whentoleave.activity;
 
 /**
  * Interface denoting that the implementing class has a method to refresh its

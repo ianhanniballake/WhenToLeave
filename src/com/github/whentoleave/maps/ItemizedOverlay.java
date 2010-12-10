@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.maps;
+package com.github.whentoleave.maps;
 
 import java.util.ArrayList;
 
@@ -7,10 +7,9 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 
+import com.github.whentoleave.activity.EventDetails;
 import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
-
-import edu.usc.csci588team02.activity.EventDetails;
 
 /**
  * Manages a set of {@link OverlayItem}s, which can be added to a map. <br />

@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.activity;
+package com.github.whentoleave.activity;
 
 import java.io.IOException;
 
@@ -14,11 +14,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.github.whentoleave.service.AppService;
+import com.github.whentoleave.service.AppServiceConnection;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpResponseException;
-
-import edu.usc.csci588team02.service.AppService;
-import edu.usc.csci588team02.service.AppServiceConnection;
 
 /**
  * 

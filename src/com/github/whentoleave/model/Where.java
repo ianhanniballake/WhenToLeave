@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.model;
+package com.github.whentoleave.model;
 
 import com.google.api.client.util.Key;
 

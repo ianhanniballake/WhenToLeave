@@ -1,15 +1,14 @@
-package edu.usc.csci588team02.model;
+package com.github.whentoleave.model;
 
 import java.io.IOException;
 import java.util.Date;
 
 import android.location.Location;
 
+import com.github.whentoleave.maps.RouteInformation;
 import com.google.api.client.googleapis.GoogleUrl;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.Key;
-
-import edu.usc.csci588team02.maps.RouteInformation;
 
 /**
  * Represents a Google Calendar Event Entry<br />

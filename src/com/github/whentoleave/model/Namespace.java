@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.model;
+package com.github.whentoleave.model;
 
 import java.util.Map;
 

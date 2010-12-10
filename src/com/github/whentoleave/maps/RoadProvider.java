@@ -1,4 +1,4 @@
-package edu.usc.csci588team02.maps;
+package com.github.whentoleave.maps;
 
 import java.io.IOException;
 import java.io.InputStream;
