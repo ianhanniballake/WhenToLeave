@@ -28,7 +28,7 @@ public class AppServiceConnection implements ServiceConnection
 	/**
 	 * Underlying service
 	 */
-	private AppServiceBinder service = null;
+	private AppService service = null;
 	/**
 	 * Refreshable instance to refresh upon connection and optionally register
 	 * for alarm timer callbacks
@@ -200,7 +200,7 @@ public class AppServiceConnection implements ServiceConnection
 	public void onServiceConnected(final ComponentName name,
 			final IBinder serviceBinder)
 	{
-		service = (AppServiceBinder) serviceBinder;
+		service = ((AppServiceBinder) serviceBinder).getService();
 		if (toUpdateLocation != null)
 			service.addLocationListener(toUpdateLocation);
 		if (refreshOnTimer)
