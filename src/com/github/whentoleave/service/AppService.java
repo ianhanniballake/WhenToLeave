@@ -18,14 +18,15 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 
 import com.github.whentoleave.R;
-import com.github.whentoleave.activity.LocationAware;
-import com.github.whentoleave.activity.Refreshable;
 import com.github.whentoleave.model.CalendarEntry;
 import com.github.whentoleave.model.CalendarFeed;
 import com.github.whentoleave.model.CalendarUrl;
@@ -46,29 +47,26 @@ import com.google.api.client.xml.atom.AtomParser;
  * Application service, managing all Google account access and authentication,
  * as well as notifications
  */
-public class AppService extends Service implements LocationListener
+public class AppService extends Service implements LocationListener,
+		Handler.Callback
 {
-	/**
-	 * Service binding exposed interface, used when Activities or other services
-	 * bind to this Service
-	 */
-	public class AppServiceBinder extends Binder
-	{
-		/**
-		 * Gets the AppService
-		 * 
-		 * @return the AppService
-		 */
-		public AppService getService()
-		{
-			return AppService.this;
-		}
-	}
-
 	/**
 	 * AlarmManager used to create repeated notification checks
 	 */
 	private static AlarmManager alarmManager;
+	public static final int MSG_ERROR = 1;
+	public static final int MSG_GET_CALENDARS = 2;
+	public static final int MSG_GET_EVENT = 3;
+	public static final int MSG_GET_EVENTS = 4;
+	public static final int MSG_GET_NEXT_EVENT_WITH_LOCATION = 5;
+	public static final int MSG_INVALIDATE_AUTH_TOKEN = 6;
+	public static final int MSG_LOCATION_UPDATE = 7;
+	private final static int MSG_REFRESH_DATA = 8;
+	public static final int MSG_REGISTER_LOCATION_LISTENER = 9;
+	public static final int MSG_REGISTER_REFRESHABLE = 10;
+	public static final int MSG_SET_AUTH_TOKEN = 11;
+	public static final int MSG_UNREGISTER_LOCATION_LISTENER = 12;
+	public static final int MSG_UNREGISTER_REFRESHABLE = 13;
 	/**
 	 * Action used to distinguish notification alarm service starts from regular
 	 * service starts
@@ -87,10 +85,6 @@ public class AppService extends Service implements LocationListener
 	 */
 	private static final String TAG = "AppService";
 	/**
-	 * Single binder instance to return on service connection requests
-	 */
-	private final IBinder binder = new AppServiceBinder();
-	/**
 	 * Current location of the device
 	 */
 	private Location currentLocation = null;
@@ -99,56 +93,29 @@ public class AppService extends Service implements LocationListener
 	 */
 	private boolean isAuthenticated = false;
 	/**
-	 * List of LocationAware listeners to notify of location changes
+	 * List of Messengers to notify of location changes
 	 */
-	private final ArrayList<LocationAware> locationListenerList = new ArrayList<LocationAware>();
+	private final ArrayList<Messenger> locationListenerList = new ArrayList<Messenger>();
 	/**
 	 * LocationManager to start and stop receiving location updates from
 	 */
 	private LocationManager locationManager;
 	/**
+	 * Messenger associated with this service
+	 */
+	private final Messenger messenger = new Messenger(new Handler(this));
+	/**
 	 * NotificationUtility used to send out notifications
 	 */
 	private NotificationUtility mNotificationUtility = null;
 	/**
-	 * List of Refreshable listeners to notify on alarm timer ticks
+	 * List of Messengers to notify on alarm timer ticks
 	 */
-	private final ArrayList<Refreshable> refreshOnTimerListenerList = new ArrayList<Refreshable>();
+	private final ArrayList<Messenger> refreshOnTimerListenerList = new ArrayList<Messenger>();
 	/**
 	 * HttpTransport used for Google API queries
 	 */
 	private HttpTransport transport;
-
-	/**
-	 * Register a new LocationAware listener to get location change
-	 * notifications. Note that if a GPS location had ever been found, the
-	 * listener's onLocationChanged is called with this latest location as part
-	 * of this method
-	 * 
-	 * @param listener
-	 *            LocationAware listener to register
-	 */
-	public void addLocationListener(final LocationAware listener)
-	{
-		locationListenerList.add(listener);
-		final Location lastKnownLocation = locationManager
-				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		if (lastKnownLocation != null)
-			listener.onLocationChanged(lastKnownLocation);
-	}
-
-	/**
-	 * Register a new Refreshable listener to get alarm timer notifications.
-	 * Note that the listener's refreshData is called as part of this method
-	 * 
-	 * @param listener
-	 *            Refreshable listener to register
-	 */
-	public void addRefreshOnTimerListener(final Refreshable listener)
-	{
-		refreshOnTimerListenerList.add(listener);
-		listener.refreshData();
-	}
 
 	/**
 	 * Check for notifications, sending them out if required
@@ -160,7 +127,7 @@ public class AppService extends Service implements LocationListener
 			return;
 		Log.d(TAG, "Checking for notification");
 		// Don't do anything until we are authenticated.
-		if (!isAuthenticated())
+		if (!isAuthenticated)
 			return;
 		try
 		{
@@ -195,7 +162,7 @@ public class AppService extends Service implements LocationListener
 	 * @throws IOException
 	 *             on IO error
 	 */
-	public List<CalendarEntry> getCalendars() throws IOException
+	private List<CalendarEntry> getCalendars() throws IOException
 	{
 		final ArrayList<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
 		final CalendarUrl calFeedUrl = CalendarUrl.forAllCalendarsFeed();
@@ -214,23 +181,6 @@ public class AppService extends Service implements LocationListener
 	}
 
 	/**
-	 * Gets a particular EventEntry given its URL. Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @param eventUrl
-	 *            the URL of the EventEntry to return
-	 * @return the EventEntry represented by the given URL
-	 * @throws IOException
-	 *             on IO error
-	 */
-	public EventEntry getEvent(final String eventUrl) throws IOException
-	{
-		final EventEntry event = EventEntry.executeGet(transport,
-				new GoogleUrl(eventUrl));
-		return event;
-	}
-
-	/**
 	 * Gets all events in a given Date range. Assumes that the service is
 	 * already authenticated
 	 * 
@@ -243,7 +193,7 @@ public class AppService extends Service implements LocationListener
 	 * @throws IOException
 	 *             on IO error
 	 */
-	public Set<EventEntry> getEvents(final Date start, final Date end)
+	private Set<EventEntry> getEvents(final Date start, final Date end)
 			throws IOException
 	{
 		final TreeSet<EventEntry> events = new TreeSet<EventEntry>(
@@ -264,23 +214,6 @@ public class AppService extends Service implements LocationListener
 	}
 
 	/**
-	 * Gets all events between now (new Date()) and the given end Date. Assumes
-	 * that the service is already authenticated
-	 * 
-	 * @param end
-	 *            end date
-	 * @return all events from all calendars from now until the given end date,
-	 *         ordered by start time
-	 * @throws IOException
-	 *             on IO error
-	 */
-	public Set<EventEntry> getEventsStartingNow(final Date end)
-			throws IOException
-	{
-		return getEvents(new Date(), end);
-	}
-
-	/**
 	 * Finds the next event across all calendars (chronologically) that has a
 	 * location. Searches in an exponentially larger date range until it finds
 	 * an event (first 1 day, then 2, then 4, etc). Assumes that the service is
@@ -291,7 +224,7 @@ public class AppService extends Service implements LocationListener
 	 * @throws IOException
 	 *             on IO error
 	 */
-	public EventEntry getNextEventWithLocation() throws IOException
+	private EventEntry getNextEventWithLocation() throws IOException
 	{
 		Calendar queryFrom = Calendar.getInstance();
 		final Calendar queryTo = Calendar.getInstance();
@@ -313,25 +246,53 @@ public class AppService extends Service implements LocationListener
 		return null;
 	}
 
+	@Override
+	public boolean handleMessage(final Message msg)
+	{
+		final Messenger replyToMessenger = msg.replyTo;
+		switch (msg.what)
+		{
+			case MSG_GET_CALENDARS:
+				replyWithCalendars(replyToMessenger);
+				return true;
+			case MSG_GET_EVENT:
+				final String eventUrl = (String) msg.obj;
+				replyWithEvent(eventUrl, replyToMessenger);
+				return true;
+			case MSG_GET_EVENTS:
+				final Date[] dateRange = (Date[]) msg.obj;
+				replyWithEvents(dateRange[0], dateRange[1], replyToMessenger);
+				return true;
+			case MSG_GET_NEXT_EVENT_WITH_LOCATION:
+				replyWithNextEventWithLocation(replyToMessenger);
+				return true;
+			case MSG_INVALIDATE_AUTH_TOKEN:
+				invalidateAuthToken();
+				return true;
+			case MSG_REGISTER_LOCATION_LISTENER:
+				locationListenerList.add(msg.replyTo);
+				return true;
+			case MSG_SET_AUTH_TOKEN:
+				final String authToken = (String) msg.obj;
+				setAuthToken(authToken);
+				return true;
+			case MSG_UNREGISTER_LOCATION_LISTENER:
+				locationListenerList.remove(msg.replyTo);
+				return true;
+			default:
+				return false;
+		}
+	}
+
 	/**
 	 * Effectively logs the user out, invalidating their authentication token.
 	 * Note that all queries done between now and future authentication will
 	 * fail
 	 */
-	public void invalidateAuthToken()
+	protected void invalidateAuthToken()
 	{
 		((GoogleHeaders) transport.defaultHeaders).remove("Authorization");
 		isAuthenticated = false;
-	}
-
-	/**
-	 * Getter for whether the service is authenticated
-	 * 
-	 * @return if the service is authenticated
-	 */
-	public boolean isAuthenticated()
-	{
-		return isAuthenticated;
 	}
 
 	/**
@@ -341,7 +302,7 @@ public class AppService extends Service implements LocationListener
 	public IBinder onBind(final Intent intent)
 	{
 		Log.d(TAG, "onBind");
-		return binder;
+		return messenger.getBinder();
 	}
 
 	/**
@@ -401,13 +362,23 @@ public class AppService extends Service implements LocationListener
 		if (location != null)
 		{
 			Log.d(TAG,
-					"Service LOCATION CHANGED: + (Lat/Long): ("
+					"LOCATION CHANGED: + (Lat/Long): ("
 							+ location.getLatitude() + ", "
 							+ location.getLongitude() + ")");
 			currentLocation = location;
 			checkNotifications();
-			for (final LocationAware listener : locationListenerList)
-				listener.onLocationChanged(location);
+			final ArrayList<Messenger> listenersToRemove = new ArrayList<Messenger>();
+			for (final Messenger listener : locationListenerList)
+				try
+				{
+					listener.send(Message.obtain(null, MSG_LOCATION_UPDATE,
+							location));
+				} catch (final RemoteException e)
+				{
+					// Remove dead listeners from the list
+					listenersToRemove.add(listener);
+				}
+			locationListenerList.removeAll(listenersToRemove);
 		}
 	}
 
@@ -437,8 +408,17 @@ public class AppService extends Service implements LocationListener
 		if (intent != null && NOTIFICATION_ACTION.equals(intent.getAction()))
 		{
 			checkNotifications();
-			for (final Refreshable refreshable : refreshOnTimerListenerList)
-				refreshable.refreshData();
+			final ArrayList<Messenger> listenersToRemove = new ArrayList<Messenger>();
+			for (final Messenger refreshable : refreshOnTimerListenerList)
+				try
+				{
+					refreshable.send(Message.obtain(null, MSG_REFRESH_DATA));
+				} catch (final RemoteException e)
+				{
+					// Remove dead listeners
+					listenersToRemove.add(refreshable);
+				}
+			refreshOnTimerListenerList.removeAll(listenersToRemove);
 		}
 		return START_STICKY;
 	}
@@ -450,27 +430,109 @@ public class AppService extends Service implements LocationListener
 		// Nothing to do
 	}
 
-	/**
-	 * Removes a LocationAware listener, stopping any location update
-	 * notifications
-	 * 
-	 * @param listener
-	 *            listener to remove
-	 */
-	public void removeLocationListener(final LocationAware listener)
+	protected void replyWithCalendars(final Messenger replyToMessenger)
 	{
-		locationListenerList.remove(listener);
+		try
+		{
+			final List<CalendarEntry> calendars = getCalendars();
+			replyToMessenger.send(Message.obtain(null, MSG_GET_CALENDARS,
+					calendars));
+		} catch (final RemoteException e)
+		{
+			Log.w(TAG, "replyWithCalendars", e);
+		} catch (final IOException e)
+		{
+			Log.e(TAG, "replyWithCalendars", e);
+			try
+			{
+				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
+						e.getMessage()));
+			} catch (final RemoteException e1)
+			{
+				Log.w(TAG, "replyWithCalendars in IOException", e);
+			}
+		}
 	}
 
 	/**
-	 * Removes a Refreshable listener, stopping any alarm notifications
+	 * Gets a particular EventEntry given its URL. Assumes that the service is
+	 * already authenticated
 	 * 
-	 * @param listener
-	 *            listener to remove
+	 * @param eventUrl
+	 *            the URL of the EventEntry to return
 	 */
-	public void removeRefreshOnTimerListener(final Refreshable listener)
+	protected void replyWithEvent(final String eventUrl,
+			final Messenger replyToMessenger)
 	{
-		refreshOnTimerListenerList.remove(listener);
+		try
+		{
+			final EventEntry event = EventEntry.executeGet(transport,
+					new GoogleUrl(eventUrl));
+			replyToMessenger.send(Message.obtain(null, MSG_GET_EVENT, event));
+		} catch (final RemoteException e)
+		{
+			Log.w(TAG, "replyWithEvent", e);
+		} catch (final IOException e)
+		{
+			Log.e(TAG, "replyWithEvent", e);
+			try
+			{
+				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
+						e.getMessage()));
+			} catch (final RemoteException e1)
+			{
+				Log.w(TAG, "replyWithEvent in IOException", e);
+			}
+		}
+	}
+
+	protected void replyWithEvents(final Date start, final Date end,
+			final Messenger replyToMessenger)
+	{
+		try
+		{
+			final Set<EventEntry> events = getEvents(start, end);
+			replyToMessenger.send(Message.obtain(null, MSG_GET_EVENTS, events));
+		} catch (final RemoteException e)
+		{
+			Log.w(TAG, "replyWithEvents", e);
+		} catch (final IOException e)
+		{
+			Log.e(TAG, "replyWithEvents", e);
+			try
+			{
+				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
+						e.getMessage()));
+			} catch (final RemoteException e1)
+			{
+				Log.w(TAG, "replyWithEvents in IOException", e);
+			}
+		}
+	}
+
+	protected void replyWithNextEventWithLocation(
+			final Messenger replyToMessenger)
+	{
+		try
+		{
+			final EventEntry event = getNextEventWithLocation();
+			replyToMessenger.send(Message.obtain(null,
+					MSG_GET_NEXT_EVENT_WITH_LOCATION, event));
+		} catch (final RemoteException e)
+		{
+			Log.w(TAG, "replyWithNextEventWithLocation", e);
+		} catch (final IOException e)
+		{
+			Log.e(TAG, "replyWithNextEventWithLocation", e);
+			try
+			{
+				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
+						e.getMessage()));
+			} catch (final RemoteException e1)
+			{
+				Log.w(TAG, "replyWithNextEventWithLocation in IOException", e);
+			}
+		}
 	}
 
 	/**
@@ -479,7 +541,7 @@ public class AppService extends Service implements LocationListener
 	 * @param authToken
 	 *            authToken used to authenticate any Google API queries
 	 */
-	public void setAuthToken(final String authToken)
+	protected void setAuthToken(final String authToken)
 	{
 		((GoogleHeaders) transport.defaultHeaders).setGoogleLogin(authToken);
 		isAuthenticated = true;
