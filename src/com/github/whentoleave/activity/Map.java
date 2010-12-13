@@ -18,8 +18,8 @@ import android.widget.TextView;
 
 import com.github.whentoleave.maps.ItemizedOverlay;
 import com.github.whentoleave.maps.MapRouteOverlay;
-import com.github.whentoleave.maps.Road;
-import com.github.whentoleave.maps.RoadProvider;
+import com.github.whentoleave.maps.Route;
+import com.github.whentoleave.maps.RouteProvider;
 import com.github.whentoleave.maps.RouteInformation;
 import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
@@ -117,7 +117,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	/**
 	 * Route to our next destination from our current location, if it exists
 	 */
-	private Road mRoad = null;
+	private Route mRoute = null;
 	/**
 	 * Default (non-numbered) orange square
 	 */
@@ -264,7 +264,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	@Override
 	protected boolean isRouteDisplayed()
 	{
-		return mRoad != null;
+		return mRoute != null;
 	}
 
 	/** Called when the activity is first created. */
@@ -302,7 +302,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			{
 				final EventEntry ee = service.getNextEventWithLocation();
 				if (ee != null)
-					mRoad = RoadProvider.getRoute(location,
+					mRoute = RouteProvider.getRoute(location,
 							ee.where.valueString);
 			} catch (final IOException e)
 			{
@@ -355,11 +355,11 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		try
 		{
 			// Draw Route
-			if (mRoad != null)
+			if (mRoute != null)
 			{
 				final TextView textView = (TextView) findViewById(R.id.mapdescription);
-				textView.setText(mRoad.mName + " " + mRoad.mDescription);
-				final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoad);
+				textView.setText(mRoute.mName + " " + mRoute.mDescription);
+				final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoute);
 				mapOverlays.add(mapOverlay);
 			}
 			final SharedPreferences settings = getSharedPreferences(PREF, 0);

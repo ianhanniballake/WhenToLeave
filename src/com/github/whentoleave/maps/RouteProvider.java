@@ -41,9 +41,9 @@ class KMLHandler extends DefaultHandler
 	 */
 	private String mElementContent;
 	/**
-	 * Road which serves as the output of this Handler
+	 * Route which serves as the output of this Handler
 	 */
-	final Road mRoad = new Road();
+	final Route mRoute = new Route();
 
 	@Override
 	public void characters(final char[] ch, final int start, final int length)
@@ -89,11 +89,11 @@ class KMLHandler extends DefaultHandler
 				if (isPlacemark)
 					isRoute = mElementContent.equalsIgnoreCase("Route");
 				else
-					mRoad.mName = mElementContent;
+					mRoute.mName = mElementContent;
 			}
 			else if (localName.equalsIgnoreCase("description") && isPlacemark
 					&& isRoute)
-				mRoad.mDescription = cleanup(mElementContent);
+				mRoute.mDescription = cleanup(mElementContent);
 			else if (localName.equalsIgnoreCase("coordinates") && isPlacemark
 					&& isRoute)
 			{
@@ -105,7 +105,7 @@ class KMLHandler extends DefaultHandler
 					// GeoPoint
 					final int lonE6 = (int) (Double.parseDouble(xyParsed[0]) * 1e6);
 					final int latE6 = (int) (Double.parseDouble(xyParsed[1]) * 1e6);
-					mRoad.mRoute.add(new GeoPoint(latE6, lonE6));
+					mRoute.mRoute.add(new GeoPoint(latE6, lonE6));
 				}
 			}
 		if (localName.equalsIgnoreCase("Placemark"))
@@ -130,15 +130,15 @@ class KMLHandler extends DefaultHandler
  * destination<br />
  * <br />
  * Modified from <a href=
- * "http://code.google.com/p/j2memaprouteprovider/source/browse/trunk/J2MEMapRouteAndroidEx/src/org/ci/geo/route/RoadProvider.java"
+ * "http://code.google.com/p/j2memaprouteprovider/source/browse/trunk/J2MEMapRouteAndroidEx/src/org/ci/geo/route/RouteProvider.java"
  * >the J2MEMapRoute Example for Android</a> by Max Gontar
  */
-public class RoadProvider
+public class RouteProvider
 {
 	/**
 	 * Logging tag
 	 */
-	private static final String TAG = "RoadProvider";
+	private static final String TAG = "RouteProvider";
 
 	/**
 	 * Finds a route from the start location to the destination
@@ -149,7 +149,7 @@ public class RoadProvider
 	 *            destination address
 	 * @return the route or null if no route was found
 	 */
-	public static Road getRoute(final Location start, final String destination)
+	public static Route getRoute(final Location start, final String destination)
 	{
 		final StringBuffer urlString = new StringBuffer();
 		urlString.append("http://maps.google.com/maps?f=d&hl=en");
@@ -204,6 +204,6 @@ public class RoadProvider
 				Log.w(TAG, "Error closing InputStream", e);
 			}
 		}
-		return handler.mRoad;
+		return handler.mRoute;
 	}
 }

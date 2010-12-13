@@ -20,18 +20,18 @@ public class MapRouteOverlay extends Overlay
 	/**
 	 * The route to draw
 	 */
-	private final Road mRoad;
+	private final Route mRoute;
 
 	/**
-	 * Basic constructor for drawing a given road onto a Google Map
+	 * Basic constructor for drawing a given route onto a Google Map
 	 * 
-	 * @param road
+	 * @param route
 	 *            The route to draw
 	 */
-	public MapRouteOverlay(final Road road)
+	public MapRouteOverlay(final Route route)
 	{
-		mRoad = road;
-		Log.v(TAG, "Route Length " + road.mRoute.size());
+		mRoute = route;
+		Log.v(TAG, "Route Length " + route.mRoute.size());
 	}
 
 	/**
@@ -42,17 +42,17 @@ public class MapRouteOverlay extends Overlay
 			final boolean shadow, final long when)
 	{
 		super.draw(canvas, mv, shadow);
-		if (!mRoad.mRoute.isEmpty())
+		if (!mRoute.mRoute.isEmpty())
 		{
 			int x1 = -1, y1 = -1, x2 = -1, y2 = -1;
 			final Paint paint = new Paint();
 			paint.setColor(0xff48b4fe); // @color/blue with extra 0xff for alpha
 			paint.setStyle(Paint.Style.STROKE);
 			paint.setStrokeWidth(4);
-			for (int i = 0; i < mRoad.mRoute.size(); i++)
+			for (int i = 0; i < mRoute.mRoute.size(); i++)
 			{
 				final Point point = new Point();
-				mv.getProjection().toPixels(mRoad.mRoute.get(i), point);
+				mv.getProjection().toPixels(mRoute.mRoute.get(i), point);
 				x2 = point.x;
 				y2 = point.y;
 				if (i > 0)
