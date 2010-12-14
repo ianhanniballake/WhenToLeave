@@ -61,7 +61,7 @@ public class AppService extends Service implements LocationListener,
 	public static final int MSG_GET_NEXT_EVENT_WITH_LOCATION = 5;
 	public static final int MSG_INVALIDATE_AUTH_TOKEN = 6;
 	public static final int MSG_LOCATION_UPDATE = 7;
-	private final static int MSG_REFRESH_DATA = 8;
+	public static final int MSG_REFRESH_DATA = 8;
 	public static final int MSG_REGISTER_LOCATION_LISTENER = 9;
 	public static final int MSG_REGISTER_REFRESHABLE = 10;
 	public static final int MSG_SET_AUTH_TOKEN = 11;
@@ -268,6 +268,16 @@ public class AppService extends Service implements LocationListener,
 				return true;
 			case MSG_INVALIDATE_AUTH_TOKEN:
 				invalidateAuthToken();
+				return true;
+			case MSG_REFRESH_DATA:
+				try
+				{
+					replyToMessenger.send(Message
+							.obtain(null, MSG_REFRESH_DATA));
+				} catch (final RemoteException e)
+				{
+					// Do nothing
+				}
 				return true;
 			case MSG_REGISTER_LOCATION_LISTENER:
 				locationListenerList.add(msg.replyTo);

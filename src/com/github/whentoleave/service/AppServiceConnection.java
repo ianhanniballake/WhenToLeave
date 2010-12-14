@@ -1,19 +1,14 @@
 package com.github.whentoleave.service;
 
-import java.io.IOException;
 import java.util.Date;
-import java.util.List;
-import java.util.Set;
 
 import android.content.ComponentName;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
-
-import com.github.whentoleave.activity.LocationAware;
-import com.github.whentoleave.activity.Refreshable;
-import com.github.whentoleave.model.CalendarEntry;
-import com.github.whentoleave.model.EventEntry;
-import com.github.whentoleave.service.AppService.AppServiceBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 
 /**
  * Serves as the primary connection to the AppService when an Activity or
@@ -22,148 +17,50 @@ import com.github.whentoleave.service.AppService.AppServiceBinder;
 public class AppServiceConnection implements ServiceConnection
 {
 	/**
-	 * Flag if we should register toRefresh for alarm timer callbacks
+	 * Client to send reply messages to
 	 */
-	private boolean refreshOnTimer = false;
+	private Handler client = null;
+	/**
+	 * Register for interval refreshes
+	 */
+	private boolean intervalRefresh = false;
+	/**
+	 * Register for location updates
+	 */
+	private boolean locationUpdates = false;
 	/**
 	 * Underlying service
 	 */
-	private AppService service = null;
-	/**
-	 * Refreshable instance to refresh upon connection and optionally register
-	 * for alarm timer callbacks
-	 */
-	private Refreshable toRefresh = null;
-	/**
-	 * LocationAware instance to register for location updates
-	 */
-	private LocationAware toUpdateLocation = null;
+	private Messenger service = null;
 
 	/**
 	 * Constructor for a one time refresh
 	 * 
-	 * @param toRefreshOnConnected
-	 *            Refreshable instance to refresh upon connection
+	 * @param client
+	 *            client to send reply messages to
 	 */
-	public AppServiceConnection(final Refreshable toRefreshOnConnected)
+	public AppServiceConnection(final Handler client)
 	{
-		this(toRefreshOnConnected, null, false);
+		this(client, false, false);
 	}
 
 	/**
 	 * Constructor for a one time refresh of the given Refreshable instance and
 	 * LocationAware listener to register for ongoing location updates
 	 * 
-	 * @param toRefreshOnConnected
-	 *            Refreshable instance to refresh upon connection
-	 * @param toUpdateLocation
-	 *            LocationAware instance to register for location updates
+	 * @param client
+	 *            client to send reply messages to
+	 * @param intervalRefresh
+	 *            if the client should receive periodic updates
+	 * @param locationUpdates
+	 *            if the client should receive location updates
 	 */
-	public AppServiceConnection(final Refreshable toRefreshOnConnected,
-			final LocationAware toUpdateLocation)
+	public AppServiceConnection(final Handler client,
+			final boolean intervalRefresh, final boolean locationUpdates)
 	{
-		this(toRefreshOnConnected, toUpdateLocation, false);
-	}
-
-	/**
-	 * Constructor for a one time refresh of the given Refreshable instance and
-	 * LocationAware listener to register for ongoing location updates.
-	 * Optionally registers the Refreshable instance for alarm timer callbacks
-	 * 
-	 * @param toRefresh
-	 *            Refreshable instance to refresh upon connection
-	 * @param toUpdateLocation
-	 *            LocationAware instance to register for location updates
-	 * @param refreshOnTimer
-	 *            whether toRefresh should be registered for alarm timer
-	 *            callbacks
-	 */
-	public AppServiceConnection(final Refreshable toRefresh,
-			final LocationAware toUpdateLocation, final boolean refreshOnTimer)
-	{
-		this.toRefresh = toRefresh;
-		this.toUpdateLocation = toUpdateLocation;
-		this.refreshOnTimer = refreshOnTimer;
-	}
-
-	/**
-	 * Gets a list of all of the authenticated user's calendars. Assumes that
-	 * the service is already authenticated
-	 * 
-	 * @return the list of all calendars the user has access to
-	 * @throws IOException
-	 *             on IO error
-	 */
-	public List<CalendarEntry> getCalendars() throws IOException
-	{
-		return service.getCalendars();
-	}
-
-	/**
-	 * Gets a particular EventEntry given its URL. Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @param eventUrl
-	 *            the URL of the EventEntry to return
-	 * @return the EventEntry represented by the given URL
-	 * @throws IOException
-	 *             on IO error
-	 */
-	public EventEntry getEvent(final String eventUrl) throws IOException
-	{
-		return service.getEvent(eventUrl);
-	}
-
-	/**
-	 * Gets all events in a given Date range. Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @param start
-	 *            start date
-	 * @param end
-	 *            end date
-	 * @return all events from all calendars in the Date range, ordered by start
-	 *         time
-	 * @throws IOException
-	 *             on IO error
-	 */
-	public Set<EventEntry> getEvents(final Date start, final Date end)
-			throws IOException
-	{
-		return service.getEvents(start, end);
-	}
-
-	/**
-	 * Gets all events between now (new Date()) and the given end Date. Assumes
-	 * that the service is already authenticated
-	 * 
-	 * @param end
-	 *            end date
-	 * @return all events from all calendars from now until the given end date,
-	 *         ordered by start time
-	 * @throws IOException
-	 *             on IO error
-	 */
-	public Set<EventEntry> getEventsStartingNow(final Date end)
-			throws IOException
-	{
-		return service.getEvents(new Date(), end);
-	}
-
-	/**
-	 * Finds the next event across all calendars (chronologically) that has a
-	 * location. Searches in an exponentially larger date range until it finds
-	 * an event (first 1 day, then 2, then 4, etc). Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @return the next event that has a location, null if no events with a
-	 *         location are found
-	 * @throws IOException
-	 *             on IO error
-	 */
-	public EventEntry getNextEventWithLocation() throws IOException
-	{
-		return service.getNextEventWithLocation();
+		this.client = client;
+		this.intervalRefresh = intervalRefresh;
+		this.locationUpdates = locationUpdates;
 	}
 
 	/**
@@ -173,17 +70,7 @@ public class AppServiceConnection implements ServiceConnection
 	 */
 	public void invalidateAuthToken()
 	{
-		service.invalidateAuthToken();
-	}
-
-	/**
-	 * Getter for whether the service is authenticated
-	 * 
-	 * @return if the service is authenticated
-	 */
-	public boolean isAuthenticated()
-	{
-		return service.isAuthenticated();
+		sendMessage(AppService.MSG_INVALIDATE_AUTH_TOKEN);
 	}
 
 	/**
@@ -200,23 +87,87 @@ public class AppServiceConnection implements ServiceConnection
 	public void onServiceConnected(final ComponentName name,
 			final IBinder serviceBinder)
 	{
-		service = ((AppServiceBinder) serviceBinder).getService();
-		if (toUpdateLocation != null)
-			service.addLocationListener(toUpdateLocation);
-		if (refreshOnTimer)
-			service.addRefreshOnTimerListener(toRefresh);
-		else if (toRefresh != null)
-			toRefresh.refreshData();
+		service = new Messenger(serviceBinder);
+		if (locationUpdates)
+			sendMessage(AppService.MSG_REGISTER_LOCATION_LISTENER);
+		if (intervalRefresh)
+			sendMessage(AppService.MSG_REGISTER_REFRESHABLE);
+		else
+			sendMessage(AppService.MSG_REFRESH_DATA);
 	}
 
 	@Override
 	public void onServiceDisconnected(final ComponentName name)
 	{
-		if (toUpdateLocation != null)
-			service.removeLocationListener(toUpdateLocation);
-		if (refreshOnTimer)
-			service.removeRefreshOnTimerListener(toRefresh);
+		if (locationUpdates)
+			sendMessage(AppService.MSG_UNREGISTER_LOCATION_LISTENER);
+		if (intervalRefresh)
+			sendMessage(AppService.MSG_UNREGISTER_REFRESHABLE);
 		service = null;
+	}
+
+	/**
+	 * Gets a list of all of the authenticated user's calendars. Assumes that
+	 * the service is already authenticated
+	 */
+	public void requestCalendars()
+	{
+		sendMessage(AppService.MSG_GET_CALENDARS);
+	}
+
+	/**
+	 * Gets a particular EventEntry given its URL. Assumes that the service is
+	 * already authenticated
+	 * 
+	 * @param eventUrl
+	 *            the URL of the EventEntry to return
+	 */
+	public void requestEvent(final String eventUrl)
+	{
+		sendMessage(AppService.MSG_GET_EVENT, eventUrl);
+	}
+
+	/**
+	 * Gets all events in a given Date range. Assumes that the service is
+	 * already authenticated
+	 * 
+	 * @param start
+	 *            start date
+	 * @param end
+	 *            end date
+	 */
+	public void requestEvents(final Date start, final Date end)
+	{
+		final Date[] dateRange = { start, end };
+		sendMessage(AppService.MSG_GET_EVENTS, dateRange);
+	}
+
+	/**
+	 * Finds the next event across all calendars (chronologically) that has a
+	 * location. Searches in an exponentially larger date range until it finds
+	 * an event (first 1 day, then 2, then 4, etc). Assumes that the service is
+	 * already authenticated
+	 */
+	public void requestNextEventWithLocation()
+	{
+		sendMessage(AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION);
+	}
+
+	private void sendMessage(final int what)
+	{
+		sendMessage(what, null);
+	}
+
+	private void sendMessage(final int what, final Object obj)
+	{
+		try
+		{
+			if (service != null)
+				service.send(Message.obtain(client, what, obj));
+		} catch (final RemoteException e)
+		{
+			service = null;
+		}
 	}
 
 	/**
@@ -227,6 +178,6 @@ public class AppServiceConnection implements ServiceConnection
 	 */
 	public void setAuthToken(final String authToken)
 	{
-		service.setAuthToken(authToken);
+		sendMessage(AppService.MSG_SET_AUTH_TOKEN, authToken);
 	}
 }
