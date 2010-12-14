@@ -12,6 +12,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import com.github.whentoleave.service.AppService;
@@ -23,7 +25,7 @@ import com.google.api.client.http.HttpResponseException;
  * 
  * @author Ian Lake
  */
-public class Login extends Activity implements Refreshable
+public class Login extends Activity implements Handler.Callback
 {
 	/**
 	 * Authorization token type for Google Calendar access
@@ -48,7 +50,8 @@ public class Login extends Activity implements Refreshable
 	/**
 	 * Connection to the persistent, to be authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(this);
+	private final AppServiceConnection service = new AppServiceConnection(
+			new Handler(this));
 
 	/**
 	 * Logs in to the given account, returning the authorization token
@@ -170,6 +173,27 @@ public class Login extends Activity implements Refreshable
 	}
 
 	@Override
+	public boolean handleMessage(final Message msg)
+	{
+		switch (msg.what)
+		{
+			case AppService.MSG_REFRESH_DATA:
+				handleRefreshData();
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * Kick off the login process as we now know we are connected to the service
+	 */
+	private void handleRefreshData()
+	{
+		gotAccount(false);
+	}
+
+	@Override
 	protected void onActivityResult(final int requestCode,
 			final int resultCode, final Intent data)
 	{
@@ -230,14 +254,5 @@ public class Login extends Activity implements Refreshable
 	{
 		super.onDestroy();
 		unbindService(service);
-	}
-
-	/**
-	 * Kick off the login process as we now know we are connected to the service
-	 */
-	@Override
-	public void refreshData()
-	{
-		gotAccount(false);
 	}
 }

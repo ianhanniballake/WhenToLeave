@@ -1,7 +1,5 @@
 package com.github.whentoleave.activity;
 
-import java.io.IOException;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.TabActivity;
@@ -11,6 +9,8 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,18 +22,16 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TabHost;
 
+import com.github.whentoleave.R;
 import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
-
-import com.github.whentoleave.R;
 
 /**
  * Activity which serves as the main hub of the application, containing the
  * Home, Agenda, and Map Activities as tabs and a persistent Action Bar
  */
-public class TabbedInterface extends TabActivity implements Refreshable,
-		LocationAware
+public class TabbedInterface extends TabActivity implements Handler.Callback
 {
 	/**
 	 * Class which handles the persistent Action Bar located above the tabs
@@ -82,10 +80,12 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 				{
 					// Refresh the current tab's data
 					final String tabTag = getTabHost().getCurrentTabTag();
-					final Refreshable tab = (Refreshable) getLocalActivityManager()
+					final Handler.Callback tab = (Handler.Callback) getLocalActivityManager()
 							.getActivity(tabTag);
-					tab.refreshData();
-					refreshData();
+					tab.handleMessage(Message.obtain(null,
+							AppService.MSG_REFRESH_DATA));
+					handleMessage(Message.obtain(null,
+							AppService.MSG_REFRESH_DATA));
 				}
 			});
 		}
@@ -235,8 +235,48 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(this,
-			this, true);
+	private final AppServiceConnection service = new AppServiceConnection(
+			new Handler(this), true, true);
+
+	private void handleGetNextEventWithLocation(final EventEntry nextEvent)
+	{
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final String travelType = settings.getString("TransportPreference",
+				"driving");
+		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
+		actionBar.setTextAndColor(
+				nextEvent.getWhenToLeaveInMinutes(currentLocation, travelType),
+				notifyTimeInMin);
+	}
+
+	@Override
+	public boolean handleMessage(final Message msg)
+	{
+		switch (msg.what)
+		{
+			case AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
+				final EventEntry nextEvent = (EventEntry) msg.obj;
+				handleGetNextEventWithLocation(nextEvent);
+				return true;
+			case AppService.MSG_LOCATION_UPDATE:
+				currentLocation = (Location) msg.obj;
+				handleRefreshData();
+				return true;
+			case AppService.MSG_REFRESH_DATA:
+				handleRefreshData();
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	private void handleRefreshData()
+	{
+		// Can't show WhenToLeave if we don't know where we are
+		if (currentLocation == null)
+			return;
+		service.requestNextEventWithLocation();
+	}
 
 	/**
 	 * This method is called when the Login activity (started in onCreate)
@@ -406,13 +446,6 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 	}
 
 	@Override
-	public void onLocationChanged(final Location location)
-	{
-		currentLocation = location;
-		refreshData();
-	}
-
-	@Override
 	public boolean onOptionsItemSelected(final MenuItem item)
 	{
 		switch (item.getItemId())
@@ -431,27 +464,5 @@ public class TabbedInterface extends TabActivity implements Refreshable,
 				return true;
 		}
 		return false;
-	}
-
-	@Override
-	public void refreshData()
-	{
-		// Can't show WhenToLeave if we don't know where we are
-		if (currentLocation == null)
-			return;
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		final String travelType = settings.getString("TransportPreference",
-				"driving");
-		try
-		{
-			final EventEntry ee = service.getNextEventWithLocation();
-			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
-			actionBar.setTextAndColor(
-					ee.getWhenToLeaveInMinutes(currentLocation, travelType),
-					notifyTimeInMin);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "Error updating actionBar", e);
-		}
 	}
 }

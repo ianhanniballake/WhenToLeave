@@ -1,23 +1,21 @@
 package com.github.whentoleave.activity;
 
-import java.io.IOException;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.github.whentoleave.R;
 import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
-
-import com.github.whentoleave.R;
 
 /**
  * Activity which shows the next event with a location, along with quick glance
@@ -26,12 +24,8 @@ import com.github.whentoleave.R;
  * 
  * @see TabbedInterface
  */
-public class Home extends Activity implements Refreshable
+public class Home extends Activity implements Handler.Callback
 {
-	/**
-	 * Logging tag
-	 */
-	private static final String TAG = "Home";
 	/**
 	 * The current event
 	 */
@@ -55,7 +49,67 @@ public class Home extends Activity implements Refreshable
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(this);
+	private final AppServiceConnection service = new AppServiceConnection(
+			new Handler(this));
+
+	private void handleError(final String errorMessage)
+	{
+		eventName.setText("Error Getting Next Event");
+		eventLocation.setText("");
+		eventDescription.setText(errorMessage);
+		eventWhen.setText("");
+	}
+
+	private void handleGetNextEventWithLocation()
+	{
+		if (currentEvent != null && currentEvent.title != null)
+			eventName.setText(currentEvent.title);
+		else
+			eventName.setText("No Events");
+		if (currentEvent != null)
+			eventLocation.setText(currentEvent.where.valueString);
+		else
+			eventLocation.setText("");
+		if (currentEvent != null && currentEvent.content != null)
+			eventDescription.setText(currentEvent.content);
+		else
+			eventDescription.setText("");
+		if (currentEvent != null && currentEvent.when.startTime != null)
+		{
+			final CharSequence time = android.text.format.DateFormat.format(
+					"hh:mma 'on' EEEE, MMM dd",
+					currentEvent.when.startTime.value);
+			eventWhen.setText(time);
+		}
+		else
+			eventWhen.setText("");
+	}
+
+	@Override
+	public boolean handleMessage(final Message msg)
+	{
+		switch (msg.what)
+		{
+			case AppService.MSG_ERROR:
+				final String errorMessage = (String) msg.obj;
+				handleError(errorMessage);
+				return true;
+			case AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
+				currentEvent = (EventEntry) msg.obj;
+				handleGetNextEventWithLocation();
+				return true;
+			case AppService.MSG_REFRESH_DATA:
+				handleRefreshData();
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	private void handleRefreshData()
+	{
+		service.requestNextEventWithLocation();
+	}
 
 	/** Called when the activity is first created. */
 	@Override
@@ -120,42 +174,5 @@ public class Home extends Activity implements Refreshable
 	{
 		super.onDestroy();
 		getApplicationContext().unbindService(service);
-	}
-
-	/**
-	 * Refresh the data for the Home Screen activity
-	 */
-	@Override
-	public void refreshData()
-	{
-		// Configure Home Screen Text
-		try
-		{
-			currentEvent = service.getNextEventWithLocation();
-			if (currentEvent != null && currentEvent.title != null)
-				eventName.setText(currentEvent.title);
-			else
-				eventName.setText("No Events");
-			if (currentEvent != null)
-				eventLocation.setText(currentEvent.where.valueString);
-			else
-				eventLocation.setText("");
-			if (currentEvent != null && currentEvent.content != null)
-				eventDescription.setText(currentEvent.content);
-			else
-				eventDescription.setText("");
-			if (currentEvent != null && currentEvent.when.startTime != null)
-			{
-				final CharSequence time = android.text.format.DateFormat
-						.format("hh:mma 'on' EEEE, MMM dd",
-								currentEvent.when.startTime.value);
-				eventWhen.setText(time);
-			}
-			else
-				eventWhen.setText("");
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "Error while refreshing data", e);
-		}
 	}
 }

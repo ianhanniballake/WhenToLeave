@@ -1,14 +1,13 @@
 package com.github.whentoleave.activity;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 import android.widget.ArrayAdapter;
 
 import com.github.whentoleave.model.CalendarEntry;
@@ -24,20 +23,57 @@ import com.github.whentoleave.service.AppServiceConnection;
  * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/CalendarAndroidSample.java?repo=samples"
  * >the google-api-java-client sample</a> by Yaniv Inbar
  */
-public final class Calendars extends ListActivity implements Refreshable
+public final class Calendars extends ListActivity implements Handler.Callback
 {
-	/**
-	 * Logging tag
-	 */
-	private static final String TAG = "Calendars";
-	/**
-	 * List of the calendars the user has access to
-	 */
-	private List<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(this);
+	private final AppServiceConnection service = new AppServiceConnection(
+			new Handler(this));
+
+	private void handleError(final String errorMessage)
+	{
+		final String[] calendarNames = new String[] { errorMessage };
+		setListAdapter(new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, calendarNames));
+	}
+
+	private void handleGetCalendars(final List<CalendarEntry> calendars)
+	{
+		final int numCalendars = calendars.size();
+		final String[] calendarNames = new String[numCalendars];
+		for (int i = 0; i < numCalendars; i++)
+			calendarNames[i] = calendars.get(i).title;
+		setListAdapter(new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, calendarNames));
+	}
+
+	@Override
+	public boolean handleMessage(final Message msg)
+	{
+		switch (msg.what)
+		{
+			case AppService.MSG_REFRESH_DATA:
+				handleRefreshData();
+				return true;
+			case AppService.MSG_GET_CALENDARS:
+				@SuppressWarnings("unchecked")
+				final List<CalendarEntry> calendars = (List<CalendarEntry>) msg.obj;
+				handleGetCalendars(calendars);
+				return true;
+			case AppService.MSG_ERROR:
+				final String errorMessage = (String) msg.obj;
+				handleError(errorMessage);
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	public void handleRefreshData()
+	{
+		service.requestCalendars();
+	}
 
 	@Override
 	public void onCreate(final Bundle savedInstanceState)
@@ -55,27 +91,5 @@ public final class Calendars extends ListActivity implements Refreshable
 	{
 		super.onDestroy();
 		unbindService(service);
-	}
-
-	@Override
-	public void refreshData()
-	{
-		String[] calendarNames;
-		calendars.clear();
-		try
-		{
-			calendars = service.getCalendars();
-			final int numCalendars = calendars.size();
-			calendarNames = new String[numCalendars];
-			for (int i = 0; i < numCalendars; i++)
-				calendarNames[i] = calendars.get(i).title;
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "Error while refreshing data", e);
-			calendarNames = new String[] { e.getMessage() };
-			calendars.clear();
-		}
-		setListAdapter(new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, calendarNames));
 	}
 }

@@ -1,6 +1,5 @@
 package com.github.whentoleave.activity;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -12,7 +11,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -20,11 +20,10 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
+import com.github.whentoleave.R;
 import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
-
-import com.github.whentoleave.R;
 
 /**
  * Activity which shows a list of all events in the next two weeks. Works
@@ -32,12 +31,8 @@ import com.github.whentoleave.R;
  * 
  * @see TabbedInterface
  */
-public class Agenda extends Activity implements Refreshable
+public class Agenda extends Activity implements Handler.Callback
 {
-	/**
-	 * Logging tag
-	 */
-	private static final String TAG = "Agenda";
 	/**
 	 * Formatted list of events used to create ListView adapter
 	 */
@@ -49,7 +44,91 @@ public class Agenda extends Activity implements Refreshable
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(this);
+	private final AppServiceConnection service = new AppServiceConnection(
+			new Handler(this));
+
+	private void handleError(final String errorMessage)
+	{
+		final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
+		calendarEventHashMap.clear();
+		calendarEventHashMap.put("title", errorMessage);
+		calendarEventHashMap.put("when", "");
+		calendarEventHashMap.put("where", "");
+		eventHashMapList.add(calendarEventHashMap);
+		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);
+		lastRefreshed.setText("");
+	}
+
+	private void handleGetEvents(final Set<EventEntry> events)
+	{
+		for (final EventEntry event : events)
+		{
+			final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
+			calendarEventHashMap.put("title", event.title);
+			if (event.when != null && event.when.startTime != null)
+			{
+				final CharSequence time = android.text.format.DateFormat
+						.format("hh:mma 'on' EEEE, MMM dd",
+								event.when.startTime.value);
+				calendarEventHashMap.put("when", time.toString());
+			}
+			else
+				calendarEventHashMap.put("when", "");
+			if (event.where != null && event.where.valueString != null
+					&& !event.where.valueString.equals(""))
+				calendarEventHashMap.put("where", event.where.valueString);
+			else
+				calendarEventHashMap.put("where", "No Location");
+			eventHashMapList.add(calendarEventHashMap);
+		}
+		eventList.clear();
+		eventList.addAll(events);
+		// Update the last refreshed text
+		final CharSequence lastRefreshedBase = getText(R.string.lastRefreshedBase);
+		final Date currentDate = new Date();
+		final DateFormat dateFormat = DateFormat
+				.getDateInstance(DateFormat.SHORT);
+		final DateFormat timeFormat = DateFormat
+				.getTimeInstance(DateFormat.SHORT);
+		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);
+		lastRefreshed.setText(lastRefreshedBase + " "
+				+ dateFormat.format(currentDate) + " "
+				+ timeFormat.format(currentDate));
+	}
+
+	@Override
+	public boolean handleMessage(final Message msg)
+	{
+		switch (msg.what)
+		{
+			case AppService.MSG_ERROR:
+				final String errorMessage = (String) msg.obj;
+				handleError(errorMessage);
+				return true;
+			case AppService.MSG_GET_EVENTS:
+				@SuppressWarnings("unchecked")
+				final Set<EventEntry> events = (Set<EventEntry>) msg.obj;
+				handleGetEvents(events);
+				return true;
+			case AppService.MSG_REFRESH_DATA:
+				handleRefreshData();
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	private void handleRefreshData()
+	{
+		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);
+		// Set the last refreshed to a while refreshing text
+		lastRefreshed.setText(getText(R.string.whileRefreshing));
+		// Load the data
+		eventHashMapList.clear();
+		final Calendar twoWeeksFromNow = Calendar.getInstance();
+		twoWeeksFromNow.add(Calendar.DATE, 14);
+		service.requestEvents(new Date(), twoWeeksFromNow.getTime());
+	}
 
 	/** Called when the activity is first created. */
 	@Override
@@ -89,65 +168,5 @@ public class Agenda extends Activity implements Refreshable
 	{
 		super.onDestroy();
 		getApplicationContext().unbindService(service);
-	}
-
-	/**
-	 * Refresh the data for the MainScreen activity
-	 */
-	@Override
-	public void refreshData()
-	{
-		// Set the last refreshed to a while refreshing text
-		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);
-		lastRefreshed.setText(getText(R.string.whileRefreshing));
-		// Load the data
-		eventHashMapList.clear();
-		try
-		{
-			final Calendar twoWeeksFromNow = Calendar.getInstance();
-			twoWeeksFromNow.add(Calendar.DATE, 14);
-			final Set<EventEntry> events = service
-					.getEventsStartingNow(twoWeeksFromNow.getTime());
-			for (final EventEntry event : events)
-			{
-				final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
-				calendarEventHashMap.put("title", event.title);
-				if (event.when != null && event.when.startTime != null)
-				{
-					final CharSequence time = android.text.format.DateFormat
-							.format("hh:mma 'on' EEEE, MMM dd",
-									event.when.startTime.value);
-					calendarEventHashMap.put("when", time.toString());
-				}
-				else
-					calendarEventHashMap.put("when", "");
-				if (event.where != null && event.where.valueString != null
-						&& !event.where.valueString.equals(""))
-					calendarEventHashMap.put("where", event.where.valueString);
-				else
-					calendarEventHashMap.put("where", "No Location");
-				eventHashMapList.add(calendarEventHashMap);
-			}
-			eventList.clear();
-			eventList.addAll(events);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "Error while refreshing data", e);
-			final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
-			calendarEventHashMap.put("title", e.getMessage());
-			calendarEventHashMap.put("when", "");
-			calendarEventHashMap.put("where", "");
-			eventHashMapList.add(calendarEventHashMap);
-		}
-		// Update the last refreshed text
-		final CharSequence lastRefreshedBase = getText(R.string.lastRefreshedBase);
-		final Date currentDate = new Date();
-		final DateFormat dateFormat = DateFormat
-				.getDateInstance(DateFormat.SHORT);
-		final DateFormat timeFormat = DateFormat
-				.getTimeInstance(DateFormat.SHORT);
-		lastRefreshed.setText(lastRefreshedBase + " "
-				+ dateFormat.format(currentDate) + " "
-				+ timeFormat.format(currentDate));
 	}
 }

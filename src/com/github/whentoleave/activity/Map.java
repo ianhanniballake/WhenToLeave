@@ -1,6 +1,5 @@
 package com.github.whentoleave.activity;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -13,14 +12,17 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.github.whentoleave.R;
 import com.github.whentoleave.maps.ItemizedOverlay;
 import com.github.whentoleave.maps.MapRouteOverlay;
 import com.github.whentoleave.maps.Route;
-import com.github.whentoleave.maps.RouteProvider;
 import com.github.whentoleave.maps.RouteInformation;
+import com.github.whentoleave.maps.RouteProvider;
 import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
@@ -31,8 +33,6 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
-import com.github.whentoleave.R;
-
 /**
  * Activity showing a map of all of the current day's events with locations. If
  * a GPS location is available, shows the current location and a route to the
@@ -40,7 +40,7 @@ import com.github.whentoleave.R;
  * 
  * @see TabbedInterface
  */
-public class Map extends MapActivity implements Refreshable, LocationAware
+public class Map extends MapActivity implements Handler.Callback
 {
 	/**
 	 * Possible Event Icon colors
@@ -118,6 +118,7 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	 * Route to our next destination from our current location, if it exists
 	 */
 	private Route mRoute = null;
+	private EventEntry nextEvent = null;
 	/**
 	 * Default (non-numbered) orange square
 	 */
@@ -138,8 +139,8 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(this,
-			this);
+	private final AppServiceConnection service = new AppServiceConnection(
+			new Handler(this), false, true);
 
 	/**
 	 * Generates all of the icons that could be used in this
@@ -261,6 +262,184 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 		mGpsOverlayItem = null;
 	}
 
+	private void handleGetEvents(
+			@SuppressWarnings("unused") final Set<EventEntry> events)
+	{
+		// TODO: Handle Redrawing events;
+	}
+
+	private void handleLocationUpdate(final Location location)
+	{
+		if (location != null)
+		{
+			Log.d(TAG, "onLocationChanged");
+			mGpsLocation = location;
+			service.requestNextEventWithLocation();
+		}
+	}
+
+	@Override
+	public boolean handleMessage(final Message msg)
+	{
+		switch (msg.what)
+		{
+			case AppService.MSG_LOCATION_UPDATE:
+				final Location location = (Location) msg.obj;
+				handleLocationUpdate(location);
+				return true;
+			case AppService.MSG_REFRESH_DATA:
+				handleRefreshData();
+				return true;
+			case AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
+				nextEvent = (EventEntry) msg.obj;
+				handleNextEvent();
+				return true;
+			case AppService.MSG_GET_EVENTS:
+				@SuppressWarnings("unchecked")
+				final Set<EventEntry> events = (Set<EventEntry>) msg.obj;
+				handleGetEvents(events);
+				return true;
+			case AppService.MSG_ERROR:
+				// TODO: Handle error messages
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	private void handleNextEvent()
+	{
+		if (mGpsLocation != null)
+			mRoute = RouteProvider.getRoute(mGpsLocation,
+					nextEvent.where.valueString);
+		// TODO: Handle Redrawing next Event
+	}
+
+	/**
+	 * Loads all of today's events on the user's calendar and plots them on the
+	 * map.
+	 */
+	@Override
+	public void handleRefreshData()
+	{
+		mapOverlays.clear();
+		// Draw Route
+		if (mRoute != null)
+		{
+			final TextView textView = (TextView) findViewById(R.id.mapdescription);
+			textView.setText(mRoute.mName + " " + mRoute.mDescription);
+			final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoute);
+			mapOverlays.add(mapOverlay);
+		}
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final EventEntry nextEvent = service.getNextEventWithLocation();
+		long leaveInMinutes = 0;
+		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
+		COLOR iconColor = COLOR.GREEN;
+		if (mGpsLocation != null && nextEvent != null)
+		{
+			final String travelType = settings.getString("TransportPreference",
+					"driving");
+			leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(mGpsLocation,
+					travelType);
+			Log.d(TAG, "getting leaveInMinutes: " + leaveInMinutes);
+		}
+		// Plot events for the day
+		// Create time window between midnight of this day and midnight
+		// of next day
+		final Calendar calendarToday = Calendar.getInstance();
+		calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
+				.getHours());
+		final Calendar calendarLaterToday = Calendar.getInstance();
+		calendarLaterToday.add(Calendar.HOUR_OF_DAY, 24 - calendarLaterToday
+				.getTime().getHours());
+		final Set<EventEntry> events = service.getEvents(
+				calendarToday.getTime(), calendarLaterToday.getTime());
+		final int h = 0;
+		Log.v(TAG, "refreshData: size of events = " + events.size());
+		GeoPoint nextEventPoint = null;
+		for (final EventEntry event : events)
+		{
+			// Close enough evaluation...
+			if (nextEvent != null)
+			{
+				if (nextEvent.title.equals(event.title)
+						&& nextEvent.when.startTime
+								.equals(event.when.startTime))
+				{
+					if (leaveInMinutes < notifyTimeInMin * .33333)
+						iconColor = COLOR.RED;
+					else if (leaveInMinutes < notifyTimeInMin * .6666)
+						iconColor = COLOR.ORANGE;
+					Log.d(TAG, "next event found - leavin: " + leaveInMinutes);
+				}
+				else
+					iconColor = COLOR.GREY;
+			}
+			else
+				iconColor = COLOR.GREY;
+			if (event.where != null && event.where.valueString != null
+					&& !event.where.valueString.equals(""))
+			{
+				if (h <= 10)
+					switch (iconColor)
+					{
+						case GREEN:
+							nextEventPoint = plotEvent(event,
+									greenSquaresNumbered[h - 1]);
+							break;
+						case ORANGE:
+							nextEventPoint = plotEvent(event,
+									orangeSquaresNumbered[h - 1]);
+							break;
+						case RED:
+							nextEventPoint = plotEvent(event,
+									redSquaresNumbered[h - 1]);
+							break;
+						default:
+							plotEvent(event, greySquaresNumbered[h - 1]);
+							break;
+					}
+				else
+					switch (iconColor)
+					{
+						case GREEN:
+							nextEventPoint = plotEvent(event,
+									greenSquareDefault);
+							break;
+						case ORANGE:
+							nextEventPoint = plotEvent(event,
+									orangeSquareDefault);
+							break;
+						case RED:
+							nextEventPoint = plotEvent(event, redSquareDefault);
+							break;
+						default:
+							plotEvent(event, greySquareDefault);
+							break;
+					}
+				Log.v(TAG, "refreshData: Plotting Event: " + h);
+			}
+		}
+		if (nextEventPoint != null)
+			zoomTo(nextEventPoint);
+		eventList.clear();
+		eventList.addAll(events);
+		// Add GPS location overlay if we have our location set
+		if (mGpsLocation != null)
+		{
+			final GeoPoint gpsLocationPoint = new GeoPoint(
+					(int) (mGpsLocation.getLatitude() * 1000000),
+					(int) (mGpsLocation.getLongitude() * 1000000));
+			mGpsOverlayItem = new OverlayItem(gpsLocationPoint, "", "");
+			mGpsOverlayItem.setMarker(gpsLocationIcon);
+			final ItemizedOverlay itemizedOverlay = new ItemizedOverlay(
+					gpsLocationIcon, this);
+			itemizedOverlay.addOverlay(mGpsOverlayItem, "");
+			mapOverlays.add(itemizedOverlay);
+		}
+	}
+
 	@Override
 	protected boolean isRouteDisplayed()
 	{
@@ -289,26 +468,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 	{
 		super.onDestroy();
 		getApplicationContext().unbindService(service);
-	}
-
-	@Override
-	public void onLocationChanged(final Location location)
-	{
-		if (location != null)
-		{
-			Log.d(TAG, "onLocationChanged");
-			mGpsLocation = location;
-			try
-			{
-				final EventEntry ee = service.getNextEventWithLocation();
-				if (ee != null)
-					mRoute = RouteProvider.getRoute(location,
-							ee.where.valueString);
-			} catch (final IOException e)
-			{
-				Log.e(TAG, "onLocationChanged IO Error", e);
-			}
-		}
 	}
 
 	/**
@@ -341,145 +500,6 @@ public class Map extends MapActivity implements Refreshable, LocationAware
 			return geoPoint;
 		}
 		return null;
-	}
-
-	/**
-	 * Loads all of today's events on the user's calendar and plots them on the
-	 * map.
-	 */
-	@Override
-	public void refreshData()
-	{
-		mapOverlays.clear();
-		String[] calendarEvents;
-		try
-		{
-			// Draw Route
-			if (mRoute != null)
-			{
-				final TextView textView = (TextView) findViewById(R.id.mapdescription);
-				textView.setText(mRoute.mName + " " + mRoute.mDescription);
-				final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoute);
-				mapOverlays.add(mapOverlay);
-			}
-			final SharedPreferences settings = getSharedPreferences(PREF, 0);
-			final EventEntry nextEvent = service.getNextEventWithLocation();
-			long leaveInMinutes = 0;
-			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
-			COLOR iconColor = COLOR.GREEN;
-			if (mGpsLocation != null && nextEvent != null)
-			{
-				final String travelType = settings.getString(
-						"TransportPreference", "driving");
-				leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
-						mGpsLocation, travelType);
-				Log.d(TAG, "getting leaveInMinutes: " + leaveInMinutes);
-			}
-			// Plot events for the day
-			// Create time window between midnight of this day and midnight
-			// of next day
-			final Calendar calendarToday = Calendar.getInstance();
-			calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
-					.getHours());
-			final Calendar calendarLaterToday = Calendar.getInstance();
-			calendarLaterToday.add(Calendar.HOUR_OF_DAY,
-					24 - calendarLaterToday.getTime().getHours());
-			final Set<EventEntry> events = service.getEvents(
-					calendarToday.getTime(), calendarLaterToday.getTime());
-			int h = 0;
-			calendarEvents = new String[events.size()];
-			Log.v(TAG, "refreshData: size of events = " + events.size());
-			GeoPoint nextEventPoint = null;
-			for (final EventEntry event : events)
-			{
-				// Close enough evaluation...
-				if (nextEvent != null)
-				{
-					if (nextEvent.title.equals(event.title)
-							&& nextEvent.when.startTime
-									.equals(event.when.startTime))
-					{
-						if (leaveInMinutes < notifyTimeInMin * .33333)
-							iconColor = COLOR.RED;
-						else if (leaveInMinutes < notifyTimeInMin * .6666)
-							iconColor = COLOR.ORANGE;
-						Log.d(TAG, "next event found - leavin: "
-								+ leaveInMinutes);
-					}
-					else
-						iconColor = COLOR.GREY;
-				}
-				else
-					iconColor = COLOR.GREY;
-				calendarEvents[h++] = event.title;
-				if (event.where != null && event.where.valueString != null
-						&& !event.where.valueString.equals(""))
-				{
-					calendarEvents[h - 1] = calendarEvents[h - 1] + " at "
-							+ event.where.valueString;
-					if (h <= 10)
-						switch (iconColor)
-						{
-							case GREEN:
-								nextEventPoint = plotEvent(event,
-										greenSquaresNumbered[h - 1]);
-								break;
-							case ORANGE:
-								nextEventPoint = plotEvent(event,
-										orangeSquaresNumbered[h - 1]);
-								break;
-							case RED:
-								nextEventPoint = plotEvent(event,
-										redSquaresNumbered[h - 1]);
-								break;
-							default:
-								plotEvent(event, greySquaresNumbered[h - 1]);
-								break;
-						}
-					else
-						switch (iconColor)
-						{
-							case GREEN:
-								nextEventPoint = plotEvent(event,
-										greenSquareDefault);
-								break;
-							case ORANGE:
-								nextEventPoint = plotEvent(event,
-										orangeSquareDefault);
-								break;
-							case RED:
-								nextEventPoint = plotEvent(event,
-										redSquareDefault);
-								break;
-							default:
-								plotEvent(event, greySquareDefault);
-								break;
-						}
-					Log.v(TAG, "refreshData: Plotting Event: " + h);
-				}
-			}
-			if (nextEventPoint != null)
-				zoomTo(nextEventPoint);
-			eventList.clear();
-			eventList.addAll(events);
-			// Add GPS location overlay if we have our location set
-			if (mGpsLocation != null)
-			{
-				final GeoPoint gpsLocationPoint = new GeoPoint(
-						(int) (mGpsLocation.getLatitude() * 1000000),
-						(int) (mGpsLocation.getLongitude() * 1000000));
-				mGpsOverlayItem = new OverlayItem(gpsLocationPoint, "", "");
-				mGpsOverlayItem.setMarker(gpsLocationIcon);
-				final ItemizedOverlay itemizedOverlay = new ItemizedOverlay(
-						gpsLocationIcon, this);
-				itemizedOverlay.addOverlay(mGpsOverlayItem, "");
-				mapOverlays.add(itemizedOverlay);
-			}
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "Error on refreshData", e);
-			calendarEvents = new String[] { e.getMessage() };
-		}
 	}
 
 	/**

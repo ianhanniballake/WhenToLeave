@@ -4,13 +4,16 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Message;
 
+import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
 
 /**
  * Activity which logs the user out and returns to the calling activity
  */
-public class Logout extends Activity implements Refreshable
+public class Logout extends Activity implements Handler.Callback
 {
 	/**
 	 * Preferences name to load settings from
@@ -23,13 +26,26 @@ public class Logout extends Activity implements Refreshable
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(this);
+	private final AppServiceConnection service = new AppServiceConnection(
+			new Handler(this));
+
+	@Override
+	public boolean handleMessage(final Message msg)
+	{
+		switch (msg.what)
+		{
+			case AppService.MSG_REFRESH_DATA:
+				handleRefreshData();
+				return true;
+			default:
+				return false;
+		}
+	}
 
 	/**
 	 * Logs the user out and calls finish() on this activity
 	 */
-	@Override
-	public void refreshData()
+	public void handleRefreshData()
 	{
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
 		final String accountName = settings.getString("accountName", null);
