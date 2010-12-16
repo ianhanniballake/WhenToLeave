@@ -65,6 +65,16 @@ public class ItemizedOverlay extends
 	}
 
 	/**
+	 * Clears this ItemizedOverlay
+	 */
+	public void clearOverlay()
+	{
+		mOverlays.clear();
+		mEventURLs.clear();
+		populate();
+	}
+
+	/**
 	 * Redefined to read from our {@link ArrayList}.
 	 */
 	@Override

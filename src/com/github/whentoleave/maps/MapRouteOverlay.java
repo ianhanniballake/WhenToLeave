@@ -3,7 +3,6 @@ package com.github.whentoleave.maps;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.util.Log;
 
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
@@ -14,13 +13,16 @@ import com.google.android.maps.Overlay;
 public class MapRouteOverlay extends Overlay
 {
 	/**
-	 * Logging tag
-	 */
-	private static final String TAG = "MapRouteOverlay";
-	/**
 	 * The route to draw
 	 */
-	private final Route mRoute;
+	private Route mRoute = null;
+
+	/**
+	 * Base constructor for a null route
+	 */
+	public MapRouteOverlay()
+	{
+	}
 
 	/**
 	 * Basic constructor for drawing a given route onto a Google Map
@@ -31,7 +33,6 @@ public class MapRouteOverlay extends Overlay
 	public MapRouteOverlay(final Route route)
 	{
 		mRoute = route;
-		Log.v(TAG, "Route Length " + route.mRoute.size());
 	}
 
 	/**
@@ -42,7 +43,7 @@ public class MapRouteOverlay extends Overlay
 			final boolean shadow, final long when)
 	{
 		super.draw(canvas, mv, shadow);
-		if (!mRoute.mRoute.isEmpty())
+		if (mRoute != null && !mRoute.mRoute.isEmpty())
 		{
 			int x1 = -1, y1 = -1, x2 = -1, y2 = -1;
 			final Paint paint = new Paint();
@@ -62,5 +63,16 @@ public class MapRouteOverlay extends Overlay
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Set the route to be drawn
+	 * 
+	 * @param route
+	 *            route to draw
+	 */
+	public void setRoute(final Route route)
+	{
+		mRoute = route;
 	}
 }

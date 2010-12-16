@@ -77,6 +77,10 @@ public class Map extends MapActivity implements Handler.Callback
 	 */
 	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
 	/**
+	 * Overlay for the day's events
+	 */
+	private ItemizedOverlay eventOverlay;
+	/**
 	 * Icon representing the current GPS location
 	 */
 	private Drawable gpsLocationIcon;
@@ -99,9 +103,13 @@ public class Map extends MapActivity implements Handler.Callback
 	 */
 	private Drawable greySquaresNumbered[];
 	/**
-	 * List of all overlays on the map
+	 * Overlay for the GPS location
 	 */
-	private List<Overlay> mapOverlays;
+	private ItemizedOverlay locationOverlay;
+	/**
+	 * Overlay for the route t the next event
+	 */
+	private final MapRouteOverlay mapRouteOverlay = new MapRouteOverlay();
 	/**
 	 * The Map View that constitutes this activity
 	 */
@@ -110,10 +118,6 @@ public class Map extends MapActivity implements Handler.Callback
 	 * Current location of the device
 	 */
 	private Location mGpsLocation;
-	/**
-	 * Global references to the GPS location overlay and it's GeoPoint
-	 */
-	private OverlayItem mGpsOverlayItem;
 	/**
 	 * Route to our next destination from our current location, if it exists
 	 */
@@ -258,81 +262,11 @@ public class Map extends MapActivity implements Handler.Callback
 		greySquareDefault.setBounds(0, 0, 36, 36);
 		for (final Drawable greySquare : greySquaresNumbered)
 			greySquare.setBounds(0, 0, 36, 36);
-		mGpsLocation = null;
-		mGpsOverlayItem = null;
 	}
 
-	private void handleGetEvents(
-			@SuppressWarnings("unused") final Set<EventEntry> events)
+	private void handleGetEvents(final Set<EventEntry> events)
 	{
-		// TODO: Handle Redrawing events;
-	}
-
-	private void handleLocationUpdate(final Location location)
-	{
-		if (location != null)
-		{
-			Log.d(TAG, "onLocationChanged");
-			mGpsLocation = location;
-			service.requestNextEventWithLocation();
-		}
-	}
-
-	@Override
-	public boolean handleMessage(final Message msg)
-	{
-		switch (msg.what)
-		{
-			case AppService.MSG_LOCATION_UPDATE:
-				final Location location = (Location) msg.obj;
-				handleLocationUpdate(location);
-				return true;
-			case AppService.MSG_REFRESH_DATA:
-				handleRefreshData();
-				return true;
-			case AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
-				nextEvent = (EventEntry) msg.obj;
-				handleNextEvent();
-				return true;
-			case AppService.MSG_GET_EVENTS:
-				@SuppressWarnings("unchecked")
-				final Set<EventEntry> events = (Set<EventEntry>) msg.obj;
-				handleGetEvents(events);
-				return true;
-			case AppService.MSG_ERROR:
-				// TODO: Handle error messages
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	private void handleNextEvent()
-	{
-		if (mGpsLocation != null)
-			mRoute = RouteProvider.getRoute(mGpsLocation,
-					nextEvent.where.valueString);
-		// TODO: Handle Redrawing next Event
-	}
-
-	/**
-	 * Loads all of today's events on the user's calendar and plots them on the
-	 * map.
-	 */
-	@Override
-	public void handleRefreshData()
-	{
-		mapOverlays.clear();
-		// Draw Route
-		if (mRoute != null)
-		{
-			final TextView textView = (TextView) findViewById(R.id.mapdescription);
-			textView.setText(mRoute.mName + " " + mRoute.mDescription);
-			final MapRouteOverlay mapOverlay = new MapRouteOverlay(mRoute);
-			mapOverlays.add(mapOverlay);
-		}
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		final EventEntry nextEvent = service.getNextEventWithLocation();
 		long leaveInMinutes = 0;
 		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
 		COLOR iconColor = COLOR.GREEN;
@@ -344,20 +278,10 @@ public class Map extends MapActivity implements Handler.Callback
 					travelType);
 			Log.d(TAG, "getting leaveInMinutes: " + leaveInMinutes);
 		}
-		// Plot events for the day
-		// Create time window between midnight of this day and midnight
-		// of next day
-		final Calendar calendarToday = Calendar.getInstance();
-		calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
-				.getHours());
-		final Calendar calendarLaterToday = Calendar.getInstance();
-		calendarLaterToday.add(Calendar.HOUR_OF_DAY, 24 - calendarLaterToday
-				.getTime().getHours());
-		final Set<EventEntry> events = service.getEvents(
-				calendarToday.getTime(), calendarLaterToday.getTime());
-		final int h = 0;
+		int h = 1;
 		Log.v(TAG, "refreshData: size of events = " + events.size());
 		GeoPoint nextEventPoint = null;
+		eventOverlay.clearOverlay();
 		for (final EventEntry event : events)
 		{
 			// Close enough evaluation...
@@ -418,26 +342,91 @@ public class Map extends MapActivity implements Handler.Callback
 							plotEvent(event, greySquareDefault);
 							break;
 					}
-				Log.v(TAG, "refreshData: Plotting Event: " + h);
+				Log.v(TAG, "refreshData: Plotting Event: " + h++);
 			}
 		}
 		if (nextEventPoint != null)
 			zoomTo(nextEventPoint);
 		eventList.clear();
 		eventList.addAll(events);
-		// Add GPS location overlay if we have our location set
-		if (mGpsLocation != null)
+	}
+
+	private void handleLocationUpdate(final Location location)
+	{
+		if (location != null)
 		{
+			Log.d(TAG, "onLocationChanged");
+			mGpsLocation = location;
 			final GeoPoint gpsLocationPoint = new GeoPoint(
 					(int) (mGpsLocation.getLatitude() * 1000000),
 					(int) (mGpsLocation.getLongitude() * 1000000));
-			mGpsOverlayItem = new OverlayItem(gpsLocationPoint, "", "");
+			final OverlayItem mGpsOverlayItem = new OverlayItem(
+					gpsLocationPoint, "", "");
 			mGpsOverlayItem.setMarker(gpsLocationIcon);
-			final ItemizedOverlay itemizedOverlay = new ItemizedOverlay(
-					gpsLocationIcon, this);
-			itemizedOverlay.addOverlay(mGpsOverlayItem, "");
-			mapOverlays.add(itemizedOverlay);
+			locationOverlay.clearOverlay();
+			locationOverlay.addOverlay(mGpsOverlayItem, "");
+			service.requestNextEventWithLocation();
 		}
+	}
+
+	@Override
+	public boolean handleMessage(final Message msg)
+	{
+		switch (msg.what)
+		{
+			case AppService.MSG_LOCATION_UPDATE:
+				final Location location = (Location) msg.obj;
+				handleLocationUpdate(location);
+				return true;
+			case AppService.MSG_REFRESH_DATA:
+				handleRefreshData();
+				return true;
+			case AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
+				nextEvent = (EventEntry) msg.obj;
+				handleNextEvent();
+				return true;
+			case AppService.MSG_GET_EVENTS:
+				@SuppressWarnings("unchecked")
+				final Set<EventEntry> events = (Set<EventEntry>) msg.obj;
+				handleGetEvents(events);
+				return true;
+			case AppService.MSG_ERROR:
+				final String errorMessage = (String) msg.obj;
+				final TextView textView = (TextView) findViewById(R.id.mapdescription);
+				textView.setText("Error retrieving data: " + errorMessage);
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	private void handleNextEvent()
+	{
+		if (mGpsLocation != null)
+		{
+			mRoute = RouteProvider.getRoute(mGpsLocation,
+					nextEvent.where.valueString);
+			final TextView textView = (TextView) findViewById(R.id.mapdescription);
+			textView.setText(mRoute.mName + " " + mRoute.mDescription);
+		}
+	}
+
+	/**
+	 * Loads all of today's events on the user's calendar.
+	 */
+	public void handleRefreshData()
+	{
+		service.requestNextEventWithLocation();
+		// Create time window between midnight of this day and midnight
+		// of next day
+		final Calendar calendarToday = Calendar.getInstance();
+		calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
+				.getHours());
+		final Calendar calendarLaterToday = Calendar.getInstance();
+		calendarLaterToday.add(Calendar.HOUR_OF_DAY, 24 - calendarLaterToday
+				.getTime().getHours());
+		service.requestEvents(calendarToday.getTime(),
+				calendarLaterToday.getTime());
 	}
 
 	@Override
@@ -456,8 +445,13 @@ public class Map extends MapActivity implements Handler.Callback
 		mapView = (MapView) findViewById(R.id.mapview);
 		mapView.setBuiltInZoomControls(true);
 		// Initialize overlay variables
-		mapOverlays = mapView.getOverlays();
+		final List<Overlay> mapOverlays = mapView.getOverlays();
 		generateDrawables();
+		mapOverlays.add(mapRouteOverlay);
+		locationOverlay = new ItemizedOverlay(gpsLocationIcon, this);
+		mapOverlays.add(locationOverlay);
+		eventOverlay = new ItemizedOverlay(greySquareDefault, this);
+		mapOverlays.add(eventOverlay);
 		// Need to use getApplicationContext as this activity is used as a Tab
 		getApplicationContext().bindService(new Intent(this, AppService.class),
 				service, Context.BIND_AUTO_CREATE);
@@ -488,15 +482,11 @@ public class Map extends MapActivity implements Handler.Callback
 		if (geoPoint != null)
 		{
 			// Create a marker for the point
-			// TODO Move this to only create one ItemizedOverlay
-			final ItemizedOverlay itemizedOverlay = new ItemizedOverlay(icon,
-					this);
 			final OverlayItem overlayItem = new OverlayItem(geoPoint,
 					"Appointment", "Appointment");
 			overlayItem.setMarker(icon);
 			// Add the point to the map
-			itemizedOverlay.addOverlay(overlayItem, event.getSelfLink());
-			mapOverlays.add(itemizedOverlay);
+			eventOverlay.addOverlay(overlayItem, event.getSelfLink());
 			return geoPoint;
 		}
 		return null;
