@@ -47,6 +47,7 @@ public class ItemizedOverlay extends
 	{
 		super(boundCenterBottom(defaultMarker));
 		mContext = context;
+		populate();
 	}
 
 	/**
