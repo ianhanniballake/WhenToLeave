@@ -19,7 +19,7 @@ public class AppServiceConnection implements ServiceConnection
 	/**
 	 * Client to send reply messages to
 	 */
-	private Handler client = null;
+	private Messenger client = null;
 	/**
 	 * Register for interval refreshes
 	 */
@@ -58,7 +58,7 @@ public class AppServiceConnection implements ServiceConnection
 	public AppServiceConnection(final Handler client,
 			final boolean intervalRefresh, final boolean locationUpdates)
 	{
-		this.client = client;
+		this.client = new Messenger(client);
 		this.intervalRefresh = intervalRefresh;
 		this.locationUpdates = locationUpdates;
 	}
@@ -163,7 +163,11 @@ public class AppServiceConnection implements ServiceConnection
 		try
 		{
 			if (service != null)
-				service.send(Message.obtain(client, what, obj));
+			{
+				final Message message = Message.obtain(null, what, obj);
+				message.replyTo = client;
+				service.send(message);
+			}
 		} catch (final RemoteException e)
 		{
 			service = null;
