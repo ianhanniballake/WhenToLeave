@@ -2,7 +2,8 @@
 <manifest
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:versionCode="1"
-	android:versionName="@string/version" package="com.github.whentoleave">
+	android:versionName="@string/version"
+	package="com.github.whentoleave">
 	<uses-permission
 		android:name="android.permission.INTERNET" />
 	<uses-permission
@@ -40,32 +41,38 @@
 			android:name=".activity.Login"></activity>
 		<activity
 			android:name=".activity.Logout"></activity>
-        <activity
-            android:name=".activity.EventDetails"
-            android:label="@string/eventDetailsTitle" android:theme="@style/Theme.EventDetails"></activity>
+		<activity
+			android:name=".activity.EventDetails"
+			android:label="@string/eventDetailsTitle"
+			android:theme="@style/Theme.EventDetails"></activity>
 		<activity
 			android:name=".activity.Preferences"
 			android:label="@string/preferencesTitle"></activity>
 		<activity
 			android:name=".activity.Home"></activity>
-			
-		<service android:enabled="true" android:name=".service.AppService"></service>
-        <service android:enabled="true" android:name=".widget.WidgetUpdateService"></service>
-		<receiver android:name=".widget.WidgetProvider">
-            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_provider" />
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="WHENTOLEAVE_WIDGET_UPDATE_ACTION" />
-            </intent-filter>
-        </receiver>
-  
+		<service
+			android:enabled="true"
+			android:name=".service.AppService"></service>
+		<service
+			android:enabled="true"
+			android:name=".widget.WidgetUpdateService"></service>
+		<receiver
+			android:name=".widget.WidgetProvider">
+			<meta-data
+				android:name="android.appwidget.provider"
+				android:resource="@xml/widget_provider" />
+			<intent-filter>
+				<action
+					android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+			</intent-filter>
+			<intent-filter>
+				<action
+					android:name="WHENTOLEAVE_WIDGET_UPDATE_ACTION" />
+			</intent-filter>
+		</receiver>
 		<uses-library
 			android:name="com.google.android.maps" />
-	
-
-</application>
+	</application>
 	<uses-sdk
 		android:minSdkVersion="8"></uses-sdk>
 </manifest>
