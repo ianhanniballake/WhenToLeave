@@ -406,6 +406,7 @@ public class Map extends MapActivity implements Handler.Callback
 		{
 			mRoute = RouteProvider.getRoute(mGpsLocation,
 					nextEvent.where.valueString);
+			mapRouteOverlay.setRoute(mRoute);
 			final TextView textView = (TextView) findViewById(R.id.mapdescription);
 			textView.setText(mRoute.mName + " " + mRoute.mDescription);
 		}
