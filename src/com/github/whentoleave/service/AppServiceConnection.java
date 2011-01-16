@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.util.Log;
 
 /**
  * Serves as the primary connection to the AppService when an Activity or
@@ -16,6 +17,7 @@ import android.os.RemoteException;
  */
 public class AppServiceConnection implements ServiceConnection
 {
+	private static final String TAG = "AppServiceConnection";
 	/**
 	 * Client to send reply messages to
 	 */
@@ -87,6 +89,7 @@ public class AppServiceConnection implements ServiceConnection
 	public void onServiceConnected(final ComponentName name,
 			final IBinder serviceBinder)
 	{
+		Log.d(TAG, "onServiceConnected: " + name);
 		service = new Messenger(serviceBinder);
 		if (locationUpdates)
 			sendMessage(AppService.MSG_REGISTER_LOCATION_LISTENER);
@@ -99,10 +102,7 @@ public class AppServiceConnection implements ServiceConnection
 	@Override
 	public void onServiceDisconnected(final ComponentName name)
 	{
-		if (locationUpdates)
-			sendMessage(AppService.MSG_UNREGISTER_LOCATION_LISTENER);
-		if (intervalRefresh)
-			sendMessage(AppService.MSG_UNREGISTER_REFRESHABLE);
+		Log.d(TAG, "onServiceDisconnected");
 		service = null;
 	}
 
@@ -183,5 +183,14 @@ public class AppServiceConnection implements ServiceConnection
 	public void setAuthToken(final String authToken)
 	{
 		sendMessage(AppService.MSG_SET_AUTH_TOKEN, authToken);
+	}
+
+	public void unregister()
+	{
+		Log.d(TAG, "unregister");
+		if (locationUpdates)
+			sendMessage(AppService.MSG_UNREGISTER_LOCATION_LISTENER);
+		if (intervalRefresh)
+			sendMessage(AppService.MSG_UNREGISTER_REFRESHABLE);
 	}
 }

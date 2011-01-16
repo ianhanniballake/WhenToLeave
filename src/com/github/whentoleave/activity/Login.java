@@ -253,6 +253,7 @@ public class Login extends Activity implements Handler.Callback
 	public void onDestroy()
 	{
 		super.onDestroy();
+		service.unregister();
 		unbindService(service);
 	}
 }

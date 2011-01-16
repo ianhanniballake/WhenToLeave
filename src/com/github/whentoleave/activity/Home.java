@@ -173,6 +173,7 @@ public class Home extends Activity implements Handler.Callback
 	protected void onDestroy()
 	{
 		super.onDestroy();
+		service.unregister();
 		getApplicationContext().unbindService(service);
 	}
 }

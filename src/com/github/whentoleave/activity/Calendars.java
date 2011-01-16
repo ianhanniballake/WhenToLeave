@@ -90,6 +90,7 @@ public final class Calendars extends ListActivity implements Handler.Callback
 	protected void onDestroy()
 	{
 		super.onDestroy();
+		service.unregister();
 		unbindService(service);
 	}
 }

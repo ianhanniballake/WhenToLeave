@@ -442,6 +442,7 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 	protected void onDestroy()
 	{
 		super.onDestroy();
+		service.unregister();
 		unbindService(service);
 	}
 

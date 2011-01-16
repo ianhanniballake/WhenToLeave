@@ -462,6 +462,7 @@ public class Map extends MapActivity implements Handler.Callback
 	protected void onDestroy()
 	{
 		super.onDestroy();
+		service.unregister();
 		getApplicationContext().unbindService(service);
 	}
 

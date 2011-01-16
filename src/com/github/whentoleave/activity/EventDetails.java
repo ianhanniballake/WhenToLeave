@@ -146,6 +146,7 @@ public class EventDetails extends Activity implements Handler.Callback
 	protected void onDestroy()
 	{
 		super.onDestroy();
+		service.unregister();
 		unbindService(service);
 	}
 }

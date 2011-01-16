@@ -65,8 +65,9 @@ public class AppService extends Service implements LocationListener,
 	public static final int MSG_REGISTER_LOCATION_LISTENER = 9;
 	public static final int MSG_REGISTER_REFRESHABLE = 10;
 	public static final int MSG_SET_AUTH_TOKEN = 11;
-	public static final int MSG_UNREGISTER_LOCATION_LISTENER = 12;
-	public static final int MSG_UNREGISTER_REFRESHABLE = 13;
+	public static final int MSG_SLEEP_GPS = 12;
+	public static final int MSG_UNREGISTER_LOCATION_LISTENER = 13;
+	public static final int MSG_UNREGISTER_REFRESHABLE = 14;
 	/**
 	 * Action used to distinguish notification alarm service starts from regular
 	 * service starts
@@ -84,6 +85,7 @@ public class AppService extends Service implements LocationListener,
 	 * Logging tag
 	 */
 	private static final String TAG = "AppService";
+	private static final int TWO_MINUTES = 1000 * 60 * 2;
 	/**
 	 * Current location of the device
 	 */
@@ -152,6 +154,16 @@ public class AppService extends Service implements LocationListener,
 		{
 			Log.e(TAG, "Error checking for notifications", e);
 		}
+	}
+
+	private void enableNetworkProviderLocationListening()
+	{
+		Log.d(TAG, "enableNetworkProviderLocationListening");
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		int interval = settings.getInt("RefreshInterval", 600);
+		interval = interval * 1000;
+		locationManager.requestLocationUpdates(
+				LocationManager.NETWORK_PROVIDER, interval, 0, this);
 	}
 
 	/**
@@ -280,14 +292,25 @@ public class AppService extends Service implements LocationListener,
 				}
 				return true;
 			case MSG_REGISTER_LOCATION_LISTENER:
-				locationListenerList.add(msg.replyTo);
+				registerLocationListener(msg.replyTo);
 				return true;
 			case MSG_SET_AUTH_TOKEN:
 				final String authToken = (String) msg.obj;
 				setAuthToken(authToken);
 				return true;
+			case MSG_SLEEP_GPS:
+				Log.d(TAG, "Stopped listening for GPS Updates");
+				locationManager.removeUpdates(this);
+				// Keep Network Provider updates running if there are location
+				// listeners remaining
+				if (!locationListenerList.isEmpty())
+					enableNetworkProviderLocationListening();
+				return true;
 			case MSG_UNREGISTER_LOCATION_LISTENER:
-				locationListenerList.remove(msg.replyTo);
+				unregisterLocationListener(msg.replyTo);
+				return true;
+			case MSG_UNREGISTER_REFRESHABLE:
+				refreshOnTimerListenerList.remove(msg.replyTo);
 				return true;
 			default:
 				return false;
@@ -299,10 +322,73 @@ public class AppService extends Service implements LocationListener,
 	 * Note that all queries done between now and future authentication will
 	 * fail
 	 */
-	protected void invalidateAuthToken()
+	private void invalidateAuthToken()
 	{
 		((GoogleHeaders) transport.defaultHeaders).remove("Authorization");
 		isAuthenticated = false;
+	}
+
+	/**
+	 * Determines whether one Location reading is better than the current
+	 * Location fix. Modified from <a href=
+	 * "http://developer.android.com/guide/topics/location/obtaining-user-location.html"
+	 * >the Android Dev Guide on Obtaining User Location</a>
+	 * 
+	 * @param location
+	 *            The new Location that you want to evaluate
+	 * @param currentBestLocation
+	 *            The current Location fix, to which you want to compare the new
+	 *            one
+	 */
+	private boolean isBetterLocation(final Location location,
+			final Location currentBestLocation)
+	{
+		// A null location is never better
+		if (location == null)
+			return false;
+		// A new location is always better than no location
+		if (currentBestLocation == null)
+			return true;
+		// Check whether the new location fix is newer or older
+		final long timeDelta = location.getTime()
+				- currentBestLocation.getTime();
+		final boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
+		final boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
+		final boolean isNewer = timeDelta > 0;
+		// If it's been more than two minutes since the current location, use
+		// the new location because the user has likely moved
+		if (isSignificantlyNewer)
+			return true;
+		// If the new location is more than two minutes older, it must be worse
+		else if (isSignificantlyOlder)
+			return false;
+		// Check whether the new location fix is more or less accurate
+		final int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation
+				.getAccuracy());
+		final boolean isLessAccurate = accuracyDelta > 0;
+		final boolean isMoreAccurate = accuracyDelta < 0;
+		final boolean isSignificantlyLessAccurate = accuracyDelta > 200;
+		// Check if the old and new location are from the same provider
+		final boolean isFromSameProvider = isSameProvider(
+				location.getProvider(), currentBestLocation.getProvider());
+		// Determine location quality using a combination of timeliness and
+		// accuracy
+		if (isMoreAccurate)
+			return true;
+		else if (isNewer && !isLessAccurate)
+			return true;
+		else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider)
+			return true;
+		return false;
+	}
+
+	/** Checks whether two providers are the same */
+	private boolean isSameProvider(final String provider1,
+			final String provider2)
+	{
+		if (provider1 == null)
+			return provider2 == null;
+		return provider1.equals(provider2);
 	}
 
 	/**
@@ -332,13 +418,7 @@ public class AppService extends Service implements LocationListener,
 		final AtomParser parser = new AtomParser();
 		parser.namespaceDictionary = Namespace.DICTIONARY;
 		transport.addParser(parser);
-		// Setup GPS callbacks
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		int interval = settings.getInt("RefreshInterval", 5);
-		interval = interval * 1000;
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-				interval, 0, this);
 		// Setup Notification Utility Manager
 		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		mNotificationUtility = new NotificationUtility(this, nm);
@@ -369,7 +449,7 @@ public class AppService extends Service implements LocationListener,
 	@Override
 	public void onLocationChanged(final Location location)
 	{
-		if (location != null)
+		if (isBetterLocation(location, currentLocation))
 		{
 			Log.d(TAG,
 					"LOCATION CHANGED: + (Lat/Long): ("
@@ -440,7 +520,34 @@ public class AppService extends Service implements LocationListener,
 		// Nothing to do
 	}
 
-	protected void replyWithCalendars(final Messenger replyToMessenger)
+	private void registerLocationListener(final Messenger replyTo)
+	{
+		locationListenerList.add(replyTo);
+		final int locationListenerSize = locationListenerList.size();
+		Log.d(TAG, "Registering new Location Listener: " + locationListenerSize
+				+ " now listening");
+		// If this is the very first location listener, make sure we enable
+		// network provider listening as well
+		if (locationListenerSize == 1)
+		{
+			enableNetworkProviderLocationListening();
+			// Get an initial location
+			final Location lastNetworkLocation = locationManager
+					.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+			onLocationChanged(lastNetworkLocation);
+		}
+		// Setup GPS callbacks for the next minute to ensure we have the best
+		// location possible
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
+				0, this);
+		// Get an initial GPS location as well
+		final Location lastGPSLocation = locationManager
+				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		onLocationChanged(lastGPSLocation);
+		new Handler(this).sendEmptyMessageDelayed(MSG_SLEEP_GPS, 60000);
+	}
+
+	private void replyWithCalendars(final Messenger replyToMessenger)
 	{
 		try
 		{
@@ -471,7 +578,7 @@ public class AppService extends Service implements LocationListener,
 	 * @param eventUrl
 	 *            the URL of the EventEntry to return
 	 */
-	protected void replyWithEvent(final String eventUrl,
+	private void replyWithEvent(final String eventUrl,
 			final Messenger replyToMessenger)
 	{
 		try
@@ -496,7 +603,7 @@ public class AppService extends Service implements LocationListener,
 		}
 	}
 
-	protected void replyWithEvents(final Date start, final Date end,
+	private void replyWithEvents(final Date start, final Date end,
 			final Messenger replyToMessenger)
 	{
 		try
@@ -520,8 +627,7 @@ public class AppService extends Service implements LocationListener,
 		}
 	}
 
-	protected void replyWithNextEventWithLocation(
-			final Messenger replyToMessenger)
+	private void replyWithNextEventWithLocation(final Messenger replyToMessenger)
 	{
 		try
 		{
@@ -551,9 +657,20 @@ public class AppService extends Service implements LocationListener,
 	 * @param authToken
 	 *            authToken used to authenticate any Google API queries
 	 */
-	protected void setAuthToken(final String authToken)
+	private void setAuthToken(final String authToken)
 	{
 		((GoogleHeaders) transport.defaultHeaders).setGoogleLogin(authToken);
 		isAuthenticated = true;
+	}
+
+	private void unregisterLocationListener(final Messenger replyTo)
+	{
+		locationListenerList.remove(replyTo);
+		Log.d(TAG,
+				"Unregistering Location Listener: "
+						+ locationListenerList.size() + " remaining.");
+		// Stop getting location if no one is listening for it
+		if (locationListenerList.isEmpty())
+			locationManager.removeUpdates(this);
 	}
 }
