@@ -1,73 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-android:orientation="vertical"
-android:layout_width="fill_parent"
-android:layout_height="fill_parent"
-xmlns:android="http://schemas.android.com/apk/res/android">
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	xmlns:android="http://schemas.android.com/apk/res/android">
 	<LinearLayout
 		android:id="@+id/actionBarLayout"
-	    android:orientation="horizontal"
-	    android:layout_width="fill_parent"
-	    android:layout_height="40dp"
-	    android:layout_marginBottom="1dp"
-	    android:padding="0dp">
-	<ImageButton
-		android:id="@+id/refreshButton"
-		android:layout_width="66dp"
-		android:layout_height="fill_parent"
-		android:layout_gravity="center_horizontal"
-		android:src="@drawable/refresh3_white37"
-        android:background="@drawable/action_bar_side_button_green">
-	</ImageButton>
-	<Button
-		android:id="@+id/actionBar"
-		android:layout_width="wrap_content"
-		android:layout_height="fill_parent"
-		android:text="Leave In 3:04h"
-		android:textSize="21sp"
-		android:typeface="sans"
-		android:textColor="@color/white"
-		android:textStyle="bold"
-		android:gravity="center"
-		android:layout_gravity="center_horizontal"
-		android:background="@drawable/custom_action_bar_green"
-		android:layout_weight="1">
-	</Button>
-    <ImageButton
-        android:id="@+id/transportModeButton"
-        android:layout_width="66dp"
-        android:layout_height="fill_parent"
-        android:gravity="center"
-        android:layout_gravity="center_horizontal"
-        android:src="@drawable/car_white37"
-        android:background="@drawable/action_bar_side_button_green">
-    </ImageButton>
-
+		android:orientation="horizontal"
+		android:layout_width="fill_parent"
+		android:layout_height="40dp"
+		android:layout_marginBottom="1dp"
+		android:padding="0dp">
+		<ImageButton
+			android:id="@+id/refreshButton"
+			android:layout_width="66dp"
+			android:layout_height="fill_parent"
+			android:layout_gravity="center_horizontal"
+			android:src="@drawable/refresh3_white37"
+			android:background="@drawable/action_bar_side_button_green">
+		</ImageButton>
+		<Button
+			android:id="@+id/actionBar"
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:text="Leave In 3:04h"
+			android:textSize="21sp"
+			android:typeface="sans"
+			android:textColor="@color/white"
+			android:textStyle="bold"
+			android:gravity="center"
+			android:layout_gravity="center_horizontal"
+			android:background="@drawable/custom_action_bar_green"
+			android:layout_weight="1">
+		</Button>
+		<ImageButton
+			android:id="@+id/transportModeButton"
+			android:layout_width="66dp"
+			android:layout_height="fill_parent"
+			android:gravity="center"
+			android:layout_gravity="center_horizontal"
+			android:src="@drawable/car_white37"
+			android:background="@drawable/action_bar_side_button_green">
+		</ImageButton>
 	</LinearLayout>
-	<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
-	    android:id="@android:id/tabhost"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
-	    android:padding="0px"
-	    android:layout_marginLeft="0dp"
-	    android:layout_marginRight="0dp">
-	    <LinearLayout
-	        android:orientation="vertical"
-	        android:layout_width="fill_parent"
-	        android:layout_height="fill_parent"
-	        android:padding="0dp">
-	        <TabWidget
-	            android:id="@android:id/tabs"
-	            android:layout_width="fill_parent"
-	            android:layout_height="45dp"
-	            android:layout_margin="0dp" />
-	        <FrameLayout
-	            android:id="@android:id/tabcontent"
-	            android:layout_width="fill_parent"
-	            android:layout_height="wrap_content"
-	            android:padding="0dp"
-	            android:layout_margin="0dp"
-	            android:layout_weight="1" />
-	    </LinearLayout>
+	<TabHost
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@android:id/tabhost"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:padding="0px"
+		android:layout_marginLeft="0dp"
+		android:layout_marginRight="0dp">
+		<LinearLayout
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:padding="0dp">
+			<TabWidget
+				android:id="@android:id/tabs"
+				android:layout_width="fill_parent"
+				android:layout_height="45dp"
+				android:layout_margin="0dp" />
+			<FrameLayout
+				android:id="@android:id/tabcontent"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:padding="0dp"
+				android:layout_margin="0dp"
+				android:layout_weight="1" />
+		</LinearLayout>
 	</TabHost>
 </LinearLayout>

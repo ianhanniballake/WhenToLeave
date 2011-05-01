@@ -1,5 +1,6 @@
 <resources>
-	<string-array name="intervals">
+	<string-array
+		name="intervals">
 		<item>10 Seconds</item>
 		<item>30 Seconds</item>
 		<item>1 Minute</item>
@@ -16,9 +17,10 @@
 		<item>6 Hours</item>
 	</string-array>
 	<!-- Refresh Interval Values in Seconds -->
-	<integer-array name="interval_values">
+	<integer-array
+		name="interval_values">
 		<item>10</item>
-		<item>30</item>	
+		<item>30</item>
 		<item>60</item>
 		<item>300</item>
 		<item>600</item>
@@ -32,7 +34,8 @@
 		<item>10800</item>
 		<item>21600</item>
 	</integer-array>
-	<string-array name="notify_time">
+	<string-array
+		name="notify_time">
 		<item>5 Minutes Before</item>
 		<item>15 Minutes Before</item>
 		<item>30 Minutes Before</item>
@@ -42,7 +45,8 @@
 		<item>3 Hours Before</item>
 	</string-array>
 	<!-- Refresh Interval Values in Seconds -->
-	<integer-array name="notify_time_values">
+	<integer-array
+		name="notify_time_values">
 		<item>300</item>
 		<item>900</item>
 		<item>1800</item>

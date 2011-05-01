@@ -1,58 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
-android:layout_width="fill_parent"
-android:layout_height="fill_parent"
-android:orientation="vertical"
-android:padding="5dp"
-android:background="@drawable/background6"
-xmlns:android="http://schemas.android.com/apk/res/android">
-	    <TextView
-	        android:id="@+id/eventName"
-	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:text="Loading Next Event..."
-	        android:typeface="sans"
-	        android:textColor="@color/white"
-	        android:textStyle="bold"
-	        android:textSize="28sp"
-	        android:layout_margin="2dp" >
-	    </TextView>
-	    <TextView
-	        android:id="@+id/eventLocation"
-	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:text=""
-	        android:typeface="sans"
-	        android:textColor="@color/blue"
-	        android:textStyle="bold"
-	        android:layout_below="@id/eventName"
-	        android:textSize="21sp"
-	        android:layout_margin="2dp">
-	    </TextView>
-	    <TextView
-	        android:id="@+id/eventWhen"
-	        android:layout_width="fill_parent"
-	        android:layout_height="wrap_content"
-	        android:text=""
-	        android:typeface="serif"
-	        android:textColor="@color/white"
-	        android:layout_below="@id/eventLocation"
-	        android:textSize="18sp"
-	        android:layout_margin="2dp">
-	    </TextView>
-	    <TextView
-	        android:id="@+id/eventDescription"
-	        android:layout_width="fill_parent"
-	        android:layout_height="210dp"
-	        android:text=""
-	        android:typeface="serif"
-	        android:textColor="@color/white"
-	        android:layout_below="@id/eventWhen"
-	        android:textSize="16sp"
-	        android:layout_margin="2dp">
-	    </TextView>
-    <LinearLayout
-        android:id="@+id/eventBottomBar"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical"
+	android:padding="5dp"
+	android:background="@drawable/background6"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<TextView
+		android:id="@+id/eventName"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="Loading Next Event..."
+		android:typeface="sans"
+		android:textColor="@color/white"
+		android:textStyle="bold"
+		android:textSize="28sp"
+		android:layout_margin="2dp">
+	</TextView>
+	<TextView
+		android:id="@+id/eventLocation"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text=""
+		android:typeface="sans"
+		android:textColor="@color/blue"
+		android:textStyle="bold"
+		android:layout_below="@id/eventName"
+		android:textSize="21sp"
+		android:layout_margin="2dp">
+	</TextView>
+	<TextView
+		android:id="@+id/eventWhen"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text=""
+		android:typeface="serif"
+		android:textColor="@color/white"
+		android:layout_below="@id/eventLocation"
+		android:textSize="18sp"
+		android:layout_margin="2dp">
+	</TextView>
+	<TextView
+		android:id="@+id/eventDescription"
+		android:layout_width="fill_parent"
+		android:layout_height="210dp"
+		android:text=""
+		android:typeface="serif"
+		android:textColor="@color/white"
+		android:layout_below="@id/eventWhen"
+		android:textSize="16sp"
+		android:layout_margin="2dp">
+	</TextView>
+	<LinearLayout
+		android:id="@+id/eventBottomBar"
 		android:orientation="horizontal"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
@@ -60,43 +60,43 @@ xmlns:android="http://schemas.android.com/apk/res/android">
 		android:layout_marginTop="5dp"
 		android:layout_alignParentBottom="true">
 		<Button
-	        android:id="@+id/mapButton"
-	        android:layout_width="wrap_content"
-	        android:layout_height="53dp"
-	        android:textSize="21sp"
-	        android:textStyle="bold"
-	        android:textColor="@color/white"
-	        android:background="@drawable/custom_launcher_button"
-	        android:text="Map"
-	        android:typeface="sans"
-	        android:layout_marginRight="10dp"
-	        android:layout_weight="1">
-	    </Button>
-        <Button
-	        android:id="@+id/navButton"
-	        android:layout_width="wrap_content"
-	        android:layout_height="53dp"
-	        android:textSize="21sp"
-	        android:textStyle="bold"
-	        android:textColor="@color/white"
-	        android:background="@drawable/custom_launcher_button"
-	        android:text="Navigate"
-	        android:typeface="sans"
-	        android:layout_marginLeft="10dp"
-            android:layout_weight="1">
-	    </Button>
+			android:id="@+id/mapButton"
+			android:layout_width="wrap_content"
+			android:layout_height="53dp"
+			android:textSize="21sp"
+			android:textStyle="bold"
+			android:textColor="@color/white"
+			android:background="@drawable/custom_launcher_button"
+			android:text="Map"
+			android:typeface="sans"
+			android:layout_marginRight="10dp"
+			android:layout_weight="1">
+		</Button>
+		<Button
+			android:id="@+id/navButton"
+			android:layout_width="wrap_content"
+			android:layout_height="53dp"
+			android:textSize="21sp"
+			android:textStyle="bold"
+			android:textColor="@color/white"
+			android:background="@drawable/custom_launcher_button"
+			android:text="Navigate"
+			android:typeface="sans"
+			android:layout_marginLeft="10dp"
+			android:layout_weight="1">
+		</Button>
 	</LinearLayout>
-    <Button
-        android:layout_margin="2dp"
-        android:id="@+id/infoButton"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="@color/grey3"
-        android:background="@drawable/custom_launcher_button_grey"
-        android:text="More Info"
-        android:typeface="serif"
-        android:layout_above="@id/eventBottomBar">
-    </Button>
+	<Button
+		android:layout_margin="2dp"
+		android:id="@+id/infoButton"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:textSize="14sp"
+		android:textStyle="bold"
+		android:textColor="@color/grey3"
+		android:background="@drawable/custom_launcher_button_grey"
+		android:text="More Info"
+		android:typeface="serif"
+		android:layout_above="@id/eventBottomBar">
+	</Button>
 </RelativeLayout>

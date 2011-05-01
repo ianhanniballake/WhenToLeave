@@ -2,16 +2,16 @@
 <resources>
 	<string
 		name="app_name">WhenToLeave</string>
-    <string
-        name="version">1.0</string>
+	<string
+		name="version">1.0</string>
 	<string
 		name="agendaTitle">Agenda</string>
 	<string
 		name="calendarsTitle">Calendars</string>
 	<string
 		name="mapTitle">Map</string>
-    <string
-        name="eventDetailsTitle">Event Details</string>
+	<string
+		name="eventDetailsTitle">Event Details</string>
 	<string
 		name="preferencesTitle">Preferences</string>
 	<string
