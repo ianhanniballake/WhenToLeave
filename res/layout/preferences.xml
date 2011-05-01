@@ -12,18 +12,14 @@
 		android:typeface="sans"
 		android:textColor="@color/white"
 		android:textStyle="bold"
-		android:gravity="left"
-		android:layout_gravity="left"
 		android:textSize="28sp"
-		android:layout_margin="2dp">
-	</TextView>
+		android:layout_margin="2dp" />
 	<Spinner
 		android:id="@+id/spinnerRefreshTime"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginLeft="5dp"
-		android:prompt="@string/refresh_time">
-	</Spinner>
+		android:prompt="@string/refresh_time" />
 	<TextView
 		android:id="@+id/actionbarPrefText"
 		android:layout_width="fill_parent"
@@ -32,11 +28,8 @@
 		android:typeface="sans"
 		android:textColor="@color/white"
 		android:textStyle="bold"
-		android:gravity="left"
-		android:layout_gravity="left"
 		android:textSize="28sp"
-		android:layout_margin="2dp">
-	</TextView>
+		android:layout_margin="2dp" />
 	<RadioGroup
 		android:id="@+id/preferencesRBGroup"
 		android:layout_width="wrap_content"
@@ -47,22 +40,19 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="5dp"
-			android:text="Open Current Event Details">
-		</RadioButton>
+			android:text="Open Current Event Details" />
 		<RadioButton
 			android:id="@+id/rbActionButtonPrefMap"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="5dp"
-			android:text="Map Current Event">
-		</RadioButton>
+			android:text="Map Current Event" />
 		<RadioButton
 			android:id="@+id/rbActionButtonPrefNav"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="5dp"
-			android:text="Navigate to Current Event">
-		</RadioButton>
+			android:text="Navigate to Current Event" />
 	</RadioGroup>
 	<TextView
 		android:id="@+id/notificationPrefText"
@@ -72,17 +62,13 @@
 		android:typeface="sans"
 		android:textColor="@color/white"
 		android:textStyle="bold"
-		android:gravity="left"
-		android:layout_gravity="left"
 		android:textSize="28sp"
-		android:layout_margin="2dp">
-	</TextView>
+		android:layout_margin="2dp" />
 	<CheckBox
 		android:id="@+id/cbEnableNotifications"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:text="Enable Notifications">
-	</CheckBox>
+		android:text="Enable Notifications" />
 	<TextView
 		android:id="@+id/notificationIntervalPrefText"
 		android:layout_width="fill_parent"
@@ -91,15 +77,11 @@
 		android:typeface="sans"
 		android:textColor="@color/white"
 		android:textStyle="bold"
-		android:gravity="left"
 		android:textSize="28sp"
-		android:layout_gravity="center"
-		android:layout_margin="2dp">
-	</TextView>
+		android:layout_margin="2dp" />
 	<Spinner
 		android:id="@+id/spinnerNotifyTime"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:prompt="@string/notify_time">
-	</Spinner>
+		android:prompt="@string/notify_time" />
 </LinearLayout>

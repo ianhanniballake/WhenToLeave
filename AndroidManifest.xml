@@ -25,37 +25,37 @@
 				<action
 					android:name="android.intent.action.MAIN" />
 				<category
-					android:name="android.intent.category.LAUNCHER"></category>
+					android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
 		<activity
 			android:name=".activity.Agenda"
-			android:label="@string/agendaTitle"></activity>
+			android:label="@string/agendaTitle" />
 		<activity
 			android:name=".activity.Calendars"
-			android:label="@string/calendarsTitle"></activity>
+			android:label="@string/calendarsTitle" />
 		<activity
 			android:name=".activity.Map"
-			android:label="@string/mapTitle"></activity>
+			android:label="@string/mapTitle" />
 		<activity
-			android:name=".activity.Login"></activity>
+			android:name=".activity.Login" />
 		<activity
-			android:name=".activity.Logout"></activity>
+			android:name=".activity.Logout" />
 		<activity
 			android:name=".activity.EventDetails"
 			android:label="@string/eventDetailsTitle"
-			android:theme="@style/Theme.EventDetails"></activity>
+			android:theme="@android:style/Theme.Dialog" />
 		<activity
 			android:name=".activity.Preferences"
-			android:label="@string/preferencesTitle"></activity>
+			android:label="@string/preferencesTitle" />
 		<activity
-			android:name=".activity.Home"></activity>
+			android:name=".activity.Home" />
 		<service
 			android:enabled="true"
-			android:name=".service.AppService"></service>
+			android:name=".service.AppService" />
 		<service
 			android:enabled="true"
-			android:name=".widget.WidgetUpdateService"></service>
+			android:name=".widget.WidgetUpdateService" />
 		<receiver
 			android:name=".widget.WidgetProvider">
 			<meta-data
@@ -74,5 +74,5 @@
 			android:name="com.google.android.maps" />
 	</application>
 	<uses-sdk
-		android:minSdkVersion="8"></uses-sdk>
+		android:minSdkVersion="8" />
 </manifest>

@@ -7,10 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.github.whentoleave.R;
 import com.github.whentoleave.activity.TabbedInterface;
 import com.github.whentoleave.model.EventEntry;
-
-import com.github.whentoleave.R;
 
 /**
  * Utility class to manage Notifications
@@ -119,10 +118,7 @@ public class NotificationUtility
 								+ ee.where.valueString + " @" + time,
 						makeNotificationIntent());
 		// Send the notification.
-		// We use a layout id because it is a unique number. We use it later to
-		// cancel.
-		mNotificationManager.notify(R.layout.status_bar_notifications,
-				notification);
+		mNotificationManager.notify(0, notification);
 	}
 
 	/**
