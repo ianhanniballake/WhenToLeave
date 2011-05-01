@@ -31,6 +31,12 @@ public final class Calendars extends ListActivity implements Handler.Callback
 	private final AppServiceConnection service = new AppServiceConnection(
 			new Handler(this));
 
+	/**
+	 * Handles an error from the AppService
+	 * 
+	 * @param errorMessage
+	 *            message to display
+	 */
 	private void handleError(final String errorMessage)
 	{
 		final String[] calendarNames = new String[] { errorMessage };
@@ -38,6 +44,12 @@ public final class Calendars extends ListActivity implements Handler.Callback
 				android.R.layout.simple_list_item_1, calendarNames));
 	}
 
+	/**
+	 * Handles a getCalendars event from the AppService
+	 * 
+	 * @param calendars
+	 *            newly returned calendars
+	 */
 	private void handleGetCalendars(final List<CalendarEntry> calendars)
 	{
 		final int numCalendars = calendars.size();
@@ -70,6 +82,9 @@ public final class Calendars extends ListActivity implements Handler.Callback
 		}
 	}
 
+	/**
+	 * Handles a refreshData event from the AppService
+	 */
 	public void handleRefreshData()
 	{
 		service.requestCalendars();

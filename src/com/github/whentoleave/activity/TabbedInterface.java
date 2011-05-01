@@ -238,6 +238,12 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 	private final AppServiceConnection service = new AppServiceConnection(
 			new Handler(this), true, true);
 
+	/**
+	 * Handles a getNextEventWithLocation event from the AppService
+	 * 
+	 * @param nextEvent
+	 *            newly returned next event with a location
+	 */
 	private void handleGetNextEventWithLocation(final EventEntry nextEvent)
 	{
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
@@ -270,6 +276,9 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 		}
 	}
 
+	/**
+	 * Handles a refreshData event from the AppService
+	 */
 	private void handleRefreshData()
 	{
 		// Can't show WhenToLeave if we don't know where we are

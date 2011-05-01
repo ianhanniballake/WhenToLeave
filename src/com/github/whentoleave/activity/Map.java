@@ -122,6 +122,9 @@ public class Map extends MapActivity implements Handler.Callback
 	 * Route to our next destination from our current location, if it exists
 	 */
 	private Route mRoute = null;
+	/**
+	 * The next event with a location
+	 */
 	private EventEntry nextEvent = null;
 	/**
 	 * Default (non-numbered) orange square
@@ -264,6 +267,12 @@ public class Map extends MapActivity implements Handler.Callback
 			greySquare.setBounds(0, 0, 36, 36);
 	}
 
+	/**
+	 * Handles a getEvents event from the AppService
+	 * 
+	 * @param events
+	 *            newly returned events
+	 */
 	private void handleGetEvents(final Set<EventEntry> events)
 	{
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
@@ -351,6 +360,12 @@ public class Map extends MapActivity implements Handler.Callback
 		eventList.addAll(events);
 	}
 
+	/**
+	 * Handles an updated location from the AppService
+	 * 
+	 * @param location
+	 *            the updated location
+	 */
 	private void handleLocationUpdate(final Location location)
 	{
 		if (location != null)
@@ -400,6 +415,10 @@ public class Map extends MapActivity implements Handler.Callback
 		}
 	}
 
+	/**
+	 * Handles the nextEvent event from the AppService. Note that the returned
+	 * event is saved in the nextEvent field.
+	 */
 	private void handleNextEvent()
 	{
 		if (mGpsLocation != null)

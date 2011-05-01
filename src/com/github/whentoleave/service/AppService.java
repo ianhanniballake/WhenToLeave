@@ -54,19 +54,65 @@ public class AppService extends Service implements LocationListener,
 	 * AlarmManager used to create repeated notification checks
 	 */
 	private static AlarmManager alarmManager;
+	/**
+	 * Message returned if an error occured while processing
+	 */
 	public static final int MSG_ERROR = 1;
+	/**
+	 * Message returned with a list of the users' calendars
+	 */
 	public static final int MSG_GET_CALENDARS = 2;
+	/**
+	 * Message returned with a specific requested event
+	 */
 	public static final int MSG_GET_EVENT = 3;
+	/**
+	 * Message returned with a time ordered set of events
+	 */
 	public static final int MSG_GET_EVENTS = 4;
+	/**
+	 * Message returned with the next event with a location
+	 */
 	public static final int MSG_GET_NEXT_EVENT_WITH_LOCATION = 5;
+	/**
+	 * Message to invalidate the Auth Token
+	 */
 	public static final int MSG_INVALIDATE_AUTH_TOKEN = 6;
+	/**
+	 * Message returned when the user's location updated
+	 */
 	public static final int MSG_LOCATION_UPDATE = 7;
+	/**
+	 * Message to denote that the AppService is ready to receive requests for
+	 * data
+	 */
 	public static final int MSG_REFRESH_DATA = 8;
+	/**
+	 * Message to register a component interested in location updates
+	 */
 	public static final int MSG_REGISTER_LOCATION_LISTENER = 9;
+	/**
+	 * Message to register a component interested in periodic data refresh
+	 * notices
+	 */
 	public static final int MSG_REGISTER_REFRESHABLE = 10;
+	/**
+	 * Message to set the Auth Token
+	 */
 	public static final int MSG_SET_AUTH_TOKEN = 11;
+	/**
+	 * Message to disable/sleep the GPS
+	 */
 	public static final int MSG_SLEEP_GPS = 12;
+	/**
+	 * Message to unregister a component no longer interested in location
+	 * updates
+	 */
 	public static final int MSG_UNREGISTER_LOCATION_LISTENER = 13;
+	/**
+	 * Message to unregister a component no longer interested in periodic data
+	 * refresh notices
+	 */
 	public static final int MSG_UNREGISTER_REFRESHABLE = 14;
 	/**
 	 * Action used to distinguish notification alarm service starts from regular
@@ -82,10 +128,14 @@ public class AppService extends Service implements LocationListener,
 	 */
 	private static final String PREF = "MyPrefs";
 	/**
+	 * A 'significant' time period between location updates. Currently two
+	 * minutes in milliseconds
+	 */
+	private static final int SIGNIFICANT_TIME_PERIOD = 1000 * 60 * 2;
+	/**
 	 * Logging tag
 	 */
 	private static final String TAG = "AppService";
-	private static final int TWO_MINUTES = 1000 * 60 * 2;
 	/**
 	 * Current location of the device
 	 */
@@ -156,6 +206,9 @@ public class AppService extends Service implements LocationListener,
 		}
 	}
 
+	/**
+	 * Enables only Network Provider location updates
+	 */
 	private void enableNetworkProviderLocationListening()
 	{
 		Log.d(TAG, "enableNetworkProviderLocationListening");
@@ -339,6 +392,7 @@ public class AppService extends Service implements LocationListener,
 	 * @param currentBestLocation
 	 *            The current Location fix, to which you want to compare the new
 	 *            one
+	 * @return whether the new location is better than the current best location
 	 */
 	private boolean isBetterLocation(final Location location,
 			final Location currentBestLocation)
@@ -352,8 +406,8 @@ public class AppService extends Service implements LocationListener,
 		// Check whether the new location fix is newer or older
 		final long timeDelta = location.getTime()
 				- currentBestLocation.getTime();
-		final boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
-		final boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
+		final boolean isSignificantlyNewer = timeDelta > SIGNIFICANT_TIME_PERIOD;
+		final boolean isSignificantlyOlder = timeDelta < -SIGNIFICANT_TIME_PERIOD;
 		final boolean isNewer = timeDelta > 0;
 		// If it's been more than two minutes since the current location, use
 		// the new location because the user has likely moved
@@ -382,7 +436,15 @@ public class AppService extends Service implements LocationListener,
 		return false;
 	}
 
-	/** Checks whether two providers are the same */
+	/**
+	 * Null safe check for whether two providers are the same
+	 * 
+	 * @param provider1
+	 *            first provider
+	 * @param provider2
+	 *            second provider
+	 * @return if the two providers are the same or both null
+	 */
 	private boolean isSameProvider(final String provider1,
 			final String provider2)
 	{
@@ -520,6 +582,14 @@ public class AppService extends Service implements LocationListener,
 		// Nothing to do
 	}
 
+	/**
+	 * Registers a new component as wanting to receive location updates. Kicks
+	 * off an initial GPS Provider location request to ensure a good initial
+	 * location.
+	 * 
+	 * @param replyTo
+	 *            component to register
+	 */
 	private void registerLocationListener(final Messenger replyTo)
 	{
 		locationListenerList.add(replyTo);
@@ -547,6 +617,13 @@ public class AppService extends Service implements LocationListener,
 		new Handler(this).sendEmptyMessageDelayed(MSG_SLEEP_GPS, 60000);
 	}
 
+	/**
+	 * Returns a MSG_GET_CALENDARS message with a list of calendars. Assumes
+	 * that the service is already authenticated
+	 * 
+	 * @param replyToMessenger
+	 *            messenger to send reply to
+	 */
 	private void replyWithCalendars(final Messenger replyToMessenger)
 	{
 		try
@@ -577,6 +654,8 @@ public class AppService extends Service implements LocationListener,
 	 * 
 	 * @param eventUrl
 	 *            the URL of the EventEntry to return
+	 * @param replyToMessenger
+	 *            messenger to send reply to
 	 */
 	private void replyWithEvent(final String eventUrl,
 			final Messenger replyToMessenger)
@@ -603,6 +682,17 @@ public class AppService extends Service implements LocationListener,
 		}
 	}
 
+	/**
+	 * Gets all events in the specified time period. Assumes that the service is
+	 * already authenticated
+	 * 
+	 * @param start
+	 *            earliest time for events to return
+	 * @param end
+	 *            latest time for events to return
+	 * @param replyToMessenger
+	 *            messenger to send reply to
+	 */
 	private void replyWithEvents(final Date start, final Date end,
 			final Messenger replyToMessenger)
 	{
@@ -627,6 +717,13 @@ public class AppService extends Service implements LocationListener,
 		}
 	}
 
+	/**
+	 * Gets the next event that has a location set. Assumes that the service is
+	 * already authenticated
+	 * 
+	 * @param replyToMessenger
+	 *            messenger to send reply to
+	 */
 	private void replyWithNextEventWithLocation(final Messenger replyToMessenger)
 	{
 		try
@@ -663,6 +760,12 @@ public class AppService extends Service implements LocationListener,
 		isAuthenticated = true;
 	}
 
+	/**
+	 * Unregisters a component from receiving location updates
+	 * 
+	 * @param replyTo
+	 *            messenger to unregister
+	 */
 	private void unregisterLocationListener(final Messenger replyTo)
 	{
 		locationListenerList.remove(replyTo);

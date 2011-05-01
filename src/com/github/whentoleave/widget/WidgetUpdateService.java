@@ -45,6 +45,12 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 	private final AppServiceConnection service = new AppServiceConnection(
 			new Handler(this), false, true);
 
+	/**
+	 * Gets a 'base' remote view as all widgets contain the same type of
+	 * information
+	 * 
+	 * @return a basic RemoteViews object for all widgets
+	 */
 	private RemoteViews getBaseRemoteViews()
 	{
 		// As all widgets will contain the same information, we create the
@@ -60,6 +66,12 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 		return views;
 	}
 
+	/**
+	 * Handles an error from the AppService
+	 * 
+	 * @param errorMessage
+	 *            error message to display
+	 */
 	private void handleError(final String errorMessage)
 	{
 		final RemoteViews views = getBaseRemoteViews();
@@ -96,6 +108,13 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 		}
 	}
 
+	/**
+	 * Handles an incoming next event from the AppService, updating all Widgets
+	 * with the new information
+	 * 
+	 * @param nextEvent
+	 *            newly returned next event
+	 */
 	private void handleNextEvent(final EventEntry nextEvent)
 	{
 		final RemoteViews views = getBaseRemoteViews();
@@ -157,16 +176,9 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 		updateAllWidgets(views);
 	}
 
-	@SuppressWarnings("unused")
-	private void handleNotAuthenticated()
-	{
-		final RemoteViews views = getBaseRemoteViews();
-		views.setTextViewText(R.id.widgetLeaveInText, "Click here to log in");
-		views.setTextViewText(R.id.widgetEventDetail, "to your Google Account");
-		views.setTextViewText(R.id.widgetEventTime, "");
-		updateAllWidgets(views);
-	}
-
+	/**
+	 * Handles a refreshData event from the AppService
+	 */
 	private void handleRefreshData()
 	{
 		service.requestNextEventWithLocation();

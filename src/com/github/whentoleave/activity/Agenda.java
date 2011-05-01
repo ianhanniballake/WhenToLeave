@@ -47,6 +47,12 @@ public class Agenda extends Activity implements Handler.Callback
 	private final AppServiceConnection service = new AppServiceConnection(
 			new Handler(this));
 
+	/**
+	 * Handles an error message received from the AppService
+	 * 
+	 * @param errorMessage
+	 *            the message to display
+	 */
 	private void handleError(final String errorMessage)
 	{
 		final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
@@ -59,6 +65,12 @@ public class Agenda extends Activity implements Handler.Callback
 		lastRefreshed.setText("");
 	}
 
+	/**
+	 * Handles a GetEvents message from the AppService
+	 * 
+	 * @param events
+	 *            the newly returned events
+	 */
 	private void handleGetEvents(final Set<EventEntry> events)
 	{
 		for (final EventEntry event : events)
@@ -118,6 +130,9 @@ public class Agenda extends Activity implements Handler.Callback
 		}
 	}
 
+	/**
+	 * Handles a refreshData event from the AppService
+	 */
 	private void handleRefreshData()
 	{
 		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);

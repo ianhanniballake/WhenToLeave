@@ -32,12 +32,24 @@ public class EventDetails extends Activity implements Handler.Callback
 	private final AppServiceConnection service = new AppServiceConnection(
 			new Handler(this));
 
+	/**
+	 * Handles an error from the AppService
+	 * 
+	 * @param errorMessage
+	 *            the error message to display
+	 */
 	private void handleError(final String errorMessage)
 	{
 		final TextView eventDetailsName = (TextView) findViewById(R.id.eventDetailsName);
 		eventDetailsName.setText(errorMessage);
 	}
 
+	/**
+	 * Handles a getEvent event from the AppService
+	 * 
+	 * @param event
+	 *            newly returned event
+	 */
 	private void handleGetEvent(final EventEntry event)
 	{
 		final TextView eventDetailsName = (TextView) findViewById(R.id.eventDetailsName);
@@ -125,6 +137,9 @@ public class EventDetails extends Activity implements Handler.Callback
 		}
 	}
 
+	/**
+	 * Handles a refreshData event from the AppService
+	 */
 	private void handleRefreshData()
 	{
 		final Bundle passedInValue = getIntent().getExtras();

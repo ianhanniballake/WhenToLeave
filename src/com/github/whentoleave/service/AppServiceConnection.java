@@ -17,6 +17,9 @@ import android.util.Log;
  */
 public class AppServiceConnection implements ServiceConnection
 {
+	/**
+	 * Logging tag
+	 */
 	private static final String TAG = "AppServiceConnection";
 	/**
 	 * Client to send reply messages to
@@ -153,11 +156,25 @@ public class AppServiceConnection implements ServiceConnection
 		sendMessage(AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION);
 	}
 
+	/**
+	 * Sends out the specified type of message
+	 * 
+	 * @param what
+	 *            type of message
+	 */
 	private void sendMessage(final int what)
 	{
 		sendMessage(what, null);
 	}
 
+	/**
+	 * Sends out specified type of message with an attached object
+	 * 
+	 * @param what
+	 *            type of message
+	 * @param obj
+	 *            attached object
+	 */
 	private void sendMessage(final int what, final Object obj)
 	{
 		try
@@ -185,6 +202,10 @@ public class AppServiceConnection implements ServiceConnection
 		sendMessage(AppService.MSG_SET_AUTH_TOKEN, authToken);
 	}
 
+	/**
+	 * Unregisters the component from location updates and interval refreshes as
+	 * appropriate
+	 */
 	public void unregister()
 	{
 		Log.d(TAG, "unregister");

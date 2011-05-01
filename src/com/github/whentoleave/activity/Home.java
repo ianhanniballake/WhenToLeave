@@ -52,6 +52,12 @@ public class Home extends Activity implements Handler.Callback
 	private final AppServiceConnection service = new AppServiceConnection(
 			new Handler(this));
 
+	/**
+	 * Handles an error from the AppService
+	 * 
+	 * @param errorMessage
+	 *            error message to display
+	 */
 	private void handleError(final String errorMessage)
 	{
 		eventName.setText("Error Getting Next Event");
@@ -60,6 +66,10 @@ public class Home extends Activity implements Handler.Callback
 		eventWhen.setText("");
 	}
 
+	/**
+	 * Handles a getNextEventWithLocation event from the AppService. Note that
+	 * the event returned is saved in the currentEvent field.
+	 */
 	private void handleGetNextEventWithLocation()
 	{
 		if (currentEvent != null && currentEvent.title != null)
@@ -106,6 +116,9 @@ public class Home extends Activity implements Handler.Callback
 		}
 	}
 
+	/**
+	 * Handles a refreshData event from the AppService
+	 */
 	private void handleRefreshData()
 	{
 		service.requestNextEventWithLocation();
