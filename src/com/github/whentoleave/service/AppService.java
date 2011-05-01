@@ -356,7 +356,8 @@ public class AppService extends Service implements LocationListener,
 				locationManager.removeUpdates(this);
 				// Keep Network Provider updates running if there are location
 				// listeners remaining
-				if (!locationListenerList.isEmpty())
+				if (!locationListenerList.isEmpty()
+						&& locationProviderEnabled(LocationManager.NETWORK_PROVIDER))
 					enableNetworkProviderLocationListening();
 				return true;
 			case MSG_UNREGISTER_LOCATION_LISTENER:
@@ -451,6 +452,19 @@ public class AppService extends Service implements LocationListener,
 		if (provider1 == null)
 			return provider2 == null;
 		return provider1.equals(provider2);
+	}
+
+	/**
+	 * Ensures that a given location provider exists and is enabled
+	 * 
+	 * @param provider
+	 *            location provider to check
+	 * @return if the location provider exists and is enabled
+	 */
+	private boolean locationProviderEnabled(final String provider)
+	{
+		return locationManager.getProvider(provider) != null
+				&& locationManager.isProviderEnabled(provider);
 	}
 
 	/**
@@ -598,7 +612,8 @@ public class AppService extends Service implements LocationListener,
 				+ " now listening");
 		// If this is the very first location listener, make sure we enable
 		// network provider listening as well
-		if (locationListenerSize == 1)
+		if (locationListenerSize == 1
+				&& locationProviderEnabled(LocationManager.NETWORK_PROVIDER))
 		{
 			enableNetworkProviderLocationListening();
 			// Get an initial location
@@ -608,13 +623,16 @@ public class AppService extends Service implements LocationListener,
 		}
 		// Setup GPS callbacks for the next minute to ensure we have the best
 		// location possible
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0,
-				0, this);
-		// Get an initial GPS location as well
-		final Location lastGPSLocation = locationManager
-				.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		onLocationChanged(lastGPSLocation);
-		new Handler(this).sendEmptyMessageDelayed(MSG_SLEEP_GPS, 60000);
+		if (locationProviderEnabled(LocationManager.GPS_PROVIDER))
+		{
+			locationManager.requestLocationUpdates(
+					LocationManager.GPS_PROVIDER, 0, 0, this);
+			// Get an initial GPS location as well
+			final Location lastGPSLocation = locationManager
+					.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			onLocationChanged(lastGPSLocation);
+			new Handler(this).sendEmptyMessageDelayed(MSG_SLEEP_GPS, 60000);
+		}
 	}
 
 	/**
