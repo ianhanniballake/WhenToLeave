@@ -56,7 +56,6 @@ public class Agenda extends Activity implements Handler.Callback
 	private void handleError(final String errorMessage)
 	{
 		final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
-		calendarEventHashMap.clear();
 		calendarEventHashMap.put("title", errorMessage);
 		calendarEventHashMap.put("when", "");
 		calendarEventHashMap.put("where", "");
