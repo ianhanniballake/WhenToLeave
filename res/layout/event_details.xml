@@ -27,7 +27,6 @@
 		android:id="@+id/eventDetailsWhen"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
-		android:text=""
 		android:typeface="serif"
 		android:textColor="@color/white"
 		android:textSize="17sp"
@@ -44,34 +43,32 @@
 	<LinearLayout
 		android:orientation="horizontal"
 		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
+		android:layout_height="wrap_content"
 		android:padding="5dp"
-		android:layout_marginTop="10dp"
-		android:gravity="bottom"
-		android:layout_gravity="bottom">
+		android:layout_marginTop="10dp">
 		<Button
 			android:id="@+id/eventDetailsMapButton"
-			android:layout_width="130dp"
-			android:layout_height="53dp"
-			android:layout_marginLeft="0dp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
 			android:layout_marginRight="5dp"
 			android:textSize="21sp"
 			android:textStyle="bold"
 			android:textColor="@color/white"
 			android:background="@drawable/custom_launcher_button"
 			android:text="Map"
-			android:typeface="sans" />
+			android:typeface="sans"
+			android:layout_weight="1" />
 		<Button
 			android:id="@+id/eventDetailsNavButton"
-			android:layout_width="130dp"
-			android:layout_height="53dp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
 			android:layout_marginLeft="5dp"
-			android:layout_marginRight="0dp"
 			android:textSize="21sp"
 			android:textStyle="bold"
 			android:textColor="@color/white"
 			android:background="@drawable/custom_launcher_button"
 			android:text="Navigate"
-			android:typeface="sans" />
+			android:typeface="sans"
+            android:layout_weight="1" />
 	</LinearLayout>
 </LinearLayout>

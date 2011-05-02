@@ -54,26 +54,26 @@
 			<Button
 				android:id="@+id/mapButton"
 				android:layout_width="wrap_content"
-				android:layout_height="53dp"
+				android:layout_height="wrap_content"
 				android:textSize="21sp"
 				android:textStyle="bold"
 				android:textColor="@color/white"
 				android:background="@drawable/custom_launcher_button"
 				android:text="Map"
 				android:typeface="sans"
-				android:layout_marginRight="10dp"
+				android:layout_marginRight="5dp"
 				android:layout_weight="1" />
 			<Button
 				android:id="@+id/navButton"
 				android:layout_width="wrap_content"
-				android:layout_height="53dp"
+				android:layout_height="wrap_content"
 				android:textSize="21sp"
 				android:textStyle="bold"
 				android:textColor="@color/white"
 				android:background="@drawable/custom_launcher_button"
 				android:text="Navigate"
 				android:typeface="sans"
-				android:layout_marginLeft="10dp"
+				android:layout_marginLeft="5dp"
                 android:layout_weight="1" />
 		</LinearLayout>
 		<Button
