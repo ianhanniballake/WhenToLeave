@@ -31,7 +31,7 @@
 			android:id="@+id/transportModeButton"
 			android:layout_width="66dp"
 			android:layout_height="fill_parent"
-			android:src="@drawable/car_white37"
+			android:src="@drawable/car_white55"
 			android:background="@drawable/action_bar_side_button_green" />
 	</LinearLayout>
 	<TabHost
