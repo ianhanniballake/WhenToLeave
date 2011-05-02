@@ -14,7 +14,7 @@
 			android:id="@+id/refreshButton"
 			android:layout_width="66dp"
 			android:layout_height="fill_parent"
-			android:src="@drawable/refresh3_white37"
+			android:src="@drawable/refresh_white37"
 			android:background="@drawable/action_bar_side_button_green" />
 		<Button
 			android:id="@+id/actionBar"

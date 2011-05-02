@@ -3,7 +3,7 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:padding="5dp"
-	android:background="@drawable/background6"
+	android:background="@drawable/background"
 	xmlns:android="http://schemas.android.com/apk/res/android">
 	<TextView
 		android:id="@+id/eventName"
