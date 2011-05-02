@@ -73,7 +73,8 @@
 				android:background="@drawable/custom_launcher_button"
 				android:text="Navigate"
 				android:typeface="sans"
-				android:layout_marginLeft="10dp" />
+				android:layout_marginLeft="10dp"
+                android:layout_weight="1" />
 		</LinearLayout>
 		<Button
 			android:layout_margin="2dp"
