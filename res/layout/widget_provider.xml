@@ -30,8 +30,6 @@
 				android:textColor="@color/white"
 				android:textStyle="bold"
 				android:textSize="18sp"
-				android:gravity="left|center_vertical"
-				android:layout_gravity="center_vertical"
 				android:background="@null" />
 			<TextView
 				android:id="@+id/widgetEventDetail"
@@ -40,8 +38,6 @@
 				android:typeface="serif"
 				android:textColor="@color/white"
 				android:textStyle="bold"
-				android:gravity="left|center_vertical"
-				android:layout_gravity="center_vertical"
 				android:textSize="15sp"
 				android:background="@null" />
 			<TextView
@@ -51,8 +47,6 @@
 				android:typeface="serif"
 				android:textColor="@color/blue3"
 				android:textStyle="bold"
-				android:gravity="left|center_vertical"
-				android:layout_gravity="center_vertical"
 				android:textSize="12sp"
 				android:background="@null" />
 		</LinearLayout>
@@ -60,8 +54,6 @@
 			android:id="@+id/widgetTransportButton"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
-			android:gravity="right"
-			android:layout_gravity="center_vertical|right"
 			android:src="@drawable/car_white72"
 			android:background="@null" />
 	</LinearLayout>
@@ -69,8 +61,7 @@
 		android:id="@+id/widgetNavigationButton"
 		android:layout_width="wrap_content"
 		android:layout_height="48dp"
-		android:gravity="right"
 		android:layout_marginLeft="7dp"
-		android:layout_gravity="center_vertical|right"
+        android:layout_gravity="center_vertical"
 		android:background="@drawable/custom_widget_nav_button" />
 </LinearLayout>
