@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import android.app.AlarmManager;
 import android.app.NotificationManager;
@@ -18,6 +20,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -35,11 +38,12 @@ import com.github.whentoleave.model.EventEntryComparator;
 import com.github.whentoleave.model.EventFeed;
 import com.github.whentoleave.model.Namespace;
 import com.github.whentoleave.utility.NotificationUtility;
-import com.google.api.client.apache.ApacheHttpTransport;
 import com.google.api.client.googleapis.GoogleHeaders;
-import com.google.api.client.googleapis.GoogleTransport;
 import com.google.api.client.googleapis.GoogleUrl;
+import com.google.api.client.googleapis.GoogleUtils;
 import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.apache.ApacheHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.xml.atom.AtomParser;
 
@@ -486,11 +490,20 @@ public class AppService extends Service implements LocationListener,
 	public void onCreate()
 	{
 		Log.d(TAG, "onCreate");
-		HttpTransport.setLowLevelHttpTransport(ApacheHttpTransport.INSTANCE);
-		transport = GoogleTransport.create();
-		final GoogleHeaders headers = (GoogleHeaders) transport.defaultHeaders;
+		// Run 'adb shell setprop log.tag.HttpTransport DEBUG'
+		// to turn on debugging
+		Logger.getLogger("com.google.api.client").setLevel(Level.CONFIG);
+		// Per documentation on google-api-java-client, use the appropriate
+		// transport for the current version of Android
+		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.FROYO)
+			transport = new ApacheHttpTransport();
+		else
+			transport = new NetHttpTransport();
+		GoogleUtils.useMethodOverride(transport);
+		final GoogleHeaders headers = new GoogleHeaders();
 		headers.setApplicationName(R.string.app_name + "-" + R.string.version);
 		headers.gdataVersion = "2";
+		transport.defaultHeaders = headers;
 		final AtomParser parser = new AtomParser();
 		parser.namespaceDictionary = Namespace.DICTIONARY;
 		transport.addParser(parser);

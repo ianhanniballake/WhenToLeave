@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.api.client.googleapis.GoogleUrl;
-import com.google.api.client.googleapis.xml.atom.GData;
+import com.google.api.client.googleapis.xml.atom.GoogleAtom;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.DataUtil;
@@ -37,7 +37,7 @@ public abstract class Entry implements Cloneable
 			final GoogleUrl url, final Class<? extends Entry> entryClass)
 			throws IOException
 	{
-		url.fields = GData.getFieldsFor(entryClass);
+		url.fields = GoogleAtom.getFieldsFor(entryClass);
 		final HttpRequest request = transport.buildGetRequest();
 		request.url = url;
 		return RedirectHandler.execute(request).parseAs(entryClass);

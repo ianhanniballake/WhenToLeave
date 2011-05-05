@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.api.client.googleapis.GoogleUrl;
-import com.google.api.client.googleapis.xml.atom.GData;
+import com.google.api.client.googleapis.xml.atom.GoogleAtom;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.util.Key;
@@ -35,7 +35,7 @@ public abstract class Feed
 	static Feed executeGet(final HttpTransport transport, final GoogleUrl url,
 			final Class<? extends Feed> feedClass) throws IOException
 	{
-		url.fields = GData.getFieldsFor(feedClass);
+		url.fields = GoogleAtom.getFieldsFor(feedClass);
 		final HttpRequest request = transport.buildGetRequest();
 		request.url = url;
 		return RedirectHandler.execute(request).parseAs(feedClass);

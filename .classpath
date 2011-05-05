@@ -3,10 +3,16 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="lib" path="lib/google-api-client-1.2.1-alpha.jar" sourcepath="lib/google-api-client-1.2.1-alpha-sources.jar">
+	<classpathentry kind="lib" path="lib/google-api-client-1.3.2-alpha.jar" sourcepath="lib/google-api-client-1.3.2-alpha-sources.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/WhenToLeave/lib/google-api-client-1.2.1-alpha-javadoc.jar!/"/>
+			<attribute name="javadoc_location" value="http://javadoc.google-api-java-client.googlecode.com/hg/1.3.2-alpha/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/google-api-client-googleapis-1.3.2-alpha.jar" sourcepath="lib/google-api-client-googleapis-1.3.2-alpha-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://javadoc.google-api-java-client.googlecode.com/hg/1.3.2-alpha/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/guava-r08.jar" sourcepath="lib/guava-r08-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
