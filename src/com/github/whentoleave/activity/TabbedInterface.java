@@ -246,6 +246,8 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 	 */
 	private void handleGetNextEventWithLocation(final EventEntry nextEvent)
 	{
+		if (nextEvent == null)
+			return;
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
 		final String travelType = settings.getString("TransportPreference",
 				"driving");
