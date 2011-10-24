@@ -1,33 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string
-		name="app_name">WhenToLeave</string>
-	<string
-		name="version">1.0</string>
-	<string
-		name="agendaTitle">Agenda</string>
-	<string
-		name="calendarsTitle">Calendars</string>
-	<string
-		name="mapTitle">Map</string>
-	<string
-		name="eventDetailsTitle">Event Details</string>
-	<string
-		name="preferencesTitle">Preferences</string>
-	<string
-		name="refresh">Refresh</string>
-	<string
-		name="loginCanceled">Login Canceled</string>
-	<string
-		name="whileRefreshing">Refreshing Data...</string>
-	<string
-		name="lastRefreshedBase">Last Refreshed:</string>
-	<string
-		name="lastRefreshedDefault">Last Refreshed: Never</string>
-	<string
-		name="eventLocation">35+Corporate+Dr+Burlington+MA</string>
-	<string
-		name="refresh_time">Refresh Time</string>
-	<string
-		name="notify_time">Notify Me to Leave</string>
+	<string name="app_name">WhenToLeave</string>
+	<string name="version">1.0</string>
+	<string name="agendaTitle">Agenda</string>
+	<string name="calendarsTitle">Calendars</string>
+	<string name="mapTitle">Map</string>
+	<string name="eventDetailsTitle">Event Details</string>
+	<string name="preferencesTitle">Preferences</string>
+	<string name="refresh">Refresh</string>
+	<string name="loginCanceled">Login Canceled</string>
+	<string name="whileRefreshing">Refreshing Data...</string>
+	<string name="lastRefreshedBase">Last Refreshed:</string>
+	<string name="lastRefreshedDefault">Last Refreshed: Never</string>
+	<string name="eventLocation">35+Corporate+Dr+Burlington+MA</string>
+	<string name="refresh_time">Refresh Time</string>
+	<string name="notify_time">Notify Me to Leave</string>
 </resources>

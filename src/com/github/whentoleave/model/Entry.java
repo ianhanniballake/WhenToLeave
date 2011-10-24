@@ -6,8 +6,8 @@ import java.util.List;
 import com.google.api.client.googleapis.GoogleUrl;
 import com.google.api.client.googleapis.xml.atom.GoogleAtom;
 import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.util.DataUtil;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.util.Data;
 import com.google.api.client.util.Key;
 
 /**
@@ -23,8 +23,8 @@ public abstract class Entry implements Cloneable
 	/**
 	 * Builds and executes the HTTP request to get an Entry
 	 * 
-	 * @param transport
-	 *            the authorized HttpTransport to use
+	 * @param factory
+	 *            the authorized HttpRequestFactory to use
 	 * @param url
 	 *            URL of the Entry
 	 * @param entryClass
@@ -33,14 +33,13 @@ public abstract class Entry implements Cloneable
 	 * @throws IOException
 	 *             on IO error
 	 */
-	protected static Entry executeGet(final HttpTransport transport,
+	protected static Entry executeGet(final HttpRequestFactory factory,
 			final GoogleUrl url, final Class<? extends Entry> entryClass)
 			throws IOException
 	{
 		url.fields = GoogleAtom.getFieldsFor(entryClass);
-		final HttpRequest request = transport.buildGetRequest();
-		request.url = url;
-		return RedirectHandler.execute(request).parseAs(entryClass);
+		final HttpRequest request = factory.buildDeleteRequest(url);
+		return request.execute().parseAs(entryClass);
 	}
 
 	/**
@@ -65,7 +64,7 @@ public abstract class Entry implements Cloneable
 	@Override
 	protected Entry clone()
 	{
-		return DataUtil.clone(this);
+		return Data.clone(this);
 	}
 
 	/**

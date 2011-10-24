@@ -7,7 +7,7 @@ import android.location.Location;
 
 import com.github.whentoleave.maps.RouteInformation;
 import com.google.api.client.googleapis.GoogleUrl;
-import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.util.Key;
 
 /**
@@ -23,18 +23,18 @@ public class EventEntry extends Entry
 	/**
 	 * Builds and executes the HTTP request to get an EventEntry
 	 * 
-	 * @param transport
-	 *            the authorized HttpTransport to use
+	 * @param factory
+	 *            the authorized HttpRequestFactory to use
 	 * @param url
 	 *            URL of the EventEntry
 	 * @return the EventEntry associated with the given URL
 	 * @throws IOException
 	 *             on IO error
 	 */
-	public static EventEntry executeGet(final HttpTransport transport,
+	public static EventEntry executeGet(final HttpRequestFactory factory,
 			final GoogleUrl url) throws IOException
 	{
-		return (EventEntry) Entry.executeGet(transport, url, EventEntry.class);
+		return (EventEntry) Entry.executeGet(factory, url, EventEntry.class);
 	}
 
 	/**

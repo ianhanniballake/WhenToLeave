@@ -1,66 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
-	android:orientation="horizontal"
-	android:padding="10dp"
 	android:background="@drawable/widget_frame"
-	xmlns:android="http://schemas.android.com/apk/res/android">
+	android:orientation="horizontal"
+	android:padding="10dp" >
 	<LinearLayout
 		android:id="@+id/widgetBackgroudLayout"
 		android:layout_width="wrap_content"
 		android:layout_height="fill_parent"
-		android:orientation="horizontal"
-		android:padding="5dp"
 		android:layout_marginLeft="3dp"
-		android:background="@drawable/custom_widget_background_green">
+		android:background="@drawable/custom_widget_background_green"
+		android:orientation="horizontal"
+		android:padding="5dp" >
 		<LinearLayout
 			android:id="@+id/widgetClickableLayout"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
-			android:orientation="vertical"
 			android:clickable="true"
-			android:focusable="true">
+			android:focusable="true"
+			android:orientation="vertical" >
 			<TextView
 				android:id="@+id/widgetLeaveInText"
 				android:layout_width="170dp"
 				android:layout_height="wrap_content"
-				android:typeface="sans"
+				android:background="@null"
 				android:textColor="@color/white"
-				android:textStyle="bold"
 				android:textSize="18sp"
-				android:background="@null" />
+				android:textStyle="bold"
+				android:typeface="sans" />
 			<TextView
 				android:id="@+id/widgetEventDetail"
 				android:layout_width="170dp"
 				android:layout_height="wrap_content"
-				android:typeface="serif"
+				android:background="@null"
 				android:textColor="@color/white"
-				android:textStyle="bold"
 				android:textSize="15sp"
-				android:background="@null" />
+				android:textStyle="bold"
+				android:typeface="serif" />
 			<TextView
 				android:id="@+id/widgetEventTime"
 				android:layout_width="170dp"
 				android:layout_height="wrap_content"
-				android:typeface="serif"
+				android:background="@null"
 				android:textColor="@color/blue3"
-				android:textStyle="bold"
 				android:textSize="12sp"
-				android:background="@null" />
+				android:textStyle="bold"
+				android:typeface="serif" />
 		</LinearLayout>
 		<ImageButton
 			android:id="@+id/widgetTransportButton"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
-			android:src="@drawable/car_white72"
-			android:background="@null" />
+			android:background="@null"
+			android:src="@drawable/car_white72" />
 	</LinearLayout>
 	<ImageButton
 		android:id="@+id/widgetNavigationButton"
 		android:layout_width="wrap_content"
 		android:layout_height="48dp"
+		android:layout_gravity="center_vertical"
 		android:layout_marginLeft="7dp"
-        android:layout_gravity="center_vertical"
 		android:background="@drawable/custom_widget_nav_button" />
 </LinearLayout>

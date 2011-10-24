@@ -20,7 +20,6 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -38,14 +37,20 @@ import com.github.whentoleave.model.EventEntryComparator;
 import com.github.whentoleave.model.EventFeed;
 import com.github.whentoleave.model.Namespace;
 import com.github.whentoleave.utility.NotificationUtility;
+import com.google.api.client.extensions.android2.AndroidHttp;
 import com.google.api.client.googleapis.GoogleHeaders;
 import com.google.api.client.googleapis.GoogleUrl;
-import com.google.api.client.googleapis.GoogleUtils;
+import com.google.api.client.googleapis.MethodOverride;
+import com.google.api.client.googleapis.extensions.android2.auth.GoogleAccountManager;
+import com.google.api.client.http.HttpExecuteInterceptor;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.apache.ApacheHttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.http.HttpUnsuccessfulResponseHandler;
+import com.google.api.client.http.xml.atom.AtomParser;
 import com.google.api.client.util.DateTime;
-import com.google.api.client.xml.atom.AtomParser;
 
 /**
  * Application service, managing all Google account access and authentication,
@@ -54,6 +59,16 @@ import com.google.api.client.xml.atom.AtomParser;
 public class AppService extends Service implements LocationListener,
 		Handler.Callback
 {
+	private class AuthenticationRequiredException extends Exception
+	{
+		public final static String AUTH_REQUIRED_MESSAGE = "Authentication Required";
+
+		public AuthenticationRequiredException()
+		{
+			super(AUTH_REQUIRED_MESSAGE);
+		}
+	}
+
 	/**
 	 * AlarmManager used to create repeated notification checks
 	 */
@@ -131,6 +146,7 @@ public class AppService extends Service implements LocationListener,
 	 * Preferences name to load settings from
 	 */
 	private static final String PREF = "MyPrefs";
+	private static final String PREF_GSESSIONID = "gsessionid";
 	/**
 	 * A 'significant' time period between location updates. Currently two
 	 * minutes in milliseconds
@@ -144,6 +160,10 @@ public class AppService extends Service implements LocationListener,
 	 * Current location of the device
 	 */
 	private Location currentLocation = null;
+	/**
+	 * HttpRequestFactory used for Google API queries
+	 */
+	private HttpRequestFactory factory = null;
 	/**
 	 * Whether the Google HttpTransport is authenticated or not
 	 */
@@ -168,10 +188,6 @@ public class AppService extends Service implements LocationListener,
 	 * List of Messengers to notify on alarm timer ticks
 	 */
 	private final ArrayList<Messenger> refreshOnTimerListenerList = new ArrayList<Messenger>();
-	/**
-	 * HttpTransport used for Google API queries
-	 */
-	private HttpTransport transport;
 
 	/**
 	 * Check for notifications, sending them out if required
@@ -207,6 +223,9 @@ public class AppService extends Service implements LocationListener,
 		} catch (final IOException e)
 		{
 			Log.e(TAG, "Error checking for notifications", e);
+		} catch (final AuthenticationRequiredException e)
+		{
+			Log.e(TAG, "Error checking for notifications", e);
 		}
 	}
 
@@ -230,15 +249,20 @@ public class AppService extends Service implements LocationListener,
 	 * @return the list of all calendars the user has access to
 	 * @throws IOException
 	 *             on IO error
+	 * @throws AuthenticationRequiredException
+	 *             if there is no authenticated HttpRequestFactory
 	 */
-	private List<CalendarEntry> getCalendars() throws IOException
+	private List<CalendarEntry> getCalendars() throws IOException,
+			AuthenticationRequiredException
 	{
+		if (factory == null)
+			throw new AuthenticationRequiredException();
 		final ArrayList<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
 		final CalendarUrl calFeedUrl = CalendarUrl.forAllCalendarsFeed();
 		// page through results
 		while (true)
 		{
-			final CalendarFeed feed = CalendarFeed.executeGet(transport,
+			final CalendarFeed feed = CalendarFeed.executeGet(factory,
 					calFeedUrl);
 			if (feed.calendars != null)
 				calendars.addAll(feed.calendars);
@@ -261,10 +285,14 @@ public class AppService extends Service implements LocationListener,
 	 *         time
 	 * @throws IOException
 	 *             on IO error
+	 * @throws AuthenticationRequiredException
+	 *             if there is no authenticated HttpRequestFactory
 	 */
 	private Set<EventEntry> getEvents(final Date start, final Date end)
-			throws IOException
+			throws IOException, AuthenticationRequiredException
 	{
+		if (factory == null)
+			throw new AuthenticationRequiredException();
 		final TreeSet<EventEntry> events = new TreeSet<EventEntry>(
 				new EventEntryComparator());
 		final List<CalendarEntry> calendars = getCalendars();
@@ -275,7 +303,7 @@ public class AppService extends Service implements LocationListener,
 							+ new DateTime(start) + "&start-max="
 							+ new DateTime(end) + "&orderby=starttime"
 							+ "&singleevents=true");
-			final EventFeed eventFeed = EventFeed.executeGet(transport,
+			final EventFeed eventFeed = EventFeed.executeGet(factory,
 					eventFeedUrl);
 			events.addAll(eventFeed.getEntries());
 		}
@@ -292,8 +320,11 @@ public class AppService extends Service implements LocationListener,
 	 *         location are found
 	 * @throws IOException
 	 *             on IO error
+	 * @throws AuthenticationRequiredException
+	 *             if there is no authenticated HttpRequestFactory
 	 */
-	private EventEntry getNextEventWithLocation() throws IOException
+	private EventEntry getNextEventWithLocation() throws IOException,
+			AuthenticationRequiredException
 	{
 		Calendar queryFrom = Calendar.getInstance();
 		final Calendar queryTo = Calendar.getInstance();
@@ -382,8 +413,12 @@ public class AppService extends Service implements LocationListener,
 	 */
 	private void invalidateAuthToken()
 	{
-		((GoogleHeaders) transport.defaultHeaders).remove("Authorization");
+		factory = null;
 		isAuthenticated = false;
+		final SharedPreferences.Editor editor = getSharedPreferences(PREF, 0)
+				.edit();
+		editor.remove("authToken");
+		editor.commit();
 	}
 
 	/**
@@ -493,20 +528,6 @@ public class AppService extends Service implements LocationListener,
 		// Run 'adb shell setprop log.tag.HttpTransport DEBUG'
 		// to turn on debugging
 		Logger.getLogger("com.google.api.client").setLevel(Level.CONFIG);
-		// Per documentation on google-api-java-client, use the appropriate
-		// transport for the current version of Android
-		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.FROYO)
-			transport = new ApacheHttpTransport();
-		else
-			transport = new NetHttpTransport();
-		GoogleUtils.useMethodOverride(transport);
-		final GoogleHeaders headers = new GoogleHeaders();
-		headers.setApplicationName(R.string.app_name + "-" + R.string.version);
-		headers.gdataVersion = "2";
-		transport.defaultHeaders = headers;
-		final AtomParser parser = new AtomParser();
-		parser.namespaceDictionary = Namespace.DICTIONARY;
-		transport.addParser(parser);
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		// Setup Notification Utility Manager
 		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -676,6 +697,18 @@ public class AppService extends Service implements LocationListener,
 			{
 				Log.w(TAG, "replyWithCalendars in IOException", e);
 			}
+		} catch (final AuthenticationRequiredException e)
+		{
+			Log.e(TAG, "replyWithEvents", e);
+			try
+			{
+				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
+						e.getMessage()));
+			} catch (final RemoteException e1)
+			{
+				Log.w(TAG,
+						"replyWithEvents in AuthenticationRequiredException", e);
+			}
 		}
 	}
 
@@ -693,7 +726,13 @@ public class AppService extends Service implements LocationListener,
 	{
 		try
 		{
-			final EventEntry event = EventEntry.executeGet(transport,
+			if (factory == null)
+			{
+				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
+						AuthenticationRequiredException.AUTH_REQUIRED_MESSAGE));
+				return;
+			}
+			final EventEntry event = EventEntry.executeGet(factory,
 					new GoogleUrl(eventUrl));
 			replyToMessenger.send(Message.obtain(null, MSG_GET_EVENT, event));
 		} catch (final RemoteException e)
@@ -745,6 +784,18 @@ public class AppService extends Service implements LocationListener,
 			{
 				Log.w(TAG, "replyWithEvents in IOException", e);
 			}
+		} catch (final AuthenticationRequiredException e)
+		{
+			Log.e(TAG, "replyWithEvents", e);
+			try
+			{
+				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
+						e.getMessage()));
+			} catch (final RemoteException e1)
+			{
+				Log.w(TAG,
+						"replyWithEvents in AuthenticationRequiredException", e);
+			}
 		}
 	}
 
@@ -776,6 +827,19 @@ public class AppService extends Service implements LocationListener,
 			{
 				Log.w(TAG, "replyWithNextEventWithLocation in IOException", e);
 			}
+		} catch (final AuthenticationRequiredException e)
+		{
+			Log.e(TAG, "replyWithNextEventWithLocation", e);
+			try
+			{
+				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
+						e.getMessage()));
+			} catch (final RemoteException e1)
+			{
+				Log.w(TAG,
+						"replyWithNextEventWithLocation in AuthenticationRequiredException",
+						e);
+			}
 		}
 	}
 
@@ -787,7 +851,70 @@ public class AppService extends Service implements LocationListener,
 	 */
 	private void setAuthToken(final String authToken)
 	{
-		((GoogleHeaders) transport.defaultHeaders).setGoogleLogin(authToken);
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final HttpTransport transport = AndroidHttp.newCompatibleTransport();
+		factory = transport.createRequestFactory(new HttpRequestInitializer()
+		{
+			@Override
+			public void initialize(final HttpRequest request)
+			{
+				// set the parser
+				final AtomParser parser = new AtomParser();
+				parser.namespaceDictionary = Namespace.DICTIONARY;
+				request.addParser(parser);
+				// set up the Google headers
+				final GoogleHeaders headers = new GoogleHeaders();
+				headers.setApplicationName(R.string.app_name + "-"
+						+ R.string.version);
+				headers.gdataVersion = "2";
+				headers.setGoogleLogin(authToken);
+				request.headers = headers;
+				request.interceptor = new HttpExecuteInterceptor()
+				{
+					@Override
+					public void intercept(final HttpRequest interceptRequest)
+							throws IOException
+					{
+						final GoogleHeaders requestHeaders = (GoogleHeaders) interceptRequest.headers;
+						requestHeaders.setGoogleLogin(authToken);
+						final String gsessionid = settings.getString(
+								PREF_GSESSIONID, null);
+						interceptRequest.url.set("gsessionid", gsessionid);
+						new MethodOverride().intercept(interceptRequest);
+					}
+				};
+				request.unsuccessfulResponseHandler = new HttpUnsuccessfulResponseHandler()
+				{
+					@Override
+					public boolean handleResponse(
+							final HttpRequest unsuccessfulRequest,
+							final HttpResponse response,
+							final boolean retrySupported) throws IOException
+					{
+						switch (response.statusCode)
+						{
+							case 302:
+								final GoogleUrl url = new GoogleUrl(
+										response.headers.location);
+								final String gsessionid = (String) url
+										.getFirst("gsessionid");
+								final SharedPreferences.Editor editor = settings
+										.edit();
+								editor.putString(PREF_GSESSIONID, gsessionid);
+								editor.commit();
+								return true;
+							case 401:
+							case 403:
+								new GoogleAccountManager(AppService.this)
+										.invalidateAuthToken(authToken);
+								invalidateAuthToken();
+								return false;
+						}
+						return false;
+					}
+				};
+			}
+		});
 		isAuthenticated = true;
 	}
 

@@ -6,7 +6,7 @@ import java.util.List;
 import com.google.api.client.googleapis.GoogleUrl;
 import com.google.api.client.googleapis.xml.atom.GoogleAtom;
 import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.util.Key;
 
 /**
@@ -22,8 +22,8 @@ public abstract class Feed
 	/**
 	 * Builds and executes the HTTP request to get the Google Feed
 	 * 
-	 * @param transport
-	 *            the authorized HttpTransport to use
+	 * @param factory
+	 *            the authorized HttpRequestFactory to use
 	 * @param url
 	 *            URL of the EventFeed
 	 * @param feedClass
@@ -32,13 +32,13 @@ public abstract class Feed
 	 * @throws IOException
 	 *             on IO error
 	 */
-	static Feed executeGet(final HttpTransport transport, final GoogleUrl url,
-			final Class<? extends Feed> feedClass) throws IOException
+	static Feed executeGet(final HttpRequestFactory factory,
+			final GoogleUrl url, final Class<? extends Feed> feedClass)
+			throws IOException
 	{
 		url.fields = GoogleAtom.getFieldsFor(feedClass);
-		final HttpRequest request = transport.buildGetRequest();
-		request.url = url;
-		return RedirectHandler.execute(request).parseAs(feedClass);
+		final HttpRequest request = factory.buildGetRequest(url);
+		return request.execute().parseAs(feedClass);
 	}
 
 	/**

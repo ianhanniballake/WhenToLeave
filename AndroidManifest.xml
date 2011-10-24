@@ -1,78 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-	xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	package="com.github.whentoleave"
 	android:versionCode="1"
-	android:versionName="@string/version"
-	package="com.github.whentoleave">
-	<uses-permission
-		android:name="android.permission.INTERNET" />
-	<uses-permission
-		android:name="android.permission.GET_ACCOUNTS" />
-	<uses-permission
-		android:name="android.permission.USE_CREDENTIALS" />
-	<uses-permission
-		android:name="android.permission.MANAGE_ACCOUNTS" />
-	<uses-permission
-		android:name="android.permission.ACCESS_FINE_LOCATION" />
+	android:versionName="@string/version" >
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.GET_ACCOUNTS" />
+	<uses-permission android:name="android.permission.USE_CREDENTIALS" />
+	<uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 	<application
+		android:debuggable="true"
 		android:icon="@drawable/icon"
 		android:label="@string/app_name"
-		android:debuggable="true"
-		android:theme="@android:style/Theme.NoTitleBar">
-		<activity
-			android:name=".activity.TabbedInterface">
-			<intent-filter>
-				<action
-					android:name="android.intent.action.MAIN" />
-				<category
-					android:name="android.intent.category.LAUNCHER" />
+		android:theme="@android:style/Theme.NoTitleBar" >
+		<activity android:name=".activity.TabbedInterface" >
+			<intent-filter >
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
 		<activity
-			android:name=".activity.Agenda"
-			android:label="@string/agendaTitle" />
+			android:label="@string/agendaTitle"
+			android:name=".activity.Agenda" />
 		<activity
-			android:name=".activity.Calendars"
-			android:label="@string/calendarsTitle" />
+			android:label="@string/calendarsTitle"
+			android:name=".activity.Calendars" />
 		<activity
-			android:name=".activity.Map"
-			android:label="@string/mapTitle" />
+			android:label="@string/mapTitle"
+			android:name=".activity.Map" />
+		<activity android:name=".activity.Login" />
+		<activity android:name=".activity.Logout" />
 		<activity
-			android:name=".activity.Login" />
-		<activity
-			android:name=".activity.Logout" />
-		<activity
-			android:name=".activity.EventDetails"
 			android:label="@string/eventDetailsTitle"
+			android:name=".activity.EventDetails"
 			android:theme="@android:style/Theme.Dialog" />
 		<activity
-			android:name=".activity.Preferences"
-			android:label="@string/preferencesTitle" />
-		<activity
-			android:name=".activity.Home" />
+			android:label="@string/preferencesTitle"
+			android:name=".activity.Preferences" />
+		<activity android:name=".activity.Home" />
 		<service
 			android:enabled="true"
 			android:name=".service.AppService" />
 		<service
 			android:enabled="true"
 			android:name=".widget.WidgetUpdateService" />
-		<receiver
-			android:name=".widget.WidgetProvider">
+		<receiver android:name=".widget.WidgetProvider" >
 			<meta-data
 				android:name="android.appwidget.provider"
 				android:resource="@xml/widget_provider" />
-			<intent-filter>
-				<action
-					android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+			<intent-filter >
+				<action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 			</intent-filter>
-			<intent-filter>
-				<action
-					android:name="WHENTOLEAVE_WIDGET_UPDATE_ACTION" />
+			<intent-filter >
+				<action android:name="WHENTOLEAVE_WIDGET_UPDATE_ACTION" />
 			</intent-filter>
 		</receiver>
-		<uses-library
-			android:name="com.google.android.maps" />
+		<uses-library android:name="com.google.android.maps" />
 	</application>
-	<uses-sdk
-		android:minSdkVersion="8" />
+	<uses-sdk android:minSdkVersion="8" />
 </manifest>

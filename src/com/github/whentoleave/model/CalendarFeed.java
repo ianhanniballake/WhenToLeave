@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.util.Key;
 
 /**
@@ -20,19 +20,18 @@ public class CalendarFeed extends Feed
 	/**
 	 * Builds and executes the HTTP request to get the Google Calendar feed
 	 * 
-	 * @param transport
-	 *            the authorized HttpTransport to use
+	 * @param factory
+	 *            the authorized HttpRequestFactory to use
 	 * @param url
 	 *            URL of the Calendar
 	 * @return the CalendarFeed associated with the given URL
 	 * @throws IOException
 	 *             on IO error
 	 */
-	public static CalendarFeed executeGet(final HttpTransport transport,
+	public static CalendarFeed executeGet(final HttpRequestFactory factory,
 			final CalendarUrl url) throws IOException
 	{
-		return (CalendarFeed) Feed.executeGet(transport, url,
-				CalendarFeed.class);
+		return (CalendarFeed) Feed.executeGet(factory, url, CalendarFeed.class);
 	}
 
 	/**
