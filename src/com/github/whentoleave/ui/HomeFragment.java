@@ -1,4 +1,4 @@
-package com.github.whentoleave.activity;
+package com.github.whentoleave.ui;
 
 import android.app.Activity;
 import android.content.Context;
@@ -24,7 +24,7 @@ import com.github.whentoleave.service.AppServiceConnection;
  * 
  * @see TabbedInterface
  */
-public class Home extends Activity implements Handler.Callback
+public class HomeFragment extends Activity implements Handler.Callback
 {
 	/**
 	 * The current event
@@ -145,8 +145,8 @@ public class Home extends Activity implements Handler.Callback
 			{
 				if (currentEvent != null)
 				{
-					final Intent detailsIntent = new Intent(Home.this,
-							EventDetails.class);
+					final Intent detailsIntent = new Intent(HomeFragment.this,
+							EventDetailsFragment.class);
 					detailsIntent.putExtra("eventUrl",
 							currentEvent.getSelfLink());
 					startActivity(detailsIntent);

@@ -1,4 +1,4 @@
-package com.github.whentoleave.activity;
+package com.github.whentoleave.ui;
 
 import android.app.TabActivity;
 import android.content.Context;
@@ -217,21 +217,21 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 						.newTabSpec("event")
 						.setIndicator("",
 								res.getDrawable(R.drawable.ic_tab_home))
-						.setContent(new Intent(this, Home.class));
+						.setContent(new Intent(this, HomeFragment.class));
 				tabHost.addTab(spec);
 				// Agenda tab
 				spec = tabHost
 						.newTabSpec("agenda")
 						.setIndicator("",
 								res.getDrawable(R.drawable.ic_tab_agenda))
-						.setContent(new Intent(this, Agenda.class));
+						.setContent(new Intent(this, AgendaFragment.class));
 				tabHost.addTab(spec);
 				// Map tab
 				spec = tabHost
 						.newTabSpec("map")
 						.setIndicator("",
 								res.getDrawable(R.drawable.ic_tab_map))
-						.setContent(new Intent(this, Map.class));
+						.setContent(new Intent(this, EventMapFragment.class));
 				tabHost.addTab(spec);
 				// Set default starting tab to Event/Home
 				tabHost.setCurrentTab(0);
@@ -286,7 +286,7 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 				handleMessage(Message.obtain(null, AppService.MSG_REFRESH_DATA));
 				return true;
 			case R.id.menu_view_calendars:
-				startActivity(new Intent(this, Calendars.class));
+				startActivity(new Intent(this, CalendarsActivity.class));
 				return true;
 			case R.id.menu_preferences:
 				startActivity(new Intent(this, Preferences.class));

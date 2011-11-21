@@ -13,7 +13,7 @@
 		android:icon="@drawable/icon"
 		android:label="@string/app_name"
 		android:theme="@android:style/Theme.NoTitleBar" >
-		<activity android:name=".activity.TabbedInterface" >
+		<activity android:name=".ui.TabbedInterface" >
 			<intent-filter >
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -21,23 +21,23 @@
 		</activity>
 		<activity
 			android:label="@string/agendaTitle"
-			android:name=".activity.Agenda" />
+			android:name=".ui.AgendaFragment" />
 		<activity
 			android:label="@string/calendarsTitle"
-			android:name=".activity.Calendars" />
+			android:name=".ui.CalendarsActivity" />
 		<activity
 			android:label="@string/mapTitle"
-			android:name=".activity.Map" />
-		<activity android:name=".activity.Login" />
-		<activity android:name=".activity.Logout" />
+			android:name=".ui.EventMapFragment" />
+		<activity android:name=".ui.Login" />
+		<activity android:name=".ui.Logout" />
 		<activity
 			android:label="@string/eventDetailsTitle"
-			android:name=".activity.EventDetails"
+			android:name=".ui.EventDetailsFragment"
 			android:theme="@android:style/Theme.Dialog" />
 		<activity
 			android:label="@string/preferencesTitle"
-			android:name=".activity.Preferences" />
-		<activity android:name=".activity.Home" />
+			android:name=".ui.Preferences" />
+		<activity android:name=".ui.HomeFragment" />
 		<service
 			android:enabled="true"
 			android:name=".service.AppService" />

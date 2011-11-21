@@ -1,4 +1,4 @@
-package com.github.whentoleave.activity;
+package com.github.whentoleave.ui;
 
 import android.app.Activity;
 import android.content.SharedPreferences;

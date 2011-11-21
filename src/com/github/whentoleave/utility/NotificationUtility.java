@@ -8,8 +8,8 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.github.whentoleave.R;
-import com.github.whentoleave.activity.TabbedInterface;
 import com.github.whentoleave.model.EventEntry;
+import com.github.whentoleave.ui.TabbedInterface;
 
 /**
  * Utility class to manage Notifications

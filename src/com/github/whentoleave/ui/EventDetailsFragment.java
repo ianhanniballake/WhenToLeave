@@ -1,4 +1,4 @@
-package com.github.whentoleave.activity;
+package com.github.whentoleave.ui;
 
 import android.app.Activity;
 import android.content.Context;
@@ -24,7 +24,7 @@ import com.google.android.maps.GeoPoint;
  * <code>intent.putExtra("eventUrl", event.getSelfLink());</code>) as a custom
  * pop up
  */
-public class EventDetails extends Activity implements Handler.Callback
+public class EventDetailsFragment extends Activity implements Handler.Callback
 {
 	/**
 	 * Connection to the persistent, authorized service

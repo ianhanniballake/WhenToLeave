@@ -1,4 +1,4 @@
-package com.github.whentoleave.activity;
+package com.github.whentoleave.ui;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ import com.github.whentoleave.service.AppServiceConnection;
  * "http://code.google.com/p/google-api-java-client/source/browse/calendar-v2-atom-android-sample/src/com/google/api/client/sample/calendar/android/CalendarAndroidSample.java?repo=samples"
  * >the google-api-java-client sample</a> by Yaniv Inbar
  */
-public final class Calendars extends ListActivity implements Handler.Callback
+public final class CalendarsActivity extends ListActivity implements Handler.Callback
 {
 	/**
 	 * Connection to the persistent, authorized service

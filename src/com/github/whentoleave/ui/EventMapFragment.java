@@ -1,4 +1,4 @@
-package com.github.whentoleave.activity;
+package com.github.whentoleave.ui;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,7 +40,7 @@ import com.google.android.maps.OverlayItem;
  * 
  * @see TabbedInterface
  */
-public class Map extends MapActivity implements Handler.Callback
+public class EventMapFragment extends MapActivity implements Handler.Callback
 {
 	/**
 	 * Possible Event Icon colors

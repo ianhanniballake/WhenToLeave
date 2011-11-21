@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 
-import com.github.whentoleave.activity.EventDetails;
+import com.github.whentoleave.ui.EventDetailsFragment;
 import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
 
@@ -97,7 +97,7 @@ public class ItemizedOverlay extends
 	@Override
 	protected boolean onTap(final int index)
 	{
-		final Intent detailsIntent = new Intent(mContext, EventDetails.class);
+		final Intent detailsIntent = new Intent(mContext, EventDetailsFragment.class);
 		if (!mEventURLs.get(index).equals(""))
 		{
 			detailsIntent.putExtra("eventUrl", mEventURLs.get(index));

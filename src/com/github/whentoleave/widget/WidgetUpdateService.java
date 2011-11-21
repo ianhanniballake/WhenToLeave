@@ -16,11 +16,11 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.github.whentoleave.R;
-import com.github.whentoleave.activity.TabbedInterface;
 import com.github.whentoleave.maps.RouteInformation;
 import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
+import com.github.whentoleave.ui.TabbedInterface;
 
 /**
  * Service used to update all Widgets.

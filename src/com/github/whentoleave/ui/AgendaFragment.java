@@ -1,4 +1,4 @@
-package com.github.whentoleave.activity;
+package com.github.whentoleave.ui;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ import com.github.whentoleave.service.AppServiceConnection;
  * 
  * @see TabbedInterface
  */
-public class Agenda extends Activity implements Handler.Callback
+public class AgendaFragment extends Activity implements Handler.Callback
 {
 	/**
 	 * Formatted list of events used to create ListView adapter
@@ -157,15 +157,15 @@ public class Agenda extends Activity implements Handler.Callback
 			public void onItemClick(final AdapterView<?> parent,
 					final View view, final int position, final long id)
 			{
-				final Intent detailsIntent = new Intent(Agenda.this,
-						EventDetails.class);
+				final Intent detailsIntent = new Intent(AgendaFragment.this,
+						EventDetailsFragment.class);
 				detailsIntent.putExtra("eventUrl", eventList.get(position)
 						.getSelfLink());
 				startActivity(detailsIntent);
 			}
 		});
 		// For complex hashmap layout
-		final SimpleAdapter adapterForList = new SimpleAdapter(Agenda.this,
+		final SimpleAdapter adapterForList = new SimpleAdapter(AgendaFragment.this,
 				eventHashMapList, R.layout.agenda_item, new String[] { "title",
 						"when", "where", "imageUri" }, new int[] {
 						R.id.agendaItemTitle, R.id.agendaItemWhen,
