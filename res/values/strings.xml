@@ -2,6 +2,9 @@
 <resources>
 	<string name="app_name">WhenToLeave</string>
 	<string name="version">1.0</string>
+	<string name="menu_view_calendars">View Calendars</string>
+	<string name="menu_preferences">Preferences</string>
+	<string name="menu_logout">Logout</string>
 	<string name="agendaTitle">Agenda</string>
 	<string name="calendarsTitle">Calendars</string>
 	<string name="mapTitle">Map</string>

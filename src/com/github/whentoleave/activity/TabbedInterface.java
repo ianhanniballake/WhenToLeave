@@ -205,18 +205,6 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 	 */
 	private static final int DIALOG_TRANSPORTATION = 100;
 	/**
-	 * Menu ID for loading the Logout activity
-	 */
-	private static final int MENU_LOGOUT = 1;
-	/**
-	 * Menu ID for loading the Preferences activity
-	 */
-	private static final int MENU_PREFERENCES = 2;
-	/**
-	 * Menu ID for loading the Calendars activity
-	 */
-	private static final int MENU_VIEW_CALENDARS = 0;
-	/**
 	 * Preferences name to load settings from
 	 */
 	private static final String PREF = "MyPrefs";
@@ -443,9 +431,7 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 	@Override
 	public boolean onCreateOptionsMenu(final Menu menu)
 	{
-		menu.add(0, MENU_VIEW_CALENDARS, 0, "View Calendars");
-		menu.add(0, MENU_LOGOUT, 0, "Logout");
-		menu.add(0, MENU_PREFERENCES, 0, "Preferences");
+		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
 
@@ -462,17 +448,15 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 	{
 		switch (item.getItemId())
 		{
-			case MENU_VIEW_CALENDARS:
-				final Intent i = new Intent(this, Calendars.class);
-				startActivity(i);
+			case R.id.menu_view_calendars:
+				startActivity(new Intent(this, Calendars.class));
 				return true;
-			case MENU_LOGOUT:
+			case R.id.menu_preferences:
+				startActivity(new Intent(this, Preferences.class));
+				return true;
+			case R.id.menu_logout:
 				startActivityForResult(new Intent(this, Logout.class),
 						Logout.REQUEST_LOGOUT);
-				return true;
-			case MENU_PREFERENCES:
-				final Intent j = new Intent(this, Preferences.class);
-				startActivity(j);
 				return true;
 		}
 		return false;
