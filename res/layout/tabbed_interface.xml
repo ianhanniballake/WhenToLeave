@@ -3,11 +3,16 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:orientation="vertical" >
+	<android.support.v4.view.ViewPager
+		android:id="@+id/pager"
+		android:layout_width="fill_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1" />
 	<Button
 		android:id="@+id/actionBar"
 		android:layout_width="fill_parent"
 		android:layout_height="40dp"
-		android:layout_marginBottom="1dp"
+		android:layout_marginTop="1dp"
 		android:background="@drawable/custom_action_bar_green"
 		android:gravity="center"
 		android:text="Leave In 3:04h"
@@ -15,23 +20,4 @@
 		android:textSize="21sp"
 		android:textStyle="bold"
 		android:typeface="sans" />
-	<TabHost
-		android:id="@android:id/tabhost"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent" >
-		<LinearLayout
-			android:layout_width="fill_parent"
-			android:layout_height="fill_parent"
-			android:orientation="vertical" >
-			<TabWidget
-				android:id="@android:id/tabs"
-				android:layout_width="fill_parent"
-				android:layout_height="45dp" />
-			<FrameLayout
-				android:id="@android:id/tabcontent"
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content"
-				android:layout_weight="1" />
-		</LinearLayout>
-	</TabHost>
 </LinearLayout>

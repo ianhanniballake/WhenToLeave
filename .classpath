@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="lib/google-api-client-extensions-android2-1.4.1-beta.jar" sourcepath="lib/google-api-client-extensions-android2-1.4.1-beta-sources.jar"/>
 	<classpathentry kind="lib" path="lib/google-api-client-googleapis-extensions-android2-1.4.1-beta.jar" sourcepath="lib/google-api-client-googleapis-extensions-android2-1.4.1-beta-sources.jar"/>
 	<classpathentry kind="lib" path="lib/google-api-client-googleapis-1.4.1-beta.jar" sourcepath="lib/google-api-client-googleapis-1.4.1-beta-sources.jar"/>
+	<classpathentry kind="lib" path="libs/android-support-v13.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

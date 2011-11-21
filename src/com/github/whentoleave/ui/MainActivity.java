@@ -1,6 +1,12 @@
 package com.github.whentoleave.ui;
 
-import android.app.TabActivity;
+import java.util.ArrayList;
+
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,10 +15,11 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
-import android.widget.TabHost;
 
 import com.github.whentoleave.R;
 import com.github.whentoleave.model.EventEntry;
@@ -23,12 +30,131 @@ import com.github.whentoleave.service.AppServiceConnection;
  * Activity which serves as the main hub of the application, containing the
  * Home, Agenda, and Map Activities as tabs and a persistent Action Bar
  */
-public class MainActivity extends TabActivity implements Handler.Callback
+public class MainActivity extends Activity implements Handler.Callback
 {
+	/**
+	 * Possible Action Bar colors
+	 */
+	public enum COLOR {
+		/**
+		 * Green = Greater than 66% of Notify Time preference remaining
+		 */
+		GREEN, /**
+		 * Orange = 33% - 66% of Notify Time preference remaining
+		 */
+		ORANGE, /**
+		 * Red = <33% of Notify Time preference remaining
+		 */
+		RED
+	}
+
+	/**
+	 * This is a helper class that implements the management of tabs and all
+	 * details of connecting a ViewPager with associated TabHost. It relies on a
+	 * trick. Normally a tab host has a simple API for supplying a View or
+	 * Intent that each tab will show. This is not sufficient for switching
+	 * between pages. So instead we make the content part of the tab host 0dp
+	 * high (it is not shown) and the TabsAdapter supplies its own dummy view to
+	 * show as the tab content. It listens to changes in tabs, and takes care of
+	 * switch to the correct paged in the ViewPager whenever the selected tab
+	 * changes.
+	 */
+	public static class TabsAdapter extends FragmentPagerAdapter implements
+			ActionBar.TabListener, ViewPager.OnPageChangeListener
+	{
+		static final class TabInfo
+		{
+			private final Bundle args;
+			private final Class<?> clss;
+
+			TabInfo(final Class<?> _class, final Bundle _args)
+			{
+				clss = _class;
+				args = _args;
+			}
+		}
+
+		private final ActionBar mActionBar;
+		private final Context mContext;
+		private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
+		private final ViewPager mViewPager;
+
+		public TabsAdapter(final Activity activity, final ViewPager pager)
+		{
+			super(activity.getFragmentManager());
+			mContext = activity;
+			mActionBar = activity.getActionBar();
+			mViewPager = pager;
+			mViewPager.setAdapter(this);
+			mViewPager.setOnPageChangeListener(this);
+		}
+
+		public void addTab(final ActionBar.Tab tab, final Class<?> clss,
+				final Bundle args)
+		{
+			final TabInfo info = new TabInfo(clss, args);
+			tab.setTag(info);
+			tab.setTabListener(this);
+			mTabs.add(info);
+			mActionBar.addTab(tab);
+			notifyDataSetChanged();
+		}
+
+		@Override
+		public int getCount()
+		{
+			return mTabs.size();
+		}
+
+		@Override
+		public Fragment getItem(final int position)
+		{
+			final TabInfo info = mTabs.get(position);
+			return Fragment.instantiate(mContext, info.clss.getName(),
+					info.args);
+		}
+
+		@Override
+		public void onPageScrolled(final int position,
+				final float positionOffset, final int positionOffsetPixels)
+		{
+		}
+
+		@Override
+		public void onPageScrollStateChanged(final int state)
+		{
+		}
+
+		@Override
+		public void onPageSelected(final int position)
+		{
+			mActionBar.setSelectedNavigationItem(position);
+		}
+
+		@Override
+		public void onTabReselected(final Tab tab, final FragmentTransaction ft)
+		{
+		}
+
+		@Override
+		public void onTabSelected(final Tab tab, final FragmentTransaction ft)
+		{
+			final Object tag = tab.getTag();
+			for (int i = 0; i < mTabs.size(); i++)
+				if (mTabs.get(i) == tag)
+					mViewPager.setCurrentItem(i);
+		}
+
+		@Override
+		public void onTabUnselected(final Tab tab, final FragmentTransaction ft)
+		{
+		}
+	}
+
 	/**
 	 * Class which handles the persistent Action Bar located above the tabs
 	 */
-	private class ActionBar
+	private class WhenToLeaveIndicator
 	{
 		/**
 		 * Main button for the Action Bar, usually containing when the user
@@ -39,7 +165,7 @@ public class MainActivity extends TabActivity implements Handler.Callback
 		/**
 		 * Creates and sets up the Action Bar
 		 */
-		public ActionBar()
+		public WhenToLeaveIndicator()
 		{
 			// Setup Listeners for the ActionBar Buttons
 			actionBarButton = (Button) findViewById(R.id.actionBar);
@@ -108,33 +234,19 @@ public class MainActivity extends TabActivity implements Handler.Callback
 	}
 
 	/**
-	 * Possible Action Bar colors
-	 */
-	public enum COLOR {
-		/**
-		 * Green = Greater than 66% of Notify Time preference remaining
-		 */
-		GREEN, /**
-		 * Orange = 33% - 66% of Notify Time preference remaining
-		 */
-		ORANGE, /**
-		 * Red = <33% of Notify Time preference remaining
-		 */
-		RED
-	}
-
-	/**
 	 * Preferences name to load settings from
 	 */
 	private static final String PREF = "MyPrefs";
 	/**
 	 * Action Bar controller
 	 */
-	private ActionBar actionBar;
+	private WhenToLeaveIndicator actionBar;
 	/**
 	 * Current location of the device
 	 */
 	private Location currentLocation = null;
+	TabsAdapter mTabsAdapter;
+	private ViewPager mViewPager;
 	/**
 	 * Connection to the persistent, authorized service
 	 */
@@ -208,34 +320,7 @@ public class MainActivity extends TabActivity implements Handler.Callback
 				finish();
 				break;
 			case Login.REQUEST_AUTHENTICATE:
-				setContentView(R.layout.tabbed_interface);
-				final Resources res = getResources(); // Resource object to get
-				final TabHost tabHost = getTabHost(); // The activity TabHost
-				TabHost.TabSpec spec; // Reusable TabSpec for each tab
-				// Home tab
-				spec = tabHost
-						.newTabSpec("event")
-						.setIndicator("",
-								res.getDrawable(R.drawable.ic_tab_home))
-						.setContent(new Intent(this, HomeFragment.class));
-				tabHost.addTab(spec);
-				// Agenda tab
-				spec = tabHost
-						.newTabSpec("agenda")
-						.setIndicator("",
-								res.getDrawable(R.drawable.ic_tab_agenda))
-						.setContent(new Intent(this, AgendaFragment.class));
-				tabHost.addTab(spec);
-				// Map tab
-				spec = tabHost
-						.newTabSpec("map")
-						.setIndicator("",
-								res.getDrawable(R.drawable.ic_tab_map))
-						.setContent(new Intent(this, EventMapFragment.class));
-				tabHost.addTab(spec);
-				// Set default starting tab to Event/Home
-				tabHost.setCurrentTab(0);
-				actionBar = new ActionBar();
+				actionBar = new WhenToLeaveIndicator();
 				bindService(new Intent(this, AppService.class), service,
 						Context.BIND_AUTO_CREATE);
 				break;
@@ -247,6 +332,21 @@ public class MainActivity extends TabActivity implements Handler.Callback
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.tabbed_interface);
+		mViewPager = (ViewPager) findViewById(R.id.pager);
+		final ActionBar bar = getActionBar();
+		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+		mTabsAdapter = new TabsAdapter(this, mViewPager);
+		mTabsAdapter.addTab(bar.newTab().setText(getText(R.string.title_home)),
+				HomeFragment.class, null);
+		mTabsAdapter.addTab(bar.newTab()
+				.setText(getText(R.string.title_agenda)), AgendaFragment.class,
+				null);
+		mTabsAdapter.addTab(bar.newTab().setText(getText(R.string.title_map)),
+				EventMapFragment.class, null);
+		if (savedInstanceState != null)
+			bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
 		final SharedPreferences settings = getSharedPreferences(PREF, 0);
 		// If notifications are enabled, keep the service running after the
 		// program exits
@@ -278,9 +378,8 @@ public class MainActivity extends TabActivity implements Handler.Callback
 		{
 			case R.id.menu_refresh:
 				// Refresh the current tab's data
-				final String tabTag = getTabHost().getCurrentTabTag();
-				final Handler.Callback tab = (Handler.Callback) getLocalActivityManager()
-						.getActivity(tabTag);
+				final Handler.Callback tab = (Handler.Callback) mTabsAdapter
+						.getItem(mViewPager.getCurrentItem());
 				tab.handleMessage(Message.obtain(null,
 						AppService.MSG_REFRESH_DATA));
 				handleMessage(Message.obtain(null, AppService.MSG_REFRESH_DATA));
@@ -317,6 +416,13 @@ public class MainActivity extends TabActivity implements Handler.Callback
 			transportModeMenuItem.setIcon(menu.findItem(
 					R.id.menu_transport_mode_walking).getIcon());
 		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
+	protected void onSaveInstanceState(final Bundle outState)
+	{
+		super.onSaveInstanceState(outState);
+		outState.putInt("tab", getActionBar().getSelectedNavigationIndex());
 	}
 
 	/**
