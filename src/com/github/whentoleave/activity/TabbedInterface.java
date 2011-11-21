@@ -1,7 +1,5 @@
 package com.github.whentoleave.activity;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -11,15 +9,9 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TabHost;
 
 import com.github.whentoleave.R;
@@ -43,51 +35,14 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 		 * should leave
 		 */
 		private final Button actionBarButton;
-		/**
-		 * Button to manually trigger the data to be refreshed
-		 */
-		private final ImageButton refreshButton;
-		/**
-		 * Button to trigger the transportation mode dialog
-		 */
-		private final ImageButton transportButton;
 
 		/**
 		 * Creates and sets up the Action Bar
 		 */
 		public ActionBar()
 		{
-			final SharedPreferences settings = getSharedPreferences(PREF, 0);
-			final String travelType = settings.getString("TransportPreference",
-					"driving");
 			// Setup Listeners for the ActionBar Buttons
 			actionBarButton = (Button) findViewById(R.id.actionBar);
-			transportButton = (ImageButton) findViewById(R.id.transportModeButton);
-			transportButton.setOnClickListener(new OnClickListener()
-			{
-				@Override
-				public void onClick(final View view)
-				{
-					showDialog(DIALOG_TRANSPORTATION);
-				}
-			});
-			setTransportMode(travelType);
-			refreshButton = (ImageButton) findViewById(R.id.refreshButton);
-			refreshButton.setOnClickListener(new OnClickListener()
-			{
-				@Override
-				public void onClick(final View view)
-				{
-					// Refresh the current tab's data
-					final String tabTag = getTabHost().getCurrentTabTag();
-					final Handler.Callback tab = (Handler.Callback) getLocalActivityManager()
-							.getActivity(tabTag);
-					tab.handleMessage(Message.obtain(null,
-							AppService.MSG_REFRESH_DATA));
-					handleMessage(Message.obtain(null,
-							AppService.MSG_REFRESH_DATA));
-				}
-			});
 		}
 
 		/**
@@ -104,25 +59,13 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 				case GREEN:
 					actionBarButton.setBackgroundDrawable(res
 							.getDrawable(R.drawable.custom_action_bar_green));
-					transportButton.setBackgroundDrawable(res
-							.getDrawable(R.drawable.custom_action_bar_green));
-					refreshButton.setBackgroundDrawable(res
-							.getDrawable(R.drawable.custom_action_bar_green));
 					break;
 				case ORANGE:
 					actionBarButton.setBackgroundDrawable(res
 							.getDrawable(R.drawable.custom_action_bar_orange));
-					transportButton.setBackgroundDrawable(res
-							.getDrawable(R.drawable.custom_action_bar_orange));
-					refreshButton.setBackgroundDrawable(res
-							.getDrawable(R.drawable.custom_action_bar_orange));
 					break;
 				case RED:
 					actionBarButton.setBackgroundDrawable(res
-							.getDrawable(R.drawable.custom_action_bar_red));
-					transportButton.setBackgroundDrawable(res
-							.getDrawable(R.drawable.custom_action_bar_red));
-					refreshButton.setBackgroundDrawable(res
 							.getDrawable(R.drawable.custom_action_bar_red));
 					break;
 			}
@@ -162,26 +105,6 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 			setText("Leave "
 					+ (leaveInMinutes > 0 ? "in " + formattedTime : "Now"));
 		}
-
-		/**
-		 * Sets the transportation mode icon
-		 * 
-		 * @param travelType
-		 *            the transportation mode to set
-		 */
-		public void setTransportMode(final String travelType)
-		{
-			final Resources res = getResources();
-			if (travelType.equals("driving"))
-				transportButton.setImageDrawable(res
-						.getDrawable(R.drawable.car_white55));
-			else if (travelType.equals("bicycling"))
-				transportButton.setImageDrawable(res
-						.getDrawable(R.drawable.bicycle_white55));
-			else if (travelType.equals("walking"))
-				transportButton.setImageDrawable(res
-						.getDrawable(R.drawable.person_white55));
-		}
 	}
 
 	/**
@@ -201,17 +124,9 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 	}
 
 	/**
-	 * Dialog ID for transportation mode dialog box
-	 */
-	private static final int DIALOG_TRANSPORTATION = 100;
-	/**
 	 * Preferences name to load settings from
 	 */
 	private static final String PREF = "MyPrefs";
-	/**
-	 * Logging tag
-	 */
-	private static final String TAG = "TabbedInterfaceActivity";
 	/**
 	 * Action Bar controller
 	 */
@@ -342,93 +257,6 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 	}
 
 	@Override
-	protected Dialog onCreateDialog(final int id)
-	{
-		switch (id)
-		{
-			case DIALOG_TRANSPORTATION:
-				final AlertDialog transportDialog;
-				AlertDialog.Builder builder;
-				final Context mContext = getApplicationContext();
-				final LayoutInflater inflater = (LayoutInflater) mContext
-						.getSystemService(LAYOUT_INFLATER_SERVICE);
-				final View layout = inflater.inflate(
-						R.layout.transportation_dialog,
-						(ViewGroup) findViewById(R.id.layout_root));
-				builder = new AlertDialog.Builder(TabbedInterface.this);
-				builder.setView(layout);
-				builder.setTitle("Choose Your Mode of Transport");
-				transportDialog = builder.create();
-				// Setup Custom Dialog Item Listeners and Settings
-				final ImageButton carButton = (ImageButton) layout
-						.findViewById(R.id.carButton);
-				carButton.setOnClickListener(new OnClickListener()
-				{
-					@Override
-					public void onClick(final View view)
-					{
-						final SharedPreferences settings = getSharedPreferences(
-								PREF, 0);
-						final SharedPreferences.Editor editor = settings.edit();
-						editor.putString("TransportPreference", "driving");
-						editor.commit();
-						actionBar.setTransportMode("driving");
-						Log.v(TAG,
-								"Committed travel pref: "
-										+ settings.getString(
-												"TransportPreference",
-												"driving"));
-						transportDialog.dismiss();
-					}
-				});
-				final ImageButton publicButton = (ImageButton) layout
-						.findViewById(R.id.publicButton);
-				publicButton.setOnClickListener(new OnClickListener()
-				{
-					@Override
-					public void onClick(final View view)
-					{
-						final SharedPreferences settings = getSharedPreferences(
-								PREF, 0);
-						final SharedPreferences.Editor editor = settings.edit();
-						editor.putString("TransportPreference", "bicycling");
-						editor.commit();
-						actionBar.setTransportMode("bicycling");
-						Log.v(TAG,
-								"Committed travel pref: "
-										+ settings.getString(
-												"TransportPreference",
-												"bicycling"));
-						transportDialog.dismiss();
-					}
-				});
-				final ImageButton walkButton = (ImageButton) layout
-						.findViewById(R.id.walkButton);
-				walkButton.setOnClickListener(new OnClickListener()
-				{
-					@Override
-					public void onClick(final View view)
-					{
-						final SharedPreferences settings = getSharedPreferences(
-								PREF, 0);
-						final SharedPreferences.Editor editor = settings.edit();
-						editor.putString("TransportPreference", "walking");
-						editor.commit();
-						actionBar.setTransportMode("walking");
-						Log.v(TAG,
-								"Committed travel pref: "
-										+ settings.getString(
-												"TransportPreference",
-												"walking"));
-						transportDialog.dismiss();
-					}
-				});
-				return transportDialog;
-		}
-		return super.onCreateDialog(id);
-	}
-
-	@Override
 	public boolean onCreateOptionsMenu(final Menu menu)
 	{
 		getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -448,6 +276,15 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 	{
 		switch (item.getItemId())
 		{
+			case R.id.menu_refresh:
+				// Refresh the current tab's data
+				final String tabTag = getTabHost().getCurrentTabTag();
+				final Handler.Callback tab = (Handler.Callback) getLocalActivityManager()
+						.getActivity(tabTag);
+				tab.handleMessage(Message.obtain(null,
+						AppService.MSG_REFRESH_DATA));
+				handleMessage(Message.obtain(null, AppService.MSG_REFRESH_DATA));
+				return true;
 			case R.id.menu_view_calendars:
 				startActivity(new Intent(this, Calendars.class));
 				return true;
@@ -460,5 +297,57 @@ public class TabbedInterface extends TabActivity implements Handler.Callback
 				return true;
 		}
 		return false;
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(final Menu menu)
+	{
+		final MenuItem transportModeMenuItem = menu
+				.findItem(R.id.menu_transport_mode);
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final String transportMode = settings.getString("TransportPreference",
+				"driving");
+		if (transportMode.equals("driving"))
+			transportModeMenuItem.setIcon(menu.findItem(
+					R.id.menu_transport_mode_car).getIcon());
+		else if (transportMode.equals("bicycling"))
+			transportModeMenuItem.setIcon(menu.findItem(
+					R.id.menu_transport_mode_bicycle).getIcon());
+		else if (transportMode.equals("walking"))
+			transportModeMenuItem.setIcon(menu.findItem(
+					R.id.menu_transport_mode_walking).getIcon());
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	/**
+	 * Custom menu onClick handler for transportation mode menu items
+	 * 
+	 * @param item
+	 *            menu item clicked
+	 */
+	public void onSelectTransportMode(final MenuItem item)
+	{
+		String newTransportMode = null;
+		switch (item.getItemId())
+		{
+			case R.id.menu_transport_mode_car:
+				newTransportMode = "driving";
+				break;
+			case R.id.menu_transport_mode_bicycle:
+				newTransportMode = "bicycling";
+				break;
+			case R.id.menu_transport_mode_walking:
+				newTransportMode = "walking";
+				break;
+			default:
+				return;
+		}
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final SharedPreferences.Editor editor = settings.edit();
+		editor.putString("TransportPreference", newTransportMode);
+		editor.commit();
+		// Request a call to onPrepareOptionsMenu so we can change the transport
+		// mode icon
+		invalidateOptionsMenu();
 	}
 }

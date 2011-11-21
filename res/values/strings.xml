@@ -2,6 +2,10 @@
 <resources>
 	<string name="app_name">WhenToLeave</string>
 	<string name="version">1.0</string>
+	<string name="menu_refresh">Refresh</string>
+    <string name="menu_transport_mode_car">By Car</string>
+    <string name="menu_transport_mode_bicycle">By Bicycle</string>
+    <string name="menu_transport_mode_walking">By Walking</string>
 	<string name="menu_view_calendars">View Calendars</string>
 	<string name="menu_preferences">Preferences</string>
 	<string name="menu_logout">Logout</string>
