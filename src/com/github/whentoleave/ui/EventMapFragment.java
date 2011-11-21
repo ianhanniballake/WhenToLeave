@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,6 +16,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.github.whentoleave.R;
@@ -27,20 +31,17 @@ import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
 import com.google.android.maps.GeoPoint;
-import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
 /**
- * Activity showing a map of all of the current day's events with locations. If
+ * Fragment showing a map of all of the current day's events with locations. If
  * a GPS location is available, shows the current location and a route to the
- * next event. Works optimally as a tab for TabbedInterface.
- * 
- * @see MainActivity
+ * next event.
  */
-public class EventMapFragment extends MapActivity implements Handler.Callback
+public class EventMapFragment extends Fragment implements Handler.Callback
 {
 	/**
 	 * Possible Event Icon colors
@@ -275,7 +276,8 @@ public class EventMapFragment extends MapActivity implements Handler.Callback
 	 */
 	private void handleGetEvents(final Set<EventEntry> events)
 	{
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final SharedPreferences settings = getActivity().getSharedPreferences(
+				PREF, 0);
 		long leaveInMinutes = 0;
 		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
 		COLOR iconColor = COLOR.GREEN;
@@ -407,7 +409,8 @@ public class EventMapFragment extends MapActivity implements Handler.Callback
 				return true;
 			case AppService.MSG_ERROR:
 				final String errorMessage = (String) msg.obj;
-				final TextView textView = (TextView) findViewById(R.id.mapdescription);
+				final TextView textView = (TextView) getView().findViewById(
+						R.id.mapdescription);
 				textView.setText("Error retrieving data: " + errorMessage);
 				return true;
 			default:
@@ -426,7 +429,8 @@ public class EventMapFragment extends MapActivity implements Handler.Callback
 			mRoute = RouteProvider.getRoute(mGpsLocation,
 					nextEvent.where.valueString);
 			mapRouteOverlay.setRoute(mRoute);
-			final TextView textView = (TextView) findViewById(R.id.mapdescription);
+			final TextView textView = (TextView) getView().findViewById(
+					R.id.mapdescription);
 			textView.setText(mRoute.mName + " " + mRoute.mDescription);
 		}
 	}
@@ -449,10 +453,30 @@ public class EventMapFragment extends MapActivity implements Handler.Callback
 				calendarLaterToday.getTime());
 	}
 
-	@Override
-	protected boolean isRouteDisplayed()
+	public boolean isRouteDisplayed()
 	{
 		return mRoute != null;
+	}
+
+	@Override
+	public void onActivityCreated(final Bundle savedInstanceState)
+	{
+		super.onActivityCreated(savedInstanceState);
+		// Add the ability to zoom in and out on the map
+		mapView = new MapView(getActivity(),
+				"0ijjBgJzmghK_Je05X7DVwf53F2s2vUBtsqW2sw");
+		mapView.setClickable(true);
+		mapView.setBuiltInZoomControls(true);
+		// Initialize overlay variables
+		final List<Overlay> mapOverlays = mapView.getOverlays();
+		generateDrawables();
+		mapOverlays.add(mapRouteOverlay);
+		locationOverlay = new ItemizedOverlay(gpsLocationIcon, getActivity());
+		mapOverlays.add(locationOverlay);
+		eventOverlay = new ItemizedOverlay(greySquareDefault, getActivity());
+		mapOverlays.add(eventOverlay);
+		((ViewGroup) getView().findViewById(R.id.mapview_holder))
+				.addView(mapView);
 	}
 
 	/** Called when the activity is first created. */
@@ -460,29 +484,23 @@ public class EventMapFragment extends MapActivity implements Handler.Callback
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.map);
-		// Add the ability to zoom in and out on the map
-		mapView = (MapView) findViewById(R.id.mapview);
-		mapView.setBuiltInZoomControls(true);
-		// Initialize overlay variables
-		final List<Overlay> mapOverlays = mapView.getOverlays();
-		generateDrawables();
-		mapOverlays.add(mapRouteOverlay);
-		locationOverlay = new ItemizedOverlay(gpsLocationIcon, this);
-		mapOverlays.add(locationOverlay);
-		eventOverlay = new ItemizedOverlay(greySquareDefault, this);
-		mapOverlays.add(eventOverlay);
-		// Need to use getApplicationContext as this activity is used as a Tab
-		getApplicationContext().bindService(new Intent(this, AppService.class),
+		getActivity().bindService(new Intent(getActivity(), AppService.class),
 				service, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
-	protected void onDestroy()
+	public View onCreateView(final LayoutInflater inflater,
+			final ViewGroup container, final Bundle savedInstanceState)
+	{
+		return inflater.inflate(R.layout.map, container, false);
+	}
+
+	@Override
+	public void onDestroy()
 	{
 		super.onDestroy();
 		service.unregister();
-		getApplicationContext().unbindService(service);
+		getActivity().unbindService(service);
 	}
 
 	/**

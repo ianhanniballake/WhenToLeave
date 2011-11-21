@@ -1,14 +1,16 @@
 package com.github.whentoleave.ui;
 
-import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -18,13 +20,11 @@ import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
 
 /**
- * Activity which shows the next event with a location, along with quick glance
+ * Fragment which shows the next event with a location, along with quick glance
  * information and buttons to get more details, get a map of the event, and
- * navigate to the event. Works optimally as a tab for TabbedInterface.
- * 
- * @see MainActivity
+ * navigate to the event.
  */
-public class HomeFragment extends Activity implements Handler.Callback
+public class HomeFragment extends Fragment implements Handler.Callback
 {
 	/**
 	 * The current event
@@ -129,15 +129,18 @@ public class HomeFragment extends Activity implements Handler.Callback
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.home);
 		// Setup Listeners for the ActionBar Buttons
-		eventName = (TextView) findViewById(R.id.eventName);
-		eventLocation = (TextView) findViewById(R.id.eventLocation);
-		eventDescription = (TextView) findViewById(R.id.eventDescription);
-		eventWhen = (TextView) findViewById(R.id.eventWhen);
-		final Button mapButton = (Button) findViewById(R.id.mapButton);
-		final Button navButton = (Button) findViewById(R.id.navButton);
-		final Button infoButton = (Button) findViewById(R.id.infoButton);
+		eventName = (TextView) getView().findViewById(R.id.eventName);
+		eventLocation = (TextView) getView().findViewById(R.id.eventLocation);
+		eventDescription = (TextView) getView().findViewById(
+				R.id.eventDescription);
+		eventWhen = (TextView) getView().findViewById(R.id.eventWhen);
+		final Button mapButton = (Button) getView()
+				.findViewById(R.id.mapButton);
+		final Button navButton = (Button) getView()
+				.findViewById(R.id.navButton);
+		final Button infoButton = (Button) getView().findViewById(
+				R.id.infoButton);
 		infoButton.setOnClickListener(new OnClickListener()
 		{
 			@Override
@@ -145,7 +148,7 @@ public class HomeFragment extends Activity implements Handler.Callback
 			{
 				if (currentEvent != null)
 				{
-					final Intent detailsIntent = new Intent(HomeFragment.this,
+					final Intent detailsIntent = new Intent(getActivity(),
 							EventDetailsFragment.class);
 					detailsIntent.putExtra("eventUrl",
 							currentEvent.getSelfLink());
@@ -178,15 +181,22 @@ public class HomeFragment extends Activity implements Handler.Callback
 			}
 		});
 		// Need to use getApplicationContext as this activity is used as a Tab
-		getApplicationContext().bindService(new Intent(this, AppService.class),
+		getActivity().bindService(new Intent(getActivity(), AppService.class),
 				service, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
-	protected void onDestroy()
+	public View onCreateView(final LayoutInflater inflater,
+			final ViewGroup container, final Bundle savedInstanceState)
+	{
+		return inflater.inflate(R.layout.home, container, false);
+	}
+
+	@Override
+	public void onDestroy()
 	{
 		super.onDestroy();
 		service.unregister();
-		getApplicationContext().unbindService(service);
+		getActivity().unbindService(service);
 	}
 }

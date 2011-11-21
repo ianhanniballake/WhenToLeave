@@ -8,10 +8,8 @@
 		android:id="@+id/mapdescription"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" />
-	<com.google.android.maps.MapView
-		android:id="@+id/mapview"
+	<FrameLayout
+		android:id="@+id/mapview_holder"
 		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
-		android:apiKey="0ijjBgJzmghK_Je05X7DVwf53F2s2vUBtsqW2sw"
-		android:clickable="true" />
+		android:layout_height="fill_parent" />
 </LinearLayout>

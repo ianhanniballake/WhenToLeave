@@ -25,12 +25,13 @@ import com.github.whentoleave.R;
 import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
+import com.google.android.maps.MapActivity;
 
 /**
  * Activity which serves as the main hub of the application, containing the
  * Home, Agenda, and Map Activities as tabs and a persistent Action Bar
  */
-public class MainActivity extends Activity implements Handler.Callback
+public class MainActivity extends MapActivity implements Handler.Callback
 {
 	/**
 	 * Possible Action Bar colors
@@ -302,6 +303,13 @@ public class MainActivity extends Activity implements Handler.Callback
 		if (currentLocation == null)
 			return;
 		service.requestNextEventWithLocation();
+	}
+
+	@Override
+	protected boolean isRouteDisplayed()
+	{
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	/**

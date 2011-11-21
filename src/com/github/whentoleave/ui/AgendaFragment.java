@@ -7,13 +7,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
 
-import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -26,12 +28,9 @@ import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
 
 /**
- * Activity which shows a list of all events in the next two weeks. Works
- * optimally as a tab for TabbedInterface.
- * 
- * @see MainActivity
+ * Fragment which shows a list of all events in the next two weeks.
  */
-public class AgendaFragment extends Activity implements Handler.Callback
+public class AgendaFragment extends Fragment implements Handler.Callback
 {
 	/**
 	 * Formatted list of events used to create ListView adapter
@@ -60,7 +59,8 @@ public class AgendaFragment extends Activity implements Handler.Callback
 		calendarEventHashMap.put("when", "");
 		calendarEventHashMap.put("where", "");
 		eventHashMapList.add(calendarEventHashMap);
-		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);
+		final TextView lastRefreshed = (TextView) getView().findViewById(
+				R.id.lastRefreshed);
 		lastRefreshed.setText("");
 	}
 
@@ -101,7 +101,8 @@ public class AgendaFragment extends Activity implements Handler.Callback
 				.getDateInstance(DateFormat.SHORT);
 		final DateFormat timeFormat = DateFormat
 				.getTimeInstance(DateFormat.SHORT);
-		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);
+		final TextView lastRefreshed = (TextView) getView().findViewById(
+				R.id.lastRefreshed);
 		lastRefreshed.setText(lastRefreshedBase + " "
 				+ dateFormat.format(currentDate) + " "
 				+ timeFormat.format(currentDate));
@@ -134,7 +135,8 @@ public class AgendaFragment extends Activity implements Handler.Callback
 	 */
 	private void handleRefreshData()
 	{
-		final TextView lastRefreshed = (TextView) findViewById(R.id.lastRefreshed);
+		final TextView lastRefreshed = (TextView) getView().findViewById(
+				R.id.lastRefreshed);
 		// Set the last refreshed to a while refreshing text
 		lastRefreshed.setText(getText(R.string.whileRefreshing));
 		// Load the data
@@ -149,15 +151,15 @@ public class AgendaFragment extends Activity implements Handler.Callback
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.agenda);
-		final ListView agendaList = (ListView) findViewById(R.id.agendaList);
+		final ListView agendaList = (ListView) getView().findViewById(
+				R.id.agendaList);
 		agendaList.setOnItemClickListener(new OnItemClickListener()
 		{
 			@Override
 			public void onItemClick(final AdapterView<?> parent,
 					final View view, final int position, final long id)
 			{
-				final Intent detailsIntent = new Intent(AgendaFragment.this,
+				final Intent detailsIntent = new Intent(getActivity(),
 						EventDetailsFragment.class);
 				detailsIntent.putExtra("eventUrl", eventList.get(position)
 						.getSelfLink());
@@ -165,23 +167,30 @@ public class AgendaFragment extends Activity implements Handler.Callback
 			}
 		});
 		// For complex hashmap layout
-		final SimpleAdapter adapterForList = new SimpleAdapter(AgendaFragment.this,
+		final SimpleAdapter adapterForList = new SimpleAdapter(getActivity(),
 				eventHashMapList, R.layout.agenda_item, new String[] { "title",
 						"when", "where", "imageUri" }, new int[] {
 						R.id.agendaItemTitle, R.id.agendaItemWhen,
 						R.id.agendaItemWhere });
-		final ListView mainList = (ListView) findViewById(R.id.agendaList);
+		final ListView mainList = (ListView) getView().findViewById(
+				R.id.agendaList);
 		mainList.setAdapter(adapterForList);
-		// Need to use getApplicationContext as this activity is used as a Tab
-		getApplicationContext().bindService(new Intent(this, AppService.class),
+		getActivity().bindService(new Intent(getActivity(), AppService.class),
 				service, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
-	protected void onDestroy()
+	public View onCreateView(final LayoutInflater inflater,
+			final ViewGroup container, final Bundle savedInstanceState)
+	{
+		return inflater.inflate(R.layout.agenda, container, false);
+	}
+
+	@Override
+	public void onDestroy()
 	{
 		super.onDestroy();
 		service.unregister();
-		getApplicationContext().unbindService(service);
+		getActivity().unbindService(service);
 	}
 }
