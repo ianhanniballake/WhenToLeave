@@ -57,5 +57,5 @@
 		</receiver>
 		<uses-library android:name="com.google.android.maps" />
 	</application>
-	<uses-sdk android:minSdkVersion="8" />
+	<uses-sdk android:minSdkVersion="14" />
 </manifest>
