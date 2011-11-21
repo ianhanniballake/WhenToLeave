@@ -34,85 +34,109 @@ import com.google.android.maps.MapActivity;
 public class MainActivity extends MapActivity implements Handler.Callback
 {
 	/**
-	 * Possible Action Bar colors
-	 */
-	public enum COLOR {
-		/**
-		 * Green = Greater than 66% of Notify Time preference remaining
-		 */
-		GREEN, /**
-		 * Orange = 33% - 66% of Notify Time preference remaining
-		 */
-		ORANGE, /**
-		 * Red = <33% of Notify Time preference remaining
-		 */
-		RED
-	}
-
-	/**
 	 * This is a helper class that implements the management of tabs and all
-	 * details of connecting a ViewPager with associated TabHost. It relies on a
-	 * trick. Normally a tab host has a simple API for supplying a View or
-	 * Intent that each tab will show. This is not sufficient for switching
-	 * between pages. So instead we make the content part of the tab host 0dp
-	 * high (it is not shown) and the TabsAdapter supplies its own dummy view to
-	 * show as the tab content. It listens to changes in tabs, and takes care of
-	 * switch to the correct paged in the ViewPager whenever the selected tab
-	 * changes.
+	 * details of connecting a ViewPager with associated Action Bar tabs.
 	 */
 	public static class TabsAdapter extends FragmentPagerAdapter implements
 			ActionBar.TabListener, ViewPager.OnPageChangeListener
 	{
-		static final class TabInfo
+		/**
+		 * Class which stores information required to create Fragment Tabs
+		 */
+		private static final class TabInfo
 		{
+			/**
+			 * Arguments to pass on to the Fragment
+			 */
 			private final Bundle args;
-			private final Class<?> clss;
+			/**
+			 * Fragment class to instantiate
+			 */
+			private final Class<? extends Fragment> clss;
 
-			TabInfo(final Class<?> _class, final Bundle _args)
+			/**
+			 * Create a new TabInfo
+			 * 
+			 * @param _class
+			 *            Fragment class to instantiate
+			 * @param _args
+			 *            Arguments to pass on to the Fragment
+			 */
+			public TabInfo(final Class<? extends Fragment> _class,
+					final Bundle _args)
 			{
 				clss = _class;
 				args = _args;
 			}
 		}
 
-		private final ActionBar mActionBar;
-		private final Context mContext;
-		private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
-		private final ViewPager mViewPager;
+		/**
+		 * Reference to the ActionBar
+		 */
+		private final ActionBar actionBar;
+		/**
+		 * Reference to the current context
+		 */
+		private final Context context;
+		/**
+		 * List of Fragment tabs' information
+		 */
+		private final ArrayList<TabInfo> tabInfo = new ArrayList<TabInfo>();
+		/**
+		 * Reference to the ViewPager
+		 */
+		private final ViewPager viewPager;
 
+		/**
+		 * Creates a new TabsAdapter, tying together the ActionBar's tabs and a
+		 * ViewPager
+		 * 
+		 * @param activity
+		 *            Activity hosting the ActionBar
+		 * @param pager
+		 *            ViewPager that will hold the tabs
+		 */
 		public TabsAdapter(final Activity activity, final ViewPager pager)
 		{
 			super(activity.getFragmentManager());
-			mContext = activity;
-			mActionBar = activity.getActionBar();
-			mViewPager = pager;
-			mViewPager.setAdapter(this);
-			mViewPager.setOnPageChangeListener(this);
+			context = activity;
+			actionBar = activity.getActionBar();
+			viewPager = pager;
+			viewPager.setAdapter(this);
+			viewPager.setOnPageChangeListener(this);
 		}
 
-		public void addTab(final ActionBar.Tab tab, final Class<?> clss,
-				final Bundle args)
+		/**
+		 * @param tab
+		 *            Tab to add to the Action Bar
+		 * @param clss
+		 *            Fragment class to instantiate
+		 * @param args
+		 *            Arguments to pass on to the Fragment
+		 */
+		public void addTab(final ActionBar.Tab tab,
+				final Class<? extends Fragment> clss, final Bundle args)
 		{
 			final TabInfo info = new TabInfo(clss, args);
 			tab.setTag(info);
 			tab.setTabListener(this);
-			mTabs.add(info);
-			mActionBar.addTab(tab);
+			tabInfo.add(info);
+			actionBar.addTab(tab);
 			notifyDataSetChanged();
 		}
 
 		@Override
 		public int getCount()
 		{
-			return mTabs.size();
+			return tabInfo.size();
 		}
 
 		@Override
 		public Fragment getItem(final int position)
 		{
-			final TabInfo info = mTabs.get(position);
-			return Fragment.instantiate(mContext, info.clss.getName(),
-					info.args);
+			final TabInfo info = tabInfo.get(position);
+			return Fragment
+					.instantiate(context, info.clss.getName(), info.args);
 		}
 
 		@Override
@@ -129,7 +153,7 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		@Override
 		public void onPageSelected(final int position)
 		{
-			mActionBar.setSelectedNavigationItem(position);
+			actionBar.setSelectedNavigationItem(position);
 		}
 
 		@Override
@@ -141,9 +165,9 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		public void onTabSelected(final Tab tab, final FragmentTransaction ft)
 		{
 			final Object tag = tab.getTag();
-			for (int i = 0; i < mTabs.size(); i++)
-				if (mTabs.get(i) == tag)
-					mViewPager.setCurrentItem(i);
+			for (int i = 0; i < tabInfo.size(); i++)
+				if (tabInfo.get(i) == tag)
+					viewPager.setCurrentItem(i);
 		}
 
 		@Override
@@ -153,100 +177,20 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	}
 
 	/**
-	 * Class which handles the persistent Action Bar located above the tabs
-	 */
-	private class WhenToLeaveIndicator
-	{
-		/**
-		 * Main button for the Action Bar, usually containing when the user
-		 * should leave
-		 */
-		private final Button actionBarButton;
-
-		/**
-		 * Creates and sets up the Action Bar
-		 */
-		public WhenToLeaveIndicator()
-		{
-			// Setup Listeners for the ActionBar Buttons
-			actionBarButton = (Button) findViewById(R.id.actionBar);
-		}
-
-		/**
-		 * Sets the color of the Action Bar
-		 * 
-		 * @param c
-		 *            the color to set
-		 */
-		public void setColor(final COLOR c)
-		{
-			final Resources res = getResources();
-			switch (c)
-			{
-				case GREEN:
-					actionBarButton.setBackgroundDrawable(res
-							.getDrawable(R.drawable.custom_action_bar_green));
-					break;
-				case ORANGE:
-					actionBarButton.setBackgroundDrawable(res
-							.getDrawable(R.drawable.custom_action_bar_orange));
-					break;
-				case RED:
-					actionBarButton.setBackgroundDrawable(res
-							.getDrawable(R.drawable.custom_action_bar_red));
-					break;
-			}
-		}
-
-		/**
-		 * Sets the text on the actionBarButton
-		 * 
-		 * @param text
-		 *            text to display
-		 */
-		public void setText(final String text)
-		{
-			actionBarButton.setText(text);
-		}
-
-		/**
-		 * Sets the text and color of the Action Bar
-		 * 
-		 * @param leaveInMinutes
-		 *            time until the user must leave
-		 * @param notifyTimeInMin
-		 *            user preference on when to be notified, used to determine
-		 *            color
-		 */
-		public void setTextAndColor(final long leaveInMinutes,
-				final int notifyTimeInMin)
-		{
-			COLOR actionBarColor = COLOR.GREEN;
-			if (leaveInMinutes < notifyTimeInMin * .33333)
-				actionBarColor = COLOR.RED;
-			else if (leaveInMinutes < notifyTimeInMin * .6666)
-				actionBarColor = COLOR.ORANGE;
-			setColor(actionBarColor);
-			final String formattedTime = EventEntry
-					.formatWhenToLeave(leaveInMinutes);
-			setText("Leave "
-					+ (leaveInMinutes > 0 ? "in " + formattedTime : "Now"));
-		}
-	}
-
-	/**
 	 * Preferences name to load settings from
 	 */
 	private static final String PREF = "MyPrefs";
 	/**
-	 * Action Bar controller
-	 */
-	private WhenToLeaveIndicator actionBar;
-	/**
 	 * Current location of the device
 	 */
 	private Location currentLocation = null;
-	TabsAdapter mTabsAdapter;
+	/**
+	 * Tab/ViewPager adapter
+	 */
+	private TabsAdapter mTabsAdapter;
+	/**
+	 * Reference to the ViewPager showing the tabs
+	 */
 	private ViewPager mViewPager;
 	/**
 	 * Connection to the persistent, authorized service
@@ -268,7 +212,7 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		final String travelType = settings.getString("TransportPreference",
 				"driving");
 		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
-		actionBar.setTextAndColor(
+		setIndicatorTextAndColor(
 				nextEvent.getWhenToLeaveInMinutes(currentLocation, travelType),
 				notifyTimeInMin);
 	}
@@ -308,7 +252,7 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	@Override
 	protected boolean isRouteDisplayed()
 	{
-		// TODO Auto-generated method stub
+		// TODO Need to tie this to EventMapFragment's isRouteDisplayed
 		return false;
 	}
 
@@ -328,7 +272,6 @@ public class MainActivity extends MapActivity implements Handler.Callback
 				finish();
 				break;
 			case Login.REQUEST_AUTHENTICATE:
-				actionBar = new WhenToLeaveIndicator();
 				bindService(new Intent(this, AppService.class), service,
 						Context.BIND_AUTO_CREATE);
 				break;
@@ -463,5 +406,34 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		// Request a call to onPrepareOptionsMenu so we can change the transport
 		// mode icon
 		invalidateOptionsMenu();
+	}
+
+	/**
+	 * Sets the text and color of the Action Bar
+	 * 
+	 * @param leaveInMinutes
+	 *            time until the user must leave
+	 * @param notifyTimeInMin
+	 *            user preference on when to be notified, used to determine
+	 *            color
+	 */
+	private void setIndicatorTextAndColor(final long leaveInMinutes,
+			final int notifyTimeInMin)
+	{
+		final Button actionBarButton = (Button) findViewById(R.id.actionBar);
+		final Resources res = getResources();
+		if (leaveInMinutes < notifyTimeInMin * .33333)
+			actionBarButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.custom_action_bar_red));
+		else if (leaveInMinutes < notifyTimeInMin * .6666)
+			actionBarButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.custom_action_bar_orange));
+		else
+			actionBarButton.setBackgroundDrawable(res
+					.getDrawable(R.drawable.custom_action_bar_green));
+		final String formattedTime = EventEntry
+				.formatWhenToLeave(leaveInMinutes);
+		actionBarButton.setText("Leave "
+				+ (leaveInMinutes > 0 ? "in " + formattedTime : "Now"));
 	}
 }
