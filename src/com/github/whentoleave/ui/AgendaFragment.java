@@ -29,7 +29,7 @@ import com.github.whentoleave.service.AppServiceConnection;
  * Activity which shows a list of all events in the next two weeks. Works
  * optimally as a tab for TabbedInterface.
  * 
- * @see TabbedInterface
+ * @see MainActivity
  */
 public class AgendaFragment extends Activity implements Handler.Callback
 {

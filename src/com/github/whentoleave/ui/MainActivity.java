@@ -23,7 +23,7 @@ import com.github.whentoleave.service.AppServiceConnection;
  * Activity which serves as the main hub of the application, containing the
  * Home, Agenda, and Map Activities as tabs and a persistent Action Bar
  */
-public class TabbedInterface extends TabActivity implements Handler.Callback
+public class MainActivity extends TabActivity implements Handler.Callback
 {
 	/**
 	 * Class which handles the persistent Action Bar located above the tabs

@@ -38,7 +38,7 @@ import com.google.android.maps.OverlayItem;
  * a GPS location is available, shows the current location and a route to the
  * next event. Works optimally as a tab for TabbedInterface.
  * 
- * @see TabbedInterface
+ * @see MainActivity
  */
 public class EventMapFragment extends MapActivity implements Handler.Callback
 {

@@ -20,7 +20,7 @@ import com.github.whentoleave.maps.RouteInformation;
 import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.AppService;
 import com.github.whentoleave.service.AppServiceConnection;
-import com.github.whentoleave.ui.TabbedInterface;
+import com.github.whentoleave.ui.MainActivity;
 
 /**
  * Service used to update all Widgets.
@@ -57,7 +57,7 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 		// RemoteView here, reducing unnecessary work on the system
 		final RemoteViews views = new RemoteViews(getApplicationContext()
 				.getPackageName(), R.layout.widget_provider);
-		final Intent app = new Intent(getBaseContext(), TabbedInterface.class);
+		final Intent app = new Intent(getBaseContext(), MainActivity.class);
 		final PendingIntent launchApp = PendingIntent.getActivity(
 				getBaseContext(), 0,
 				app.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK),

@@ -22,7 +22,7 @@ import com.github.whentoleave.service.AppServiceConnection;
  * information and buttons to get more details, get a map of the event, and
  * navigate to the event. Works optimally as a tab for TabbedInterface.
  * 
- * @see TabbedInterface
+ * @see MainActivity
  */
 public class HomeFragment extends Activity implements Handler.Callback
 {

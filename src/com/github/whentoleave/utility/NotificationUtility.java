@@ -9,7 +9,7 @@ import android.util.Log;
 
 import com.github.whentoleave.R;
 import com.github.whentoleave.model.EventEntry;
-import com.github.whentoleave.ui.TabbedInterface;
+import com.github.whentoleave.ui.MainActivity;
 
 /**
  * Utility class to manage Notifications
@@ -134,7 +134,7 @@ public class NotificationUtility
 		// is already an active matching pending intent, we will update its
 		// extras to be the ones passed in here.
 		final PendingIntent contentIntent = PendingIntent.getActivity(
-				myContext, 0, new Intent(myContext, TabbedInterface.class)
+				myContext, 0, new Intent(myContext, MainActivity.class)
 						.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
 				PendingIntent.FLAG_UPDATE_CURRENT);
 		return contentIntent;
