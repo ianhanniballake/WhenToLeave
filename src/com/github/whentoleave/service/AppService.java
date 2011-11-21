@@ -59,10 +59,20 @@ import com.google.api.client.util.DateTime;
 public class AppService extends Service implements LocationListener,
 		Handler.Callback
 {
+	/**
+	 * Exception when a request is made before authentication is completed
+	 */
 	private class AuthenticationRequiredException extends Exception
 	{
+		/**
+		 * Message to be used in the Exception
+		 */
 		public final static String AUTH_REQUIRED_MESSAGE = "Authentication Required";
 
+		/**
+		 * Creates a new AuthenticationRequiredException with the default
+		 * message
+		 */
 		public AuthenticationRequiredException()
 		{
 			super(AUTH_REQUIRED_MESSAGE);
@@ -146,6 +156,9 @@ public class AppService extends Service implements LocationListener,
 	 * Preferences name to load settings from
 	 */
 	private static final String PREF = "MyPrefs";
+	/**
+	 * Preference key for the Google Session ID
+	 */
 	private static final String PREF_GSESSIONID = "gsessionid";
 	/**
 	 * A 'significant' time period between location updates. Currently two

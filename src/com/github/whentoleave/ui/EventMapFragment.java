@@ -453,6 +453,12 @@ public class EventMapFragment extends Fragment implements Handler.Callback
 				calendarLaterToday.getTime());
 	}
 
+	/**
+	 * Whether a route from the current location to the next event is displayed
+	 * 
+	 * @return Whether a route from the current location to the next event is
+	 *         displayed
+	 */
 	public boolean isRouteDisplayed()
 	{
 		return mRoute != null;
