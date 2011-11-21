@@ -20,14 +20,8 @@
 			</intent-filter>
 		</activity>
 		<activity
-			android:label="@string/title_agenda"
-			android:name=".ui.AgendaFragment" />
-		<activity
 			android:label="@string/calendarsTitle"
 			android:name=".ui.CalendarsActivity" />
-		<activity
-			android:label="@string/title_map"
-			android:name=".ui.EventMapFragment" />
 		<activity android:name=".ui.Login" />
 		<activity android:name=".ui.Logout" />
 		<activity
@@ -37,7 +31,6 @@
 		<activity
 			android:label="@string/preferencesTitle"
 			android:name=".ui.Preferences" />
-		<activity android:name=".ui.HomeFragment" />
 		<service
 			android:enabled="true"
 			android:name=".service.AppService" />
