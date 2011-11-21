@@ -3,36 +3,18 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:orientation="vertical" >
-	<LinearLayout
-		android:id="@+id/actionBarLayout"
+	<Button
+		android:id="@+id/actionBar"
 		android:layout_width="fill_parent"
 		android:layout_height="40dp"
 		android:layout_marginBottom="1dp"
-		android:orientation="horizontal" >
-		<ImageButton
-			android:id="@+id/refreshButton"
-			android:layout_width="66dp"
-			android:layout_height="fill_parent"
-			android:background="@drawable/action_bar_side_button_green"
-			android:src="@drawable/refresh_white37" />
-		<Button
-			android:id="@+id/actionBar"
-			android:layout_width="wrap_content"
-			android:layout_height="fill_parent"
-			android:layout_weight="1"
-			android:background="@drawable/custom_action_bar_green"
-			android:text="Leave In 3:04h"
-			android:textColor="@color/white"
-			android:textSize="21sp"
-			android:textStyle="bold"
-			android:typeface="sans" />
-		<ImageButton
-			android:id="@+id/transportModeButton"
-			android:layout_width="66dp"
-			android:layout_height="fill_parent"
-			android:background="@drawable/action_bar_side_button_green"
-			android:src="@drawable/car_white55" />
-	</LinearLayout>
+		android:background="@drawable/custom_action_bar_green"
+		android:gravity="center"
+		android:text="Leave In 3:04h"
+		android:textColor="@color/white"
+		android:textSize="21sp"
+		android:textStyle="bold"
+		android:typeface="sans" />
 	<TabHost
 		android:id="@android:id/tabhost"
 		android:layout_width="fill_parent"
