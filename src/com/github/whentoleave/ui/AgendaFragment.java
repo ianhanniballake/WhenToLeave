@@ -1,182 +1,137 @@
 package com.github.whentoleave.ui;
 
-import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Set;
 
-import android.app.Fragment;
+import android.app.ListFragment;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.provider.BaseColumns;
+import android.provider.CalendarContract;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AbsListView;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.github.whentoleave.R;
-import com.github.whentoleave.model.EventEntry;
-import com.github.whentoleave.service.AppService;
-import com.github.whentoleave.service.AppServiceConnection;
 
 /**
  * Fragment which shows a list of all events in the next two weeks.
  */
-public class AgendaFragment extends Fragment implements Handler.Callback
+public class AgendaFragment extends ListFragment implements
+		LoaderCallbacks<Cursor>
 {
 	/**
-	 * Formatted list of events used to create ListView adapter
+	 * Cursor Adapter for creating and binding agenda view items
 	 */
-	private final ArrayList<HashMap<String, String>> eventHashMapList = new ArrayList<HashMap<String, String>>();
-	/**
-	 * List of events
-	 */
-	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
-	/**
-	 * Connection to the persistent, authorized service
-	 */
-	private final AppServiceConnection service = new AppServiceConnection(
-			new Handler(this));
-
-	/**
-	 * Handles an error message received from the AppService
-	 * 
-	 * @param errorMessage
-	 *            the message to display
-	 */
-	private void handleError(final String errorMessage)
+	private class ContractionListCursorAdapter extends CursorAdapter
 	{
-		final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
-		calendarEventHashMap.put("title", errorMessage);
-		calendarEventHashMap.put("when", "");
-		calendarEventHashMap.put("where", "");
-		eventHashMapList.add(calendarEventHashMap);
-		final TextView lastRefreshed = (TextView) getView().findViewById(
-				R.id.lastRefreshed);
-		lastRefreshed.setText("");
+		/**
+		 * Local reference to the layout inflater service
+		 */
+		private final LayoutInflater inflater;
+
+		/**
+		 * @param context
+		 *            The context where the ListView associated with this
+		 *            SimpleListItemFactory is running
+		 * @param c
+		 *            The database cursor. Can be null if the cursor is not
+		 *            available yet.
+		 * @param flags
+		 *            Flags used to determine the behavior of the adapter, as
+		 *            per
+		 *            {@link CursorAdapter#CursorAdapter(Context, Cursor, int)}.
+		 */
+		public ContractionListCursorAdapter(final Context context,
+				final Cursor c, final int flags)
+		{
+			super(context, c, flags);
+			inflater = (LayoutInflater) context
+					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		}
+
+		@Override
+		public void bindView(final View view, final Context context,
+				final Cursor cursor)
+		{
+			// Set the event title
+			final int titleColumnIndex = cursor
+					.getColumnIndex(CalendarContract.Events.TITLE);
+			final String title = cursor.getString(titleColumnIndex);
+			final TextView titleView = (TextView) view
+					.findViewById(R.id.agendaItemTitle);
+			titleView.setText(title);
+			// Set the event start time
+			final int startTimeColumnIndex = cursor
+					.getColumnIndex(CalendarContract.Events.DTSTART);
+			final long startTime = cursor.getLong(startTimeColumnIndex);
+			final TextView startTimeView = (TextView) view
+					.findViewById(R.id.agendaItemWhen);
+			startTimeView.setText(DateFormat.format("hh:mma 'on' EEEE, MMM dd",
+					new Date(startTime)));
+			// Set the event location
+			final int locationColumnIndex = cursor
+					.getColumnIndex(CalendarContract.Events.EVENT_LOCATION);
+			final String location = cursor.getString(locationColumnIndex);
+			final TextView locationView = (TextView) view
+					.findViewById(R.id.agendaItemWhere);
+			if (location.equals(""))
+				locationView.setText(getText(R.string.event_no_location));
+			else
+				locationView.setText(location);
+		}
+
+		@Override
+		public View newView(final Context context, final Cursor cursor,
+				final ViewGroup parent)
+		{
+			return inflater.inflate(R.layout.agenda_item, parent, false);
+		}
 	}
 
 	/**
-	 * Handles a GetEvents message from the AppService
-	 * 
-	 * @param events
-	 *            the newly returned events
+	 * Adapter to display the list's data
 	 */
-	private void handleGetEvents(final Set<EventEntry> events)
+	private CursorAdapter adapter;
+
+	@Override
+	public void onActivityCreated(final Bundle savedInstanceState)
 	{
-		for (final EventEntry event : events)
-		{
-			final HashMap<String, String> calendarEventHashMap = new HashMap<String, String>();
-			calendarEventHashMap.put("title", event.title);
-			if (event.when != null && event.when.startTime != null)
-			{
-				final CharSequence time = android.text.format.DateFormat
-						.format("hh:mma 'on' EEEE, MMM dd",
-								event.when.startTime.value);
-				calendarEventHashMap.put("when", time.toString());
-			}
-			else
-				calendarEventHashMap.put("when", "");
-			if (event.where != null && event.where.valueString != null
-					&& !event.where.valueString.equals(""))
-				calendarEventHashMap.put("where", event.where.valueString);
-			else
-				calendarEventHashMap.put("where", "No Location");
-			eventHashMapList.add(calendarEventHashMap);
-		}
-		eventList.clear();
-		eventList.addAll(events);
-		// Update the last refreshed text
-		final CharSequence lastRefreshedBase = getText(R.string.lastRefreshedBase);
-		final Date currentDate = new Date();
-		final DateFormat dateFormat = DateFormat
-				.getDateInstance(DateFormat.SHORT);
-		final DateFormat timeFormat = DateFormat
-				.getTimeInstance(DateFormat.SHORT);
-		final TextView lastRefreshed = (TextView) getView().findViewById(
-				R.id.lastRefreshed);
-		lastRefreshed.setText(lastRefreshedBase + " "
-				+ dateFormat.format(currentDate) + " "
-				+ timeFormat.format(currentDate));
+		super.onActivityCreated(savedInstanceState);
+		setEmptyText(getText(R.string.agenda_loading));
+		adapter = new ContractionListCursorAdapter(getActivity(), null, 0);
+		setListAdapter(adapter);
+		getListView().setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+		registerForContextMenu(getListView());
+		getLoaderManager().initLoader(0, null, this);
 	}
 
 	@Override
-	public boolean handleMessage(final Message msg)
+	public Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1)
 	{
-		switch (msg.what)
-		{
-			case AppService.MSG_ERROR:
-				final String errorMessage = (String) msg.obj;
-				handleError(errorMessage);
-				return true;
-			case AppService.MSG_GET_EVENTS:
-				@SuppressWarnings("unchecked")
-				final Set<EventEntry> events = (Set<EventEntry>) msg.obj;
-				handleGetEvents(events);
-				return true;
-			case AppService.MSG_REFRESH_DATA:
-				handleRefreshData();
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	/**
-	 * Handles a refreshData event from the AppService
-	 */
-	private void handleRefreshData()
-	{
-		final TextView lastRefreshed = (TextView) getView().findViewById(
-				R.id.lastRefreshed);
-		// Set the last refreshed to a while refreshing text
-		lastRefreshed.setText(getText(R.string.whileRefreshing));
-		// Load the data
-		eventHashMapList.clear();
 		final Calendar twoWeeksFromNow = Calendar.getInstance();
 		twoWeeksFromNow.add(Calendar.DATE, 14);
-		service.requestEvents(new Date(), twoWeeksFromNow.getTime());
-	}
-
-	/** Called when the activity is first created. */
-	@Override
-	public void onCreate(final Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
-		final ListView agendaList = (ListView) getView().findViewById(
-				R.id.agendaList);
-		agendaList.setOnItemClickListener(new OnItemClickListener()
-		{
-			@Override
-			public void onItemClick(final AdapterView<?> parent,
-					final View view, final int position, final long id)
-			{
-				final Intent detailsIntent = new Intent(getActivity(),
-						EventDetailsFragment.class);
-				detailsIntent.putExtra("eventUrl", eventList.get(position)
-						.getSelfLink());
-				startActivity(detailsIntent);
-			}
-		});
-		// For complex hashmap layout
-		final SimpleAdapter adapterForList = new SimpleAdapter(getActivity(),
-				eventHashMapList, R.layout.agenda_item, new String[] { "title",
-						"when", "where", "imageUri" }, new int[] {
-						R.id.agendaItemTitle, R.id.agendaItemWhen,
-						R.id.agendaItemWhere });
-		final ListView mainList = (ListView) getView().findViewById(
-				R.id.agendaList);
-		mainList.setAdapter(adapterForList);
-		getActivity().bindService(new Intent(getActivity(), AppService.class),
-				service, Context.BIND_AUTO_CREATE);
+		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
+				+ CalendarContract.Events.DTEND + "<?";
+		final String selectionArgs[] = {
+				Long.toString(Calendar.getInstance().getTimeInMillis()),
+				Long.toString(twoWeeksFromNow.getTimeInMillis()) };
+		final String[] projection = { BaseColumns._ID,
+				CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART,
+				CalendarContract.Events.EVENT_LOCATION };
+		return new CursorLoader(getActivity(),
+				CalendarContract.Events.CONTENT_URI, projection, selection,
+				selectionArgs, CalendarContract.Events.DTSTART);
 	}
 
 	@Override
@@ -187,10 +142,26 @@ public class AgendaFragment extends Fragment implements Handler.Callback
 	}
 
 	@Override
-	public void onDestroy()
+	public void onListItemClick(final ListView l, final View v,
+			final int position, final long id)
 	{
-		super.onDestroy();
-		service.unregister();
-		getActivity().unbindService(service);
+		final Intent detailsIntent = new Intent(getActivity(),
+				EventDetailsFragment.class);
+		detailsIntent.putExtra("eventUrl", adapter.getItemId(position));
+		startActivity(detailsIntent);
+	}
+
+	@Override
+	public void onLoaderReset(final Loader<Cursor> loader)
+	{
+		adapter.swapCursor(null);
+	}
+
+	@Override
+	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data)
+	{
+		adapter.swapCursor(data);
+		if (data.getCount() == 0)
+			setEmptyText(getText(R.string.agenda_empty));
 	}
 }

@@ -15,11 +15,10 @@
 	<string name="calendarsTitle">Calendars</string>
 	<string name="eventDetailsTitle">Event Details</string>
 	<string name="preferencesTitle">Preferences</string>
-	<string name="refresh">Refresh</string>
+	<string name="agenda_loading">Loading Events...</string>
+	<string name="agenda_empty">No Upcoming Events</string>
+	<string name="event_no_location">No Location</string>
 	<string name="loginCanceled">Login Canceled</string>
-	<string name="whileRefreshing">Refreshing Data...</string>
-	<string name="lastRefreshedBase">Last Refreshed:</string>
-	<string name="lastRefreshedDefault">Last Refreshed: Never</string>
 	<string name="eventLocation">35+Corporate+Dr+Burlington+MA</string>
 	<string name="refresh_time">Refresh Time</string>
 	<string name="notify_time">Notify Me to Leave</string>
