@@ -33,7 +33,7 @@ public class AgendaFragment extends ListFragment implements
 	/**
 	 * Cursor Adapter for creating and binding agenda view items
 	 */
-	private class ContractionListCursorAdapter extends CursorAdapter
+	private class AgendaCursorAdapter extends CursorAdapter
 	{
 		/**
 		 * Local reference to the layout inflater service
@@ -52,7 +52,7 @@ public class AgendaFragment extends ListFragment implements
 		 *            per
 		 *            {@link CursorAdapter#CursorAdapter(Context, Cursor, int)}.
 		 */
-		public ContractionListCursorAdapter(final Context context,
+		public AgendaCursorAdapter(final Context context,
 				final Cursor c, final int flags)
 		{
 			super(context, c, flags);
@@ -109,10 +109,9 @@ public class AgendaFragment extends ListFragment implements
 	{
 		super.onActivityCreated(savedInstanceState);
 		setEmptyText(getText(R.string.agenda_loading));
-		adapter = new ContractionListCursorAdapter(getActivity(), null, 0);
+		adapter = new AgendaCursorAdapter(getActivity(), null, 0);
 		setListAdapter(adapter);
 		getListView().setChoiceMode(AbsListView.CHOICE_MODE_NONE);
-		registerForContextMenu(getListView());
 		getLoaderManager().initLoader(0, null, this);
 	}
 
