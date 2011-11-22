@@ -52,8 +52,8 @@ public class AgendaFragment extends ListFragment implements
 		 *            per
 		 *            {@link CursorAdapter#CursorAdapter(Context, Cursor, int)}.
 		 */
-		public AgendaCursorAdapter(final Context context,
-				final Cursor c, final int flags)
+		public AgendaCursorAdapter(final Context context, final Cursor c,
+				final int flags)
 		{
 			super(context, c, flags);
 			inflater = (LayoutInflater) context
@@ -146,7 +146,7 @@ public class AgendaFragment extends ListFragment implements
 	{
 		final Intent detailsIntent = new Intent(getActivity(),
 				EventDetailsFragment.class);
-		detailsIntent.putExtra("eventUrl", adapter.getItemId(position));
+		detailsIntent.putExtra("eventId", adapter.getItemId(position));
 		startActivity(detailsIntent);
 	}
 
