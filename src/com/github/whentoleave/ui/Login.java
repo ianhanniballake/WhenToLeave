@@ -16,8 +16,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.github.whentoleave.service.AppService;
-import com.github.whentoleave.service.AppServiceConnection;
+import com.github.whentoleave.service.LocationService;
+import com.github.whentoleave.service.LocationServiceConnection;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpResponseException;
 
@@ -50,7 +50,7 @@ public class Login extends Activity implements Handler.Callback
 	/**
 	 * Connection to the persistent, to be authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(
+	private final LocationServiceConnection service = new LocationServiceConnection(
 			new Handler(this));
 
 	/**
@@ -177,7 +177,7 @@ public class Login extends Activity implements Handler.Callback
 	{
 		switch (msg.what)
 		{
-			case AppService.MSG_REFRESH_DATA:
+			case LocationService.MSG_REFRESH_DATA:
 				handleRefreshData();
 				return true;
 			default:
@@ -215,7 +215,7 @@ public class Login extends Activity implements Handler.Callback
 		super.onCreate(savedInstanceState);
 		// As we must authenticate a connected service, we kick off the Login
 		// process after we are connected
-		bindService(new Intent(this, AppService.class), service,
+		bindService(new Intent(this, LocationService.class), service,
 				Context.BIND_AUTO_CREATE);
 	}
 

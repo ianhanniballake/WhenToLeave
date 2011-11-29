@@ -7,8 +7,8 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
 
-import com.github.whentoleave.service.AppService;
-import com.github.whentoleave.service.AppServiceConnection;
+import com.github.whentoleave.service.LocationService;
+import com.github.whentoleave.service.LocationServiceConnection;
 
 /**
  * Activity which logs the user out and returns to the calling activity
@@ -26,7 +26,7 @@ public class Logout extends Activity implements Handler.Callback
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(
+	private final LocationServiceConnection service = new LocationServiceConnection(
 			new Handler(this));
 
 	@Override
@@ -34,7 +34,7 @@ public class Logout extends Activity implements Handler.Callback
 	{
 		switch (msg.what)
 		{
-			case AppService.MSG_REFRESH_DATA:
+			case LocationService.MSG_REFRESH_DATA:
 				handleRefreshData();
 				return true;
 			default:

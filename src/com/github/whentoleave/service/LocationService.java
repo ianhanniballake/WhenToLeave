@@ -56,7 +56,7 @@ import com.google.api.client.util.DateTime;
  * Application service, managing all Google account access and authentication,
  * as well as notifications
  */
-public class AppService extends Service implements LocationListener,
+public class LocationService extends Service implements LocationListener,
 		Handler.Callback
 {
 	/**
@@ -549,7 +549,7 @@ public class AppService extends Service implements LocationListener,
 		final Context context = getBaseContext();
 		alarmManager = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
-		final Intent alarmIntent = new Intent(context, AppService.class);
+		final Intent alarmIntent = new Intent(context, LocationService.class);
 		alarmIntent.setAction(NOTIFICATION_ACTION);
 		pendingIntent = PendingIntent.getService(context, 0, alarmIntent, 0);
 		// Set up the alarm to trigger every minute
@@ -918,7 +918,7 @@ public class AppService extends Service implements LocationListener,
 								return true;
 							case 401:
 							case 403:
-								new GoogleAccountManager(AppService.this)
+								new GoogleAccountManager(LocationService.this)
 										.invalidateAuthToken(authToken);
 								invalidateAuthToken();
 								return false;

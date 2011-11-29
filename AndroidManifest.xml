@@ -31,7 +31,7 @@
 			android:name=".ui.Preferences" />
 		<service
 			android:enabled="true"
-			android:name=".service.AppService" />
+			android:name=".service.LocationService" />
 		<service
 			android:enabled="true"
 			android:name=".widget.WidgetUpdateService" />

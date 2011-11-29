@@ -18,8 +18,8 @@ import android.widget.RemoteViews;
 import com.github.whentoleave.R;
 import com.github.whentoleave.maps.RouteInformation;
 import com.github.whentoleave.model.EventEntry;
-import com.github.whentoleave.service.AppService;
-import com.github.whentoleave.service.AppServiceConnection;
+import com.github.whentoleave.service.LocationService;
+import com.github.whentoleave.service.LocationServiceConnection;
 import com.github.whentoleave.ui.MainActivity;
 
 /**
@@ -42,7 +42,7 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 	/**
 	 * Connection to the AppService
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(
+	private final LocationServiceConnection service = new LocationServiceConnection(
 			new Handler(this), false, true);
 
 	/**
@@ -87,19 +87,19 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 	{
 		switch (msg.what)
 		{
-			case AppService.MSG_LOCATION_UPDATE:
+			case LocationService.MSG_LOCATION_UPDATE:
 				final Location location = (Location) msg.obj;
 				currentLocation = location;
 				handleRefreshData();
 				return true;
-			case AppService.MSG_REFRESH_DATA:
+			case LocationService.MSG_REFRESH_DATA:
 				handleRefreshData();
 				return true;
-			case AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
+			case LocationService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
 				final EventEntry nextEvent = (EventEntry) msg.obj;
 				handleNextEvent(nextEvent);
 				return true;
-			case AppService.MSG_ERROR:
+			case LocationService.MSG_ERROR:
 				final String errorMessage = (String) msg.obj;
 				handleError(errorMessage);
 				return true;
@@ -204,7 +204,7 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 		if (!service.isConnected())
 		{
 			Log.d(TAG, "Connecting to AppService");
-			bindService(new Intent(this, AppService.class), service,
+			bindService(new Intent(this, LocationService.class), service,
 					Context.BIND_AUTO_CREATE);
 			// updateAppWidgets will be called by refreshData once we are
 			// connected

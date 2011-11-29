@@ -16,8 +16,8 @@ import android.widget.TextView;
 
 import com.github.whentoleave.R;
 import com.github.whentoleave.model.EventEntry;
-import com.github.whentoleave.service.AppService;
-import com.github.whentoleave.service.AppServiceConnection;
+import com.github.whentoleave.service.LocationService;
+import com.github.whentoleave.service.LocationServiceConnection;
 
 /**
  * Fragment which shows the next event with a location, along with quick glance
@@ -49,7 +49,7 @@ public class HomeFragment extends Fragment implements Handler.Callback
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(
+	private final LocationServiceConnection service = new LocationServiceConnection(
 			new Handler(this));
 
 	/**
@@ -100,15 +100,15 @@ public class HomeFragment extends Fragment implements Handler.Callback
 	{
 		switch (msg.what)
 		{
-			case AppService.MSG_ERROR:
+			case LocationService.MSG_ERROR:
 				final String errorMessage = (String) msg.obj;
 				handleError(errorMessage);
 				return true;
-			case AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
+			case LocationService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
 				currentEvent = (EventEntry) msg.obj;
 				handleGetNextEventWithLocation();
 				return true;
-			case AppService.MSG_REFRESH_DATA:
+			case LocationService.MSG_REFRESH_DATA:
 				handleRefreshData();
 				return true;
 			default:
@@ -181,7 +181,7 @@ public class HomeFragment extends Fragment implements Handler.Callback
 			}
 		});
 		// Need to use getApplicationContext as this activity is used as a Tab
-		getActivity().bindService(new Intent(getActivity(), AppService.class),
+		getActivity().bindService(new Intent(getActivity(), LocationService.class),
 				service, Context.BIND_AUTO_CREATE);
 	}
 

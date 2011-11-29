@@ -23,8 +23,8 @@ import android.widget.Button;
 
 import com.github.whentoleave.R;
 import com.github.whentoleave.model.EventEntry;
-import com.github.whentoleave.service.AppService;
-import com.github.whentoleave.service.AppServiceConnection;
+import com.github.whentoleave.service.LocationService;
+import com.github.whentoleave.service.LocationServiceConnection;
 import com.google.android.maps.MapActivity;
 
 /**
@@ -195,7 +195,7 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(
+	private final LocationServiceConnection service = new LocationServiceConnection(
 			new Handler(this), true, true);
 
 	/**
@@ -222,15 +222,15 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	{
 		switch (msg.what)
 		{
-			case AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
+			case LocationService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
 				final EventEntry nextEvent = (EventEntry) msg.obj;
 				handleGetNextEventWithLocation(nextEvent);
 				return true;
-			case AppService.MSG_LOCATION_UPDATE:
+			case LocationService.MSG_LOCATION_UPDATE:
 				currentLocation = (Location) msg.obj;
 				handleRefreshData();
 				return true;
-			case AppService.MSG_REFRESH_DATA:
+			case LocationService.MSG_REFRESH_DATA:
 				handleRefreshData();
 				return true;
 			default:
@@ -272,7 +272,7 @@ public class MainActivity extends MapActivity implements Handler.Callback
 				finish();
 				break;
 			case Login.REQUEST_AUTHENTICATE:
-				bindService(new Intent(this, AppService.class), service,
+				bindService(new Intent(this, LocationService.class), service,
 						Context.BIND_AUTO_CREATE);
 				break;
 		}
@@ -302,7 +302,7 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		// If notifications are enabled, keep the service running after the
 		// program exits
 		if (settings.getBoolean("EnableNotifications", true))
-			startService(new Intent(this, AppService.class));
+			startService(new Intent(this, LocationService.class));
 		startActivityForResult(new Intent(this, Login.class),
 				Login.REQUEST_AUTHENTICATE);
 	}
@@ -332,8 +332,8 @@ public class MainActivity extends MapActivity implements Handler.Callback
 				final Handler.Callback tab = (Handler.Callback) mTabsAdapter
 						.getItem(mViewPager.getCurrentItem());
 				tab.handleMessage(Message.obtain(null,
-						AppService.MSG_REFRESH_DATA));
-				handleMessage(Message.obtain(null, AppService.MSG_REFRESH_DATA));
+						LocationService.MSG_REFRESH_DATA));
+				handleMessage(Message.obtain(null, LocationService.MSG_REFRESH_DATA));
 				return true;
 			case R.id.menu_view_calendars:
 				startActivity(new Intent(this, CalendarsActivity.class));

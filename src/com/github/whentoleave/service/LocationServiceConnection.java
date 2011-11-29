@@ -15,7 +15,7 @@ import android.util.Log;
  * Serves as the primary connection to the AppService when an Activity or
  * Service wishes to bind to the AppService
  */
-public class AppServiceConnection implements ServiceConnection
+public class LocationServiceConnection implements ServiceConnection
 {
 	/**
 	 * Logging tag
@@ -44,7 +44,7 @@ public class AppServiceConnection implements ServiceConnection
 	 * @param client
 	 *            client to send reply messages to
 	 */
-	public AppServiceConnection(final Handler client)
+	public LocationServiceConnection(final Handler client)
 	{
 		this(client, false, false);
 	}
@@ -60,7 +60,7 @@ public class AppServiceConnection implements ServiceConnection
 	 * @param locationUpdates
 	 *            if the client should receive location updates
 	 */
-	public AppServiceConnection(final Handler client,
+	public LocationServiceConnection(final Handler client,
 			final boolean intervalRefresh, final boolean locationUpdates)
 	{
 		this.client = new Messenger(client);
@@ -75,7 +75,7 @@ public class AppServiceConnection implements ServiceConnection
 	 */
 	public void invalidateAuthToken()
 	{
-		sendMessage(AppService.MSG_INVALIDATE_AUTH_TOKEN);
+		sendMessage(LocationService.MSG_INVALIDATE_AUTH_TOKEN);
 	}
 
 	/**
@@ -95,11 +95,11 @@ public class AppServiceConnection implements ServiceConnection
 		Log.d(TAG, "onServiceConnected: " + name);
 		service = new Messenger(serviceBinder);
 		if (locationUpdates)
-			sendMessage(AppService.MSG_REGISTER_LOCATION_LISTENER);
+			sendMessage(LocationService.MSG_REGISTER_LOCATION_LISTENER);
 		if (intervalRefresh)
-			sendMessage(AppService.MSG_REGISTER_REFRESHABLE);
+			sendMessage(LocationService.MSG_REGISTER_REFRESHABLE);
 		else
-			sendMessage(AppService.MSG_REFRESH_DATA);
+			sendMessage(LocationService.MSG_REFRESH_DATA);
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class AppServiceConnection implements ServiceConnection
 	 */
 	public void requestCalendars()
 	{
-		sendMessage(AppService.MSG_GET_CALENDARS);
+		sendMessage(LocationService.MSG_GET_CALENDARS);
 	}
 
 	/**
@@ -127,7 +127,7 @@ public class AppServiceConnection implements ServiceConnection
 	 */
 	public void requestEvent(final String eventUrl)
 	{
-		sendMessage(AppService.MSG_GET_EVENT, eventUrl);
+		sendMessage(LocationService.MSG_GET_EVENT, eventUrl);
 	}
 
 	/**
@@ -142,7 +142,7 @@ public class AppServiceConnection implements ServiceConnection
 	public void requestEvents(final Date start, final Date end)
 	{
 		final Date[] dateRange = { start, end };
-		sendMessage(AppService.MSG_GET_EVENTS, dateRange);
+		sendMessage(LocationService.MSG_GET_EVENTS, dateRange);
 	}
 
 	/**
@@ -153,7 +153,7 @@ public class AppServiceConnection implements ServiceConnection
 	 */
 	public void requestNextEventWithLocation()
 	{
-		sendMessage(AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION);
+		sendMessage(LocationService.MSG_GET_NEXT_EVENT_WITH_LOCATION);
 	}
 
 	/**
@@ -199,7 +199,7 @@ public class AppServiceConnection implements ServiceConnection
 	 */
 	public void setAuthToken(final String authToken)
 	{
-		sendMessage(AppService.MSG_SET_AUTH_TOKEN, authToken);
+		sendMessage(LocationService.MSG_SET_AUTH_TOKEN, authToken);
 	}
 
 	/**
@@ -210,8 +210,8 @@ public class AppServiceConnection implements ServiceConnection
 	{
 		Log.d(TAG, "unregister");
 		if (locationUpdates)
-			sendMessage(AppService.MSG_UNREGISTER_LOCATION_LISTENER);
+			sendMessage(LocationService.MSG_UNREGISTER_LOCATION_LISTENER);
 		if (intervalRefresh)
-			sendMessage(AppService.MSG_UNREGISTER_REFRESHABLE);
+			sendMessage(LocationService.MSG_UNREGISTER_REFRESHABLE);
 	}
 }
