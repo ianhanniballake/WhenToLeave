@@ -2,13 +2,6 @@ package com.github.whentoleave.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import android.app.AlarmManager;
 import android.app.NotificationManager;
@@ -28,29 +21,8 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.github.whentoleave.R;
-import com.github.whentoleave.model.CalendarEntry;
-import com.github.whentoleave.model.CalendarFeed;
-import com.github.whentoleave.model.CalendarUrl;
 import com.github.whentoleave.model.EventEntry;
-import com.github.whentoleave.model.EventEntryComparator;
-import com.github.whentoleave.model.EventFeed;
-import com.github.whentoleave.model.Namespace;
 import com.github.whentoleave.utility.NotificationUtility;
-import com.google.api.client.extensions.android2.AndroidHttp;
-import com.google.api.client.googleapis.GoogleHeaders;
-import com.google.api.client.googleapis.GoogleUrl;
-import com.google.api.client.googleapis.MethodOverride;
-import com.google.api.client.googleapis.extensions.android2.auth.GoogleAccountManager;
-import com.google.api.client.http.HttpExecuteInterceptor;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpRequestInitializer;
-import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.HttpUnsuccessfulResponseHandler;
-import com.google.api.client.http.xml.atom.AtomParser;
-import com.google.api.client.util.DateTime;
 
 /**
  * Application service, managing all Google account access and authentication,
@@ -60,89 +32,26 @@ public class LocationService extends Service implements LocationListener,
 		Handler.Callback
 {
 	/**
-	 * Exception when a request is made before authentication is completed
-	 */
-	private class AuthenticationRequiredException extends Exception
-	{
-		/**
-		 * Message to be used in the Exception
-		 */
-		public final static String AUTH_REQUIRED_MESSAGE = "Authentication Required";
-
-		/**
-		 * Creates a new AuthenticationRequiredException with the default
-		 * message
-		 */
-		public AuthenticationRequiredException()
-		{
-			super(AUTH_REQUIRED_MESSAGE);
-		}
-	}
-
-	/**
 	 * AlarmManager used to create repeated notification checks
 	 */
 	private static AlarmManager alarmManager;
 	/**
-	 * Message returned if an error occured while processing
-	 */
-	public static final int MSG_ERROR = 1;
-	/**
-	 * Message returned with a list of the users' calendars
-	 */
-	public static final int MSG_GET_CALENDARS = 2;
-	/**
-	 * Message returned with a specific requested event
-	 */
-	public static final int MSG_GET_EVENT = 3;
-	/**
-	 * Message returned with a time ordered set of events
-	 */
-	public static final int MSG_GET_EVENTS = 4;
-	/**
-	 * Message returned with the next event with a location
-	 */
-	public static final int MSG_GET_NEXT_EVENT_WITH_LOCATION = 5;
-	/**
-	 * Message to invalidate the Auth Token
-	 */
-	public static final int MSG_INVALIDATE_AUTH_TOKEN = 6;
-	/**
 	 * Message returned when the user's location updated
 	 */
-	public static final int MSG_LOCATION_UPDATE = 7;
-	/**
-	 * Message to denote that the AppService is ready to receive requests for
-	 * data
-	 */
-	public static final int MSG_REFRESH_DATA = 8;
+	public static final int MSG_LOCATION_UPDATE = 1;
 	/**
 	 * Message to register a component interested in location updates
 	 */
-	public static final int MSG_REGISTER_LOCATION_LISTENER = 9;
-	/**
-	 * Message to register a component interested in periodic data refresh
-	 * notices
-	 */
-	public static final int MSG_REGISTER_REFRESHABLE = 10;
-	/**
-	 * Message to set the Auth Token
-	 */
-	public static final int MSG_SET_AUTH_TOKEN = 11;
+	public static final int MSG_REGISTER_LOCATION_LISTENER = 2;
 	/**
 	 * Message to disable/sleep the GPS
 	 */
-	public static final int MSG_SLEEP_GPS = 12;
+	public static final int MSG_SLEEP_GPS = 3;
 	/**
 	 * Message to unregister a component no longer interested in location
 	 * updates
 	 */
-	public static final int MSG_UNREGISTER_LOCATION_LISTENER = 13;
-	/**
-	 * Message to unregister a component no longer interested in periodic data
-	 * refresh notices
-	 */
-	public static final int MSG_UNREGISTER_REFRESHABLE = 14;
+	public static final int MSG_UNREGISTER_LOCATION_LISTENER = 4;
 	/**
 	 * Action used to distinguish notification alarm service starts from regular
 	 * service starts
@@ -157,10 +66,6 @@ public class LocationService extends Service implements LocationListener,
 	 */
 	private static final String PREF = "MyPrefs";
 	/**
-	 * Preference key for the Google Session ID
-	 */
-	private static final String PREF_GSESSIONID = "gsessionid";
-	/**
 	 * A 'significant' time period between location updates. Currently two
 	 * minutes in milliseconds
 	 */
@@ -174,13 +79,9 @@ public class LocationService extends Service implements LocationListener,
 	 */
 	private Location currentLocation = null;
 	/**
-	 * HttpRequestFactory used for Google API queries
-	 */
-	private HttpRequestFactory factory = null;
-	/**
 	 * Whether the Google HttpTransport is authenticated or not
 	 */
-	private boolean isAuthenticated = false;
+	private final boolean isAuthenticated = false;
 	/**
 	 * List of Messengers to notify of location changes
 	 */
@@ -197,10 +98,6 @@ public class LocationService extends Service implements LocationListener,
 	 * NotificationUtility used to send out notifications
 	 */
 	private NotificationUtility mNotificationUtility = null;
-	/**
-	 * List of Messengers to notify on alarm timer ticks
-	 */
-	private final ArrayList<Messenger> refreshOnTimerListenerList = new ArrayList<Messenger>();
 
 	/**
 	 * Check for notifications, sending them out if required
@@ -236,9 +133,6 @@ public class LocationService extends Service implements LocationListener,
 		} catch (final IOException e)
 		{
 			Log.e(TAG, "Error checking for notifications", e);
-		} catch (final AuthenticationRequiredException e)
-		{
-			Log.e(TAG, "Error checking for notifications", e);
 		}
 	}
 
@@ -255,149 +149,13 @@ public class LocationService extends Service implements LocationListener,
 				LocationManager.NETWORK_PROVIDER, interval, 0, this);
 	}
 
-	/**
-	 * Gets a list of all of the authenticated user's calendars. Assumes that
-	 * the service is already authenticated
-	 * 
-	 * @return the list of all calendars the user has access to
-	 * @throws IOException
-	 *             on IO error
-	 * @throws AuthenticationRequiredException
-	 *             if there is no authenticated HttpRequestFactory
-	 */
-	private List<CalendarEntry> getCalendars() throws IOException,
-			AuthenticationRequiredException
-	{
-		if (factory == null)
-			throw new AuthenticationRequiredException();
-		final ArrayList<CalendarEntry> calendars = new ArrayList<CalendarEntry>();
-		final CalendarUrl calFeedUrl = CalendarUrl.forAllCalendarsFeed();
-		// page through results
-		while (true)
-		{
-			final CalendarFeed feed = CalendarFeed.executeGet(factory,
-					calFeedUrl);
-			if (feed.calendars != null)
-				calendars.addAll(feed.calendars);
-			final String nextLink = feed.getNextLink();
-			if (nextLink == null)
-				break;
-		}
-		return calendars;
-	}
-
-	/**
-	 * Gets all events in a given Date range. Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @param start
-	 *            start date
-	 * @param end
-	 *            end date
-	 * @return all events from all calendars in the Date range, ordered by start
-	 *         time
-	 * @throws IOException
-	 *             on IO error
-	 * @throws AuthenticationRequiredException
-	 *             if there is no authenticated HttpRequestFactory
-	 */
-	private Set<EventEntry> getEvents(final Date start, final Date end)
-			throws IOException, AuthenticationRequiredException
-	{
-		if (factory == null)
-			throw new AuthenticationRequiredException();
-		final TreeSet<EventEntry> events = new TreeSet<EventEntry>(
-				new EventEntryComparator());
-		final List<CalendarEntry> calendars = getCalendars();
-		for (final CalendarEntry calendar : calendars)
-		{
-			final GoogleUrl eventFeedUrl = new GoogleUrl(
-					calendar.getEventFeedLink() + "?start-min="
-							+ new DateTime(start) + "&start-max="
-							+ new DateTime(end) + "&orderby=starttime"
-							+ "&singleevents=true");
-			final EventFeed eventFeed = EventFeed.executeGet(factory,
-					eventFeedUrl);
-			events.addAll(eventFeed.getEntries());
-		}
-		return events;
-	}
-
-	/**
-	 * Finds the next event across all calendars (chronologically) that has a
-	 * location. Searches in an exponentially larger date range until it finds
-	 * an event (first 1 day, then 2, then 4, etc). Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @return the next event that has a location, null if no events with a
-	 *         location are found
-	 * @throws IOException
-	 *             on IO error
-	 * @throws AuthenticationRequiredException
-	 *             if there is no authenticated HttpRequestFactory
-	 */
-	private EventEntry getNextEventWithLocation() throws IOException,
-			AuthenticationRequiredException
-	{
-		Calendar queryFrom = Calendar.getInstance();
-		final Calendar queryTo = Calendar.getInstance();
-		queryTo.add(Calendar.DATE, 1);
-		int daysToAdd = 2;
-		final long curTime = System.currentTimeMillis();
-		while (daysToAdd < 2048)
-		{
-			final Set<EventEntry> events = getEvents(queryFrom.getTime(),
-					queryTo.getTime());
-			for (final EventEntry event : events)
-				if (event.where != null && event.where.valueString != null
-						&& event.when.startTime.value > curTime)
-					return event;
-			queryFrom = queryTo;
-			queryTo.add(Calendar.DATE, daysToAdd);
-			daysToAdd *= 2;
-		}
-		return null;
-	}
-
 	@Override
 	public boolean handleMessage(final Message msg)
 	{
-		final Messenger replyToMessenger = msg.replyTo;
 		switch (msg.what)
 		{
-			case MSG_GET_CALENDARS:
-				replyWithCalendars(replyToMessenger);
-				return true;
-			case MSG_GET_EVENT:
-				final String eventUrl = (String) msg.obj;
-				replyWithEvent(eventUrl, replyToMessenger);
-				return true;
-			case MSG_GET_EVENTS:
-				final Date[] dateRange = (Date[]) msg.obj;
-				replyWithEvents(dateRange[0], dateRange[1], replyToMessenger);
-				return true;
-			case MSG_GET_NEXT_EVENT_WITH_LOCATION:
-				replyWithNextEventWithLocation(replyToMessenger);
-				return true;
-			case MSG_INVALIDATE_AUTH_TOKEN:
-				invalidateAuthToken();
-				return true;
-			case MSG_REFRESH_DATA:
-				try
-				{
-					replyToMessenger.send(Message
-							.obtain(null, MSG_REFRESH_DATA));
-				} catch (final RemoteException e)
-				{
-					// Do nothing
-				}
-				return true;
 			case MSG_REGISTER_LOCATION_LISTENER:
 				registerLocationListener(msg.replyTo);
-				return true;
-			case MSG_SET_AUTH_TOKEN:
-				final String authToken = (String) msg.obj;
-				setAuthToken(authToken);
 				return true;
 			case MSG_SLEEP_GPS:
 				Log.d(TAG, "Stopped listening for GPS Updates");
@@ -411,27 +169,9 @@ public class LocationService extends Service implements LocationListener,
 			case MSG_UNREGISTER_LOCATION_LISTENER:
 				unregisterLocationListener(msg.replyTo);
 				return true;
-			case MSG_UNREGISTER_REFRESHABLE:
-				refreshOnTimerListenerList.remove(msg.replyTo);
-				return true;
 			default:
 				return false;
 		}
-	}
-
-	/**
-	 * Effectively logs the user out, invalidating their authentication token.
-	 * Note that all queries done between now and future authentication will
-	 * fail
-	 */
-	private void invalidateAuthToken()
-	{
-		factory = null;
-		isAuthenticated = false;
-		final SharedPreferences.Editor editor = getSharedPreferences(PREF, 0)
-				.edit();
-		editor.remove("authToken");
-		editor.commit();
 	}
 
 	/**
@@ -538,9 +278,6 @@ public class LocationService extends Service implements LocationListener,
 	public void onCreate()
 	{
 		Log.d(TAG, "onCreate");
-		// Run 'adb shell setprop log.tag.HttpTransport DEBUG'
-		// to turn on debugging
-		Logger.getLogger("com.google.api.client").setLevel(Level.CONFIG);
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		// Setup Notification Utility Manager
 		final NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -619,20 +356,7 @@ public class LocationService extends Service implements LocationListener,
 	{
 		Log.d(TAG, "onStart");
 		if (intent != null && NOTIFICATION_ACTION.equals(intent.getAction()))
-		{
 			checkNotifications();
-			final ArrayList<Messenger> listenersToRemove = new ArrayList<Messenger>();
-			for (final Messenger refreshable : refreshOnTimerListenerList)
-				try
-				{
-					refreshable.send(Message.obtain(null, MSG_REFRESH_DATA));
-				} catch (final RemoteException e)
-				{
-					// Remove dead listeners
-					listenersToRemove.add(refreshable);
-				}
-			refreshOnTimerListenerList.removeAll(listenersToRemove);
-		}
 		return START_STICKY;
 	}
 
@@ -680,255 +404,6 @@ public class LocationService extends Service implements LocationListener,
 			onLocationChanged(lastGPSLocation);
 			new Handler(this).sendEmptyMessageDelayed(MSG_SLEEP_GPS, 60000);
 		}
-	}
-
-	/**
-	 * Returns a MSG_GET_CALENDARS message with a list of calendars. Assumes
-	 * that the service is already authenticated
-	 * 
-	 * @param replyToMessenger
-	 *            messenger to send reply to
-	 */
-	private void replyWithCalendars(final Messenger replyToMessenger)
-	{
-		try
-		{
-			final List<CalendarEntry> calendars = getCalendars();
-			replyToMessenger.send(Message.obtain(null, MSG_GET_CALENDARS,
-					calendars));
-		} catch (final RemoteException e)
-		{
-			Log.w(TAG, "replyWithCalendars", e);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "replyWithCalendars", e);
-			try
-			{
-				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
-						e.getMessage()));
-			} catch (final RemoteException e1)
-			{
-				Log.w(TAG, "replyWithCalendars in IOException", e);
-			}
-		} catch (final AuthenticationRequiredException e)
-		{
-			Log.e(TAG, "replyWithEvents", e);
-			try
-			{
-				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
-						e.getMessage()));
-			} catch (final RemoteException e1)
-			{
-				Log.w(TAG,
-						"replyWithEvents in AuthenticationRequiredException", e);
-			}
-		}
-	}
-
-	/**
-	 * Gets a particular EventEntry given its URL. Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @param eventUrl
-	 *            the URL of the EventEntry to return
-	 * @param replyToMessenger
-	 *            messenger to send reply to
-	 */
-	private void replyWithEvent(final String eventUrl,
-			final Messenger replyToMessenger)
-	{
-		try
-		{
-			if (factory == null)
-			{
-				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
-						AuthenticationRequiredException.AUTH_REQUIRED_MESSAGE));
-				return;
-			}
-			final EventEntry event = EventEntry.executeGet(factory,
-					new GoogleUrl(eventUrl));
-			replyToMessenger.send(Message.obtain(null, MSG_GET_EVENT, event));
-		} catch (final RemoteException e)
-		{
-			Log.w(TAG, "replyWithEvent", e);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "replyWithEvent", e);
-			try
-			{
-				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
-						e.getMessage()));
-			} catch (final RemoteException e1)
-			{
-				Log.w(TAG, "replyWithEvent in IOException", e);
-			}
-		}
-	}
-
-	/**
-	 * Gets all events in the specified time period. Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @param start
-	 *            earliest time for events to return
-	 * @param end
-	 *            latest time for events to return
-	 * @param replyToMessenger
-	 *            messenger to send reply to
-	 */
-	private void replyWithEvents(final Date start, final Date end,
-			final Messenger replyToMessenger)
-	{
-		try
-		{
-			final Set<EventEntry> events = getEvents(start, end);
-			replyToMessenger.send(Message.obtain(null, MSG_GET_EVENTS, events));
-		} catch (final RemoteException e)
-		{
-			Log.w(TAG, "replyWithEvents", e);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "replyWithEvents", e);
-			try
-			{
-				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
-						e.getMessage()));
-			} catch (final RemoteException e1)
-			{
-				Log.w(TAG, "replyWithEvents in IOException", e);
-			}
-		} catch (final AuthenticationRequiredException e)
-		{
-			Log.e(TAG, "replyWithEvents", e);
-			try
-			{
-				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
-						e.getMessage()));
-			} catch (final RemoteException e1)
-			{
-				Log.w(TAG,
-						"replyWithEvents in AuthenticationRequiredException", e);
-			}
-		}
-	}
-
-	/**
-	 * Gets the next event that has a location set. Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @param replyToMessenger
-	 *            messenger to send reply to
-	 */
-	private void replyWithNextEventWithLocation(final Messenger replyToMessenger)
-	{
-		try
-		{
-			final EventEntry event = getNextEventWithLocation();
-			replyToMessenger.send(Message.obtain(null,
-					MSG_GET_NEXT_EVENT_WITH_LOCATION, event));
-		} catch (final RemoteException e)
-		{
-			Log.w(TAG, "replyWithNextEventWithLocation", e);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "replyWithNextEventWithLocation", e);
-			try
-			{
-				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
-						e.getMessage()));
-			} catch (final RemoteException e1)
-			{
-				Log.w(TAG, "replyWithNextEventWithLocation in IOException", e);
-			}
-		} catch (final AuthenticationRequiredException e)
-		{
-			Log.e(TAG, "replyWithNextEventWithLocation", e);
-			try
-			{
-				replyToMessenger.send(Message.obtain(null, MSG_ERROR,
-						e.getMessage()));
-			} catch (final RemoteException e1)
-			{
-				Log.w(TAG,
-						"replyWithNextEventWithLocation in AuthenticationRequiredException",
-						e);
-			}
-		}
-	}
-
-	/**
-	 * Authorizes the service with the given authToken
-	 * 
-	 * @param authToken
-	 *            authToken used to authenticate any Google API queries
-	 */
-	private void setAuthToken(final String authToken)
-	{
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		final HttpTransport transport = AndroidHttp.newCompatibleTransport();
-		factory = transport.createRequestFactory(new HttpRequestInitializer()
-		{
-			@Override
-			public void initialize(final HttpRequest request)
-			{
-				// set the parser
-				final AtomParser parser = new AtomParser();
-				parser.namespaceDictionary = Namespace.DICTIONARY;
-				request.addParser(parser);
-				// set up the Google headers
-				final GoogleHeaders headers = new GoogleHeaders();
-				headers.setApplicationName(R.string.app_name + "-"
-						+ R.string.version);
-				headers.gdataVersion = "2";
-				headers.setGoogleLogin(authToken);
-				request.headers = headers;
-				request.interceptor = new HttpExecuteInterceptor()
-				{
-					@Override
-					public void intercept(final HttpRequest interceptRequest)
-							throws IOException
-					{
-						final GoogleHeaders requestHeaders = (GoogleHeaders) interceptRequest.headers;
-						requestHeaders.setGoogleLogin(authToken);
-						final String gsessionid = settings.getString(
-								PREF_GSESSIONID, null);
-						interceptRequest.url.set("gsessionid", gsessionid);
-						new MethodOverride().intercept(interceptRequest);
-					}
-				};
-				request.unsuccessfulResponseHandler = new HttpUnsuccessfulResponseHandler()
-				{
-					@Override
-					public boolean handleResponse(
-							final HttpRequest unsuccessfulRequest,
-							final HttpResponse response,
-							final boolean retrySupported) throws IOException
-					{
-						switch (response.statusCode)
-						{
-							case 302:
-								final GoogleUrl url = new GoogleUrl(
-										response.headers.location);
-								final String gsessionid = (String) url
-										.getFirst("gsessionid");
-								final SharedPreferences.Editor editor = settings
-										.edit();
-								editor.putString(PREF_GSESSIONID, gsessionid);
-								editor.commit();
-								return true;
-							case 401:
-							case 403:
-								new GoogleAccountManager(LocationService.this)
-										.invalidateAuthToken(authToken);
-								invalidateAuthToken();
-								return false;
-						}
-						return false;
-					}
-				};
-			}
-		});
-		isAuthenticated = true;
 	}
 
 	/**

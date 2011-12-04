@@ -1,7 +1,5 @@
 package com.github.whentoleave.service;
 
-import java.util.Date;
-
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.Handler;
@@ -26,56 +24,20 @@ public class LocationServiceConnection implements ServiceConnection
 	 */
 	private Messenger client = null;
 	/**
-	 * Register for interval refreshes
-	 */
-	private boolean intervalRefresh = false;
-	/**
-	 * Register for location updates
-	 */
-	private boolean locationUpdates = false;
-	/**
 	 * Underlying service
 	 */
 	private Messenger service = null;
 
 	/**
-	 * Constructor for a one time refresh
+	 * Constructor for a one time LocationAware listener to register for ongoing
+	 * location updates
 	 * 
 	 * @param client
 	 *            client to send reply messages to
 	 */
 	public LocationServiceConnection(final Handler client)
 	{
-		this(client, false, false);
-	}
-
-	/**
-	 * Constructor for a one time refresh of the given Refreshable instance and
-	 * LocationAware listener to register for ongoing location updates
-	 * 
-	 * @param client
-	 *            client to send reply messages to
-	 * @param intervalRefresh
-	 *            if the client should receive periodic updates
-	 * @param locationUpdates
-	 *            if the client should receive location updates
-	 */
-	public LocationServiceConnection(final Handler client,
-			final boolean intervalRefresh, final boolean locationUpdates)
-	{
 		this.client = new Messenger(client);
-		this.intervalRefresh = intervalRefresh;
-		this.locationUpdates = locationUpdates;
-	}
-
-	/**
-	 * Effectively logs the user out, invalidating their authentication token.
-	 * Note that all queries done between now and future authentication will
-	 * fail
-	 */
-	public void invalidateAuthToken()
-	{
-		sendMessage(LocationService.MSG_INVALIDATE_AUTH_TOKEN);
 	}
 
 	/**
@@ -94,12 +56,7 @@ public class LocationServiceConnection implements ServiceConnection
 	{
 		Log.d(TAG, "onServiceConnected: " + name);
 		service = new Messenger(serviceBinder);
-		if (locationUpdates)
-			sendMessage(LocationService.MSG_REGISTER_LOCATION_LISTENER);
-		if (intervalRefresh)
-			sendMessage(LocationService.MSG_REGISTER_REFRESHABLE);
-		else
-			sendMessage(LocationService.MSG_REFRESH_DATA);
+		sendMessage(LocationService.MSG_REGISTER_LOCATION_LISTENER);
 	}
 
 	@Override
@@ -107,53 +64,6 @@ public class LocationServiceConnection implements ServiceConnection
 	{
 		Log.d(TAG, "onServiceDisconnected");
 		service = null;
-	}
-
-	/**
-	 * Gets a list of all of the authenticated user's calendars. Assumes that
-	 * the service is already authenticated
-	 */
-	public void requestCalendars()
-	{
-		sendMessage(LocationService.MSG_GET_CALENDARS);
-	}
-
-	/**
-	 * Gets a particular EventEntry given its URL. Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @param eventUrl
-	 *            the URL of the EventEntry to return
-	 */
-	public void requestEvent(final String eventUrl)
-	{
-		sendMessage(LocationService.MSG_GET_EVENT, eventUrl);
-	}
-
-	/**
-	 * Gets all events in a given Date range. Assumes that the service is
-	 * already authenticated
-	 * 
-	 * @param start
-	 *            start date
-	 * @param end
-	 *            end date
-	 */
-	public void requestEvents(final Date start, final Date end)
-	{
-		final Date[] dateRange = { start, end };
-		sendMessage(LocationService.MSG_GET_EVENTS, dateRange);
-	}
-
-	/**
-	 * Finds the next event across all calendars (chronologically) that has a
-	 * location. Searches in an exponentially larger date range until it finds
-	 * an event (first 1 day, then 2, then 4, etc). Assumes that the service is
-	 * already authenticated
-	 */
-	public void requestNextEventWithLocation()
-	{
-		sendMessage(LocationService.MSG_GET_NEXT_EVENT_WITH_LOCATION);
 	}
 
 	/**
@@ -192,26 +102,12 @@ public class LocationServiceConnection implements ServiceConnection
 	}
 
 	/**
-	 * Authorizes the service with the given authToken
-	 * 
-	 * @param authToken
-	 *            authToken used to authenticate any Google API queries
-	 */
-	public void setAuthToken(final String authToken)
-	{
-		sendMessage(LocationService.MSG_SET_AUTH_TOKEN, authToken);
-	}
-
-	/**
 	 * Unregisters the component from location updates and interval refreshes as
 	 * appropriate
 	 */
 	public void unregister()
 	{
 		Log.d(TAG, "unregister");
-		if (locationUpdates)
-			sendMessage(LocationService.MSG_UNREGISTER_LOCATION_LISTENER);
-		if (intervalRefresh)
-			sendMessage(LocationService.MSG_UNREGISTER_REFRESHABLE);
+		sendMessage(LocationService.MSG_UNREGISTER_LOCATION_LISTENER);
 	}
 }
