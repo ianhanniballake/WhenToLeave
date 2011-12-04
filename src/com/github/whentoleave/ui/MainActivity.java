@@ -22,7 +22,6 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import com.github.whentoleave.R;
-import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.LocationService;
 import com.github.whentoleave.service.LocationServiceConnection;
 import com.google.android.maps.MapActivity;
@@ -256,28 +255,6 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		return false;
 	}
 
-	/**
-	 * This method is called when the Login activity (started in onCreate)
-	 * returns, ensuring that authentication is finished before setting up
-	 * remaining interface and tabs
-	 */
-	@Override
-	protected void onActivityResult(final int requestCode,
-			final int resultCode, final Intent data)
-	{
-		super.onActivityResult(requestCode, resultCode, data);
-		switch (requestCode)
-		{
-			case Logout.REQUEST_LOGOUT:
-				finish();
-				break;
-			case Login.REQUEST_AUTHENTICATE:
-				bindService(new Intent(this, LocationService.class), service,
-						Context.BIND_AUTO_CREATE);
-				break;
-		}
-	}
-
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(final Bundle savedInstanceState)
@@ -303,8 +280,8 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		// program exits
 		if (settings.getBoolean("EnableNotifications", true))
 			startService(new Intent(this, LocationService.class));
-		startActivityForResult(new Intent(this, Login.class),
-				Login.REQUEST_AUTHENTICATE);
+		bindService(new Intent(this, LocationService.class), service,
+				Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -327,23 +304,11 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	{
 		switch (item.getItemId())
 		{
-			case R.id.menu_refresh:
-				// Refresh the current tab's data
-				final Handler.Callback tab = (Handler.Callback) mTabsAdapter
-						.getItem(mViewPager.getCurrentItem());
-				tab.handleMessage(Message.obtain(null,
-						LocationService.MSG_REFRESH_DATA));
-				handleMessage(Message.obtain(null, LocationService.MSG_REFRESH_DATA));
-				return true;
 			case R.id.menu_view_calendars:
 				startActivity(new Intent(this, CalendarsActivity.class));
 				return true;
 			case R.id.menu_preferences:
 				startActivity(new Intent(this, Preferences.class));
-				return true;
-			case R.id.menu_logout:
-				startActivityForResult(new Intent(this, Logout.class),
-						Logout.REQUEST_LOGOUT);
 				return true;
 		}
 		return false;

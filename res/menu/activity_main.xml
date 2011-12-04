@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 	<item
-		android:id="@+id/menu_refresh"
-		android:icon="@drawable/refresh_white37"
-		android:showAsAction="ifRoom|withText"
-		android:title="@string/menu_refresh"/>
-	<item
 		android:id="@+id/menu_transport_mode"
 		android:icon="@drawable/car_white55"
 		android:showAsAction="ifRoom|withText"
@@ -36,8 +31,4 @@
 		android:id="@+id/menu_preferences"
 		android:icon="@android:drawable/ic_menu_preferences"
 		android:title="@string/menu_preferences"/>
-	<item
-		android:id="@+id/menu_logout"
-		android:icon="@android:drawable/ic_menu_close_clear_cancel"
-		android:title="@string/menu_logout"/>
 </menu>
