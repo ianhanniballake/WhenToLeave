@@ -1,188 +1,87 @@
 package com.github.whentoleave.ui;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import android.app.Fragment;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.provider.BaseColumns;
+import android.provider.CalendarContract;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import com.github.whentoleave.R;
-import com.github.whentoleave.model.EventEntry;
-import com.github.whentoleave.service.LocationService;
-import com.github.whentoleave.service.LocationServiceConnection;
 
 /**
  * Fragment which shows the next event with a location, along with quick glance
  * information and buttons to get more details, get a map of the event, and
  * navigate to the event.
  */
-public class HomeFragment extends Fragment implements Handler.Callback
+public class HomeFragment extends Fragment implements LoaderCallbacks<Cursor>
 {
 	/**
-	 * The current event
+	 * Adapter to the retrieved data
 	 */
-	private EventEntry currentEvent;
-	/**
-	 * TextView for the event's description
-	 */
-	private TextView eventDescription;
-	/**
-	 * TextView for the event's location
-	 */
-	private TextView eventLocation;
-	/**
-	 * TextView for the event's title
-	 */
-	private TextView eventName;
-	/**
-	 * TextView for the event's start time
-	 */
-	private TextView eventWhen;
-	/**
-	 * Connection to the persistent, authorized service
-	 */
-	private final LocationServiceConnection service = new LocationServiceConnection(
-			new Handler(this));
+	private CursorAdapter adapter;
 
-	/**
-	 * Handles an error from the AppService
-	 * 
-	 * @param errorMessage
-	 *            error message to display
-	 */
-	private void handleError(final String errorMessage)
+	@Override
+	public void onActivityCreated(final Bundle savedInstanceState)
 	{
-		eventName.setText("Error Getting Next Event");
-		eventLocation.setText("");
-		eventDescription.setText(errorMessage);
-		eventWhen.setText("");
-	}
-
-	/**
-	 * Handles a getNextEventWithLocation event from the AppService. Note that
-	 * the event returned is saved in the currentEvent field.
-	 */
-	private void handleGetNextEventWithLocation()
-	{
-		if (currentEvent != null && currentEvent.title != null)
-			eventName.setText(currentEvent.title);
-		else
-			eventName.setText("No Events");
-		if (currentEvent != null)
-			eventLocation.setText(currentEvent.where.valueString);
-		else
-			eventLocation.setText("");
-		if (currentEvent != null && currentEvent.content != null)
-			eventDescription.setText(currentEvent.content);
-		else
-			eventDescription.setText("");
-		if (currentEvent != null && currentEvent.when.startTime != null)
+		super.onActivityCreated(savedInstanceState);
+		adapter = new CursorAdapter(getActivity(), null, 0)
 		{
-			final CharSequence time = android.text.format.DateFormat.format(
-					"hh:mma 'on' EEEE, MMM dd",
-					currentEvent.when.startTime.value);
-			eventWhen.setText(time);
-		}
-		else
-			eventWhen.setText("");
+			@Override
+			public void bindView(final View view, final Context context,
+					final Cursor cursor)
+			{
+			}
+
+			@Override
+			public View newView(final Context context, final Cursor cursor,
+					final ViewGroup parent)
+			{
+				return null;
+			}
+		};
+		getLoaderManager().initLoader(0, null, this);
 	}
 
 	@Override
-	public boolean handleMessage(final Message msg)
+	public Loader<Cursor> onCreateLoader(final int id, final Bundle args)
 	{
-		switch (msg.what)
-		{
-			case LocationService.MSG_ERROR:
-				final String errorMessage = (String) msg.obj;
-				handleError(errorMessage);
-				return true;
-			case LocationService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
-				currentEvent = (EventEntry) msg.obj;
-				handleGetNextEventWithLocation();
-				return true;
-			case LocationService.MSG_REFRESH_DATA:
-				handleRefreshData();
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	/**
-	 * Handles a refreshData event from the AppService
-	 */
-	private void handleRefreshData()
-	{
-		service.requestNextEventWithLocation();
-	}
-
-	/** Called when the activity is first created. */
-	@Override
-	public void onCreate(final Bundle savedInstanceState)
-	{
-		super.onCreate(savedInstanceState);
-		// Setup Listeners for the ActionBar Buttons
-		eventName = (TextView) getView().findViewById(R.id.eventName);
-		eventLocation = (TextView) getView().findViewById(R.id.eventLocation);
-		eventDescription = (TextView) getView().findViewById(
-				R.id.eventDescription);
-		eventWhen = (TextView) getView().findViewById(R.id.eventWhen);
-		final Button mapButton = (Button) getView()
-				.findViewById(R.id.mapButton);
-		final Button navButton = (Button) getView()
-				.findViewById(R.id.navButton);
-		final Button infoButton = (Button) getView().findViewById(
-				R.id.infoButton);
-		infoButton.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(final View view)
-			{
-				if (currentEvent != null)
-				{
-					final Intent detailsIntent = new Intent(getActivity(),
-							EventDetailsFragment.class);
-					detailsIntent.putExtra("eventUrl",
-							currentEvent.getSelfLink());
-					startActivity(detailsIntent);
-				}
-			}
-		});
-		mapButton.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(final View view)
-			{
-				final Intent map = new Intent(Intent.ACTION_VIEW, Uri
-						.parse("geo:0,0?q="
-								+ currentEvent.where.valueString.replace(' ',
-										'+')));
-				startActivity(map);
-			}
-		});
-		navButton.setOnClickListener(new OnClickListener()
-		{
-			@Override
-			public void onClick(final View view)
-			{
-				final Intent nav = new Intent(Intent.ACTION_VIEW, Uri
-						.parse("google.navigation:q="
-								+ currentEvent.where.valueString.replace(' ',
-										'+')));
-				startActivity(nav);
-			}
-		});
-		// Need to use getApplicationContext as this activity is used as a Tab
-		getActivity().bindService(new Intent(getActivity(), LocationService.class),
-				service, Context.BIND_AUTO_CREATE);
+		// Create time window between midnight of this day and midnight
+		// of next day
+		final Calendar calendarToday = Calendar.getInstance();
+		calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
+				.getHours());
+		final Calendar calendarLaterToday = Calendar.getInstance();
+		calendarLaterToday.add(Calendar.HOUR_OF_DAY, 24 - calendarLaterToday
+				.getTime().getHours());
+		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
+				+ CalendarContract.Events.DTEND + "<? AND "
+				+ CalendarContract.Events.EVENT_LOCATION + " IS NOT NULL";
+		final String selectionArgs[] = {
+				Long.toString(calendarToday.getTimeInMillis()),
+				Long.toString(calendarLaterToday.getTimeInMillis()) };
+		final String[] projection = { BaseColumns._ID,
+				CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART,
+				CalendarContract.Events.EVENT_LOCATION };
+		return new CursorLoader(getActivity(),
+				CalendarContract.Events.CONTENT_URI, projection, selection,
+				selectionArgs, CalendarContract.Events.DTSTART);
 	}
 
 	@Override
@@ -193,10 +92,97 @@ public class HomeFragment extends Fragment implements Handler.Callback
 	}
 
 	@Override
-	public void onDestroy()
+	public void onLoaderReset(final Loader<Cursor> loader)
 	{
-		super.onDestroy();
-		service.unregister();
-		getActivity().unbindService(service);
+		adapter.swapCursor(null);
+	}
+
+	@Override
+	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data)
+	{
+		adapter.swapCursor(data);
+		final TextView eventName = (TextView) getView().findViewById(
+				R.id.eventName);
+		final TextView eventLocation = (TextView) getView().findViewById(
+				R.id.eventLocation);
+		final TextView eventDescription = (TextView) getView().findViewById(
+				R.id.eventDescription);
+		final TextView eventWhen = (TextView) getView().findViewById(
+				R.id.eventWhen);
+		final Button mapButton = (Button) getView()
+				.findViewById(R.id.mapButton);
+		final Button navButton = (Button) getView()
+				.findViewById(R.id.navButton);
+		final Button infoButton = (Button) getView().findViewById(
+				R.id.infoButton);
+		if (!data.moveToFirst())
+		{
+			eventName.setText("No Events");
+			eventLocation.setText("");
+			eventDescription.setText("");
+			eventWhen.setText("");
+			infoButton.setOnClickListener(null);
+			infoButton.setEnabled(false);
+			mapButton.setOnClickListener(null);
+			mapButton.setEnabled(false);
+			navButton.setOnClickListener(null);
+			navButton.setEnabled(false);
+			return;
+		}
+		// Set the title
+		final int titleColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.TITLE);
+		data.getString(titleColumnIndex);
+		final int locationColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.EVENT_LOCATION);
+		final String location = data.getString(locationColumnIndex);
+		eventLocation.setText(location);
+		final int descriptionColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.DESCRIPTION);
+		final String description = data.getString(descriptionColumnIndex);
+		eventDescription.setText(description);
+		final int startTimeColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.DTSTART);
+		final long startTime = data.getLong(startTimeColumnIndex);
+		final String formattedStartTime = DateFormat.format(
+				"hh:mma 'on' EEEE, MMM dd", new Date(startTime)).toString();
+		eventWhen.setText(formattedStartTime);
+		final int idColumnIndex = data.getColumnIndex(BaseColumns._ID);
+		final long eventId = data.getLong(idColumnIndex);
+		infoButton.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(final View view)
+			{
+				final Intent detailsIntent = new Intent(getActivity(),
+						EventDetailsFragment.class);
+				detailsIntent.putExtra("eventId", eventId);
+				startActivity(detailsIntent);
+			}
+		});
+		infoButton.setEnabled(true);
+		mapButton.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(final View view)
+			{
+				final Intent map = new Intent(Intent.ACTION_VIEW, Uri
+						.parse("geo:0,0?q=" + location.replace(' ', '+')));
+				startActivity(map);
+			}
+		});
+		mapButton.setEnabled(true);
+		navButton.setOnClickListener(new OnClickListener()
+		{
+			@Override
+			public void onClick(final View view)
+			{
+				final Intent nav = new Intent(Intent.ACTION_VIEW, Uri
+						.parse("google.navigation:q="
+								+ location.replace(' ', '+')));
+				startActivity(nav);
+			}
+		});
+		navButton.setEnabled(true);
 	}
 }
