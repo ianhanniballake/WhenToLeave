@@ -27,7 +27,7 @@ public class ItemizedOverlay extends
 	/**
 	 * Event URLs corresponding with each OverlayItem
 	 */
-	private final ArrayList<String> mEventURLs = new ArrayList<String>();
+	private final ArrayList<Long> mEventIds = new ArrayList<Long>();
 	/**
 	 * Holds each of the OverlayItems objects that we want on our map
 	 */
@@ -55,13 +55,13 @@ public class ItemizedOverlay extends
 	 * 
 	 * @param overlay
 	 *            Overlay item to be added
-	 * @param eventURL
-	 *            A unique URL specific to this event
+	 * @param eventId
+	 *            A unique ID specific to this event
 	 */
-	public void addOverlay(final OverlayItem overlay, final String eventURL)
+	public void addOverlay(final OverlayItem overlay, final long eventId)
 	{
 		mOverlays.add(overlay);
-		mEventURLs.add(eventURL);
+		mEventIds.add(eventId);
 		populate();
 	}
 
@@ -71,7 +71,7 @@ public class ItemizedOverlay extends
 	public void clearOverlay()
 	{
 		mOverlays.clear();
-		mEventURLs.clear();
+		mEventIds.clear();
 		populate();
 	}
 
@@ -97,10 +97,11 @@ public class ItemizedOverlay extends
 	@Override
 	protected boolean onTap(final int index)
 	{
-		final Intent detailsIntent = new Intent(mContext, EventDetailsFragment.class);
-		if (!mEventURLs.get(index).equals(""))
+		final Intent detailsIntent = new Intent(mContext,
+				EventDetailsFragment.class);
+		if (mEventIds.get(index) != -1)
 		{
-			detailsIntent.putExtra("eventUrl", mEventURLs.get(index));
+			detailsIntent.putExtra("eventId", mEventIds.get(index));
 			mContext.startActivity(detailsIntent);
 		}
 		return true;

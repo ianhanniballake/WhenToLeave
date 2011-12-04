@@ -1,35 +1,39 @@
 package com.github.whentoleave.ui;
 
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import android.app.Fragment;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.BaseColumns;
+import android.provider.CalendarContract;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.CursorAdapter;
 
 import com.github.whentoleave.R;
 import com.github.whentoleave.maps.ItemizedOverlay;
 import com.github.whentoleave.maps.MapRouteOverlay;
 import com.github.whentoleave.maps.Route;
 import com.github.whentoleave.maps.RouteInformation;
-import com.github.whentoleave.maps.RouteProvider;
-import com.github.whentoleave.model.EventEntry;
-import com.github.whentoleave.service.AppService;
-import com.github.whentoleave.service.AppServiceConnection;
+import com.github.whentoleave.service.LocationService;
+import com.github.whentoleave.service.LocationServiceConnection;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
@@ -41,7 +45,8 @@ import com.google.android.maps.OverlayItem;
  * a GPS location is available, shows the current location and a route to the
  * next event.
  */
-public class EventMapFragment extends Fragment implements Handler.Callback
+public class EventMapFragment extends Fragment implements
+		LoaderCallbacks<Cursor>, Handler.Callback
 {
 	/**
 	 * Possible Event Icon colors
@@ -74,9 +79,9 @@ public class EventMapFragment extends Fragment implements Handler.Callback
 	 */
 	private static final String TAG = "MapActivity";
 	/**
-	 * Holds the list of all the events currently displayed on the map
+	 * Adapter to display the list's data
 	 */
-	private final ArrayList<EventEntry> eventList = new ArrayList<EventEntry>();
+	private CursorAdapter adapter;
 	/**
 	 * Overlay for the day's events
 	 */
@@ -122,11 +127,7 @@ public class EventMapFragment extends Fragment implements Handler.Callback
 	/**
 	 * Route to our next destination from our current location, if it exists
 	 */
-	private Route mRoute = null;
-	/**
-	 * The next event with a location
-	 */
-	private EventEntry nextEvent = null;
+	private final Route mRoute = null;
 	/**
 	 * Default (non-numbered) orange square
 	 */
@@ -147,8 +148,8 @@ public class EventMapFragment extends Fragment implements Handler.Callback
 	/**
 	 * Connection to the persistent, authorized service
 	 */
-	private final AppServiceConnection service = new AppServiceConnection(
-			new Handler(this), false, true);
+	private final LocationServiceConnection service = new LocationServiceConnection(
+			new Handler(this));
 
 	/**
 	 * Generates all of the icons that could be used in this
@@ -268,112 +269,13 @@ public class EventMapFragment extends Fragment implements Handler.Callback
 			greySquare.setBounds(0, 0, 36, 36);
 	}
 
-	/**
-	 * Handles a getEvents event from the AppService
-	 * 
-	 * @param events
-	 *            newly returned events
-	 */
-	private void handleGetEvents(final Set<EventEntry> events)
+	@Override
+	public boolean handleMessage(final Message msg)
 	{
-		final SharedPreferences settings = getActivity().getSharedPreferences(
-				PREF, 0);
-		long leaveInMinutes = 0;
-		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
-		COLOR iconColor = COLOR.GREEN;
-		if (mGpsLocation != null && nextEvent != null)
-		{
-			final String travelType = settings.getString("TransportPreference",
-					"driving");
-			leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(mGpsLocation,
-					travelType);
-			Log.d(TAG, "getting leaveInMinutes: " + leaveInMinutes);
-		}
-		int h = 1;
-		Log.v(TAG, "refreshData: size of events = " + events.size());
-		GeoPoint nextEventPoint = null;
-		eventOverlay.clearOverlay();
-		for (final EventEntry event : events)
-		{
-			// Close enough evaluation...
-			if (nextEvent != null)
-			{
-				if (nextEvent.title.equals(event.title)
-						&& nextEvent.when.startTime
-								.equals(event.when.startTime))
-				{
-					if (leaveInMinutes < notifyTimeInMin * .33333)
-						iconColor = COLOR.RED;
-					else if (leaveInMinutes < notifyTimeInMin * .6666)
-						iconColor = COLOR.ORANGE;
-					Log.d(TAG, "next event found - leavin: " + leaveInMinutes);
-				}
-				else
-					iconColor = COLOR.GREY;
-			}
-			else
-				iconColor = COLOR.GREY;
-			if (event.where != null && event.where.valueString != null
-					&& !event.where.valueString.equals(""))
-			{
-				if (h <= 10)
-					switch (iconColor)
-					{
-						case GREEN:
-							nextEventPoint = plotEvent(event,
-									greenSquaresNumbered[h - 1]);
-							break;
-						case ORANGE:
-							nextEventPoint = plotEvent(event,
-									orangeSquaresNumbered[h - 1]);
-							break;
-						case RED:
-							nextEventPoint = plotEvent(event,
-									redSquaresNumbered[h - 1]);
-							break;
-						default:
-							plotEvent(event, greySquaresNumbered[h - 1]);
-							break;
-					}
-				else
-					switch (iconColor)
-					{
-						case GREEN:
-							nextEventPoint = plotEvent(event,
-									greenSquareDefault);
-							break;
-						case ORANGE:
-							nextEventPoint = plotEvent(event,
-									orangeSquareDefault);
-							break;
-						case RED:
-							nextEventPoint = plotEvent(event, redSquareDefault);
-							break;
-						default:
-							plotEvent(event, greySquareDefault);
-							break;
-					}
-				Log.v(TAG, "refreshData: Plotting Event: " + h++);
-			}
-		}
-		if (nextEventPoint != null)
-			zoomTo(nextEventPoint);
-		eventList.clear();
-		eventList.addAll(events);
-	}
-
-	/**
-	 * Handles an updated location from the AppService
-	 * 
-	 * @param location
-	 *            the updated location
-	 */
-	private void handleLocationUpdate(final Location location)
-	{
-		if (location != null)
+		if (msg.what == LocationService.MSG_LOCATION_UPDATE && msg.obj != null)
 		{
 			Log.d(TAG, "onLocationChanged");
-			mGpsLocation = location;
+			mGpsLocation = (Location) msg.obj;
 			final GeoPoint gpsLocationPoint = new GeoPoint(
 					(int) (mGpsLocation.getLatitude() * 1000000),
 					(int) (mGpsLocation.getLongitude() * 1000000));
@@ -381,76 +283,10 @@ public class EventMapFragment extends Fragment implements Handler.Callback
 					gpsLocationPoint, "", "");
 			mGpsOverlayItem.setMarker(gpsLocationIcon);
 			locationOverlay.clearOverlay();
-			locationOverlay.addOverlay(mGpsOverlayItem, "");
-			service.requestNextEventWithLocation();
+			locationOverlay.addOverlay(mGpsOverlayItem, -1);
+			return true;
 		}
-	}
-
-	@Override
-	public boolean handleMessage(final Message msg)
-	{
-		switch (msg.what)
-		{
-			case AppService.MSG_LOCATION_UPDATE:
-				final Location location = (Location) msg.obj;
-				handleLocationUpdate(location);
-				return true;
-			case AppService.MSG_REFRESH_DATA:
-				handleRefreshData();
-				return true;
-			case AppService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
-				nextEvent = (EventEntry) msg.obj;
-				handleNextEvent();
-				return true;
-			case AppService.MSG_GET_EVENTS:
-				@SuppressWarnings("unchecked")
-				final Set<EventEntry> events = (Set<EventEntry>) msg.obj;
-				handleGetEvents(events);
-				return true;
-			case AppService.MSG_ERROR:
-				final String errorMessage = (String) msg.obj;
-				final TextView textView = (TextView) getView().findViewById(
-						R.id.mapdescription);
-				textView.setText("Error retrieving data: " + errorMessage);
-				return true;
-			default:
-				return false;
-		}
-	}
-
-	/**
-	 * Handles the nextEvent event from the AppService. Note that the returned
-	 * event is saved in the nextEvent field.
-	 */
-	private void handleNextEvent()
-	{
-		if (mGpsLocation != null)
-		{
-			mRoute = RouteProvider.getRoute(mGpsLocation,
-					nextEvent.where.valueString);
-			mapRouteOverlay.setRoute(mRoute);
-			final TextView textView = (TextView) getView().findViewById(
-					R.id.mapdescription);
-			textView.setText(mRoute.mName + " " + mRoute.mDescription);
-		}
-	}
-
-	/**
-	 * Loads all of today's events on the user's calendar.
-	 */
-	public void handleRefreshData()
-	{
-		service.requestNextEventWithLocation();
-		// Create time window between midnight of this day and midnight
-		// of next day
-		final Calendar calendarToday = Calendar.getInstance();
-		calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
-				.getHours());
-		final Calendar calendarLaterToday = Calendar.getInstance();
-		calendarLaterToday.add(Calendar.HOUR_OF_DAY, 24 - calendarLaterToday
-				.getTime().getHours());
-		service.requestEvents(calendarToday.getTime(),
-				calendarLaterToday.getTime());
+		return false;
 	}
 
 	/**
@@ -483,15 +319,49 @@ public class EventMapFragment extends Fragment implements Handler.Callback
 		mapOverlays.add(eventOverlay);
 		((ViewGroup) getView().findViewById(R.id.mapview_holder))
 				.addView(mapView);
+		adapter = new CursorAdapter(getActivity(), null, 0)
+		{
+			@Override
+			public void bindView(final View view, final Context context,
+					final Cursor cursor)
+			{
+			}
+
+			@Override
+			public View newView(final Context context, final Cursor cursor,
+					final ViewGroup parent)
+			{
+				return null;
+			}
+		};
+		getActivity().bindService(
+				new Intent(getActivity(), LocationService.class), service,
+				Context.BIND_AUTO_CREATE);
+		getLoaderManager().initLoader(0, null, this);
 	}
 
-	/** Called when the activity is first created. */
 	@Override
-	public void onCreate(final Bundle savedInstanceState)
+	public Loader<Cursor> onCreateLoader(final int id, final Bundle args)
 	{
-		super.onCreate(savedInstanceState);
-		getActivity().bindService(new Intent(getActivity(), AppService.class),
-				service, Context.BIND_AUTO_CREATE);
+		// Create time window between midnight of this day and midnight
+		// of next day
+		final Calendar calendarToday = Calendar.getInstance();
+		calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
+				.getHours());
+		final Calendar calendarLaterToday = Calendar.getInstance();
+		calendarLaterToday.add(Calendar.HOUR_OF_DAY, 24 - calendarLaterToday
+				.getTime().getHours());
+		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
+				+ CalendarContract.Events.DTEND + "<?";
+		final String selectionArgs[] = {
+				Long.toString(calendarToday.getTimeInMillis()),
+				Long.toString(calendarLaterToday.getTimeInMillis()) };
+		final String[] projection = { BaseColumns._ID,
+				CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART,
+				CalendarContract.Events.EVENT_LOCATION };
+		return new CursorLoader(getActivity(),
+				CalendarContract.Events.CONTENT_URI, projection, selection,
+				selectionArgs, CalendarContract.Events.DTSTART);
 	}
 
 	@Override
@@ -509,29 +379,140 @@ public class EventMapFragment extends Fragment implements Handler.Callback
 		getActivity().unbindService(service);
 	}
 
+	@Override
+	public void onLoaderReset(final Loader<Cursor> loader)
+	{
+		adapter.swapCursor(null);
+		eventOverlay.clearOverlay();
+	}
+
+	@Override
+	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data)
+	{
+		adapter.swapCursor(data);
+		final SharedPreferences settings = getActivity().getSharedPreferences(
+				PREF, 0);
+		final String travelType = settings.getString("TransportPreference",
+				"driving");
+		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
+		long nextEventWithLocationId = -1;
+		int h = 1;
+		Log.v(TAG, "refreshData: size of events = " + data.getCount());
+		COLOR iconColor = COLOR.GREEN;
+		GeoPoint nextEventPoint = null;
+		eventOverlay.clearOverlay();
+		while (data.moveToNext())
+		{
+			final int locationColumnIndex = data
+					.getColumnIndex(CalendarContract.Events.EVENT_LOCATION);
+			final String location = data.getString(locationColumnIndex);
+			// Skip events without a location
+			if (location.equals(""))
+				continue;
+			final int idColumnIndex = data.getColumnIndex(BaseColumns._ID);
+			final long currentId = data.getLong(idColumnIndex);
+			if (nextEventWithLocationId == -1)
+			{
+				nextEventWithLocationId = currentId;
+				long leaveInMinutes = 0;
+				if (mGpsLocation != null)
+				{
+					final int startTimeColumnIndex = data
+							.getColumnIndex(CalendarContract.Events.DTSTART);
+					final long startTime = data.getLong(startTimeColumnIndex);
+					final int travelTime = RouteInformation.getDuration(
+							mGpsLocation, location, travelType);
+					final long minutesUntilEvent = (startTime - new Date()
+							.getTime()) / 60000;
+					leaveInMinutes = minutesUntilEvent - travelTime;
+					Log.d(TAG, "getting leaveInMinutes: " + leaveInMinutes);
+				}
+				if (leaveInMinutes < notifyTimeInMin * .33333)
+					iconColor = COLOR.RED;
+				else if (leaveInMinutes < notifyTimeInMin * .6666)
+					iconColor = COLOR.ORANGE;
+				else
+					iconColor = COLOR.GREEN;
+				Log.d(TAG, "next event found - leavin: " + leaveInMinutes);
+			}
+			else
+				iconColor = COLOR.GREY;
+			if (h <= 10)
+				switch (iconColor)
+				{
+					case GREEN:
+						nextEventPoint = plotEvent(data,
+								greenSquaresNumbered[h - 1]);
+						break;
+					case ORANGE:
+						nextEventPoint = plotEvent(data,
+								orangeSquaresNumbered[h - 1]);
+						break;
+					case RED:
+						nextEventPoint = plotEvent(data,
+								redSquaresNumbered[h - 1]);
+						break;
+					default:
+						plotEvent(data, greySquaresNumbered[h - 1]);
+						break;
+				}
+			else
+				switch (iconColor)
+				{
+					case GREEN:
+						nextEventPoint = plotEvent(data, greenSquareDefault);
+						break;
+					case ORANGE:
+						nextEventPoint = plotEvent(data, orangeSquareDefault);
+						break;
+					case RED:
+						nextEventPoint = plotEvent(data, redSquareDefault);
+						break;
+					default:
+						plotEvent(data, greySquareDefault);
+						break;
+				}
+			Log.v(TAG, "refreshData: Plotting Event: " + h++);
+		}
+		if (nextEventPoint != null)
+			zoomTo(nextEventPoint);
+	}
+
 	/**
-	 * Given the address of an event, this method plots it on the map.
+	 * Plots a given event on the map.
 	 * 
-	 * @param event
-	 *            the event to plot
+	 * @param data
+	 *            cursor pointing to the event to plot
 	 * 
 	 * @param icon
 	 *            The Marker that will represent the event on the map
 	 * @return the point just plotted
 	 */
-	private GeoPoint plotEvent(final EventEntry event, final Drawable icon)
+	private GeoPoint plotEvent(final Cursor data, final Drawable icon)
 	{
+		final int locationColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.EVENT_LOCATION);
+		final String location = data.getString(locationColumnIndex);
 		// Obtain the latitude and longitude
-		final String eventLocation = event.where.valueString;
-		final GeoPoint geoPoint = RouteInformation.getLocation(eventLocation);
+		final GeoPoint geoPoint = RouteInformation.getLocation(location);
 		if (geoPoint != null)
 		{
 			// Create a marker for the point
-			final OverlayItem overlayItem = new OverlayItem(geoPoint,
-					"Appointment", "Appointment");
+			final int titleColumnIndex = data
+					.getColumnIndex(CalendarContract.Events.TITLE);
+			final String title = data.getString(titleColumnIndex);
+			final int startTimeColumnIndex = data
+					.getColumnIndex(CalendarContract.Events.DTSTART);
+			final long startTime = data.getLong(startTimeColumnIndex);
+			final String formattedStartTime = DateFormat.format(
+					"hh:mma 'on' EEEE, MMM dd", new Date(startTime)).toString();
+			final OverlayItem overlayItem = new OverlayItem(geoPoint, title,
+					formattedStartTime);
 			overlayItem.setMarker(icon);
 			// Add the point to the map
-			eventOverlay.addOverlay(overlayItem, event.getSelfLink());
+			final int idColumnIndex = data.getColumnIndex(BaseColumns._ID);
+			final long eventId = data.getLong(idColumnIndex);
+			eventOverlay.addOverlay(overlayItem, eventId);
 			return geoPoint;
 		}
 		return null;
