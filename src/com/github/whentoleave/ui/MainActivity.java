@@ -1,36 +1,47 @@
 package com.github.whentoleave.ui;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import android.app.ActionBar;
 import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.BaseColumns;
+import android.provider.CalendarContract;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.CursorAdapter;
 
 import com.github.whentoleave.R;
+import com.github.whentoleave.maps.RouteInformation;
 import com.github.whentoleave.service.LocationService;
 import com.github.whentoleave.service.LocationServiceConnection;
 import com.google.android.maps.MapActivity;
 
 /**
  * Activity which serves as the main hub of the application, containing the
- * Home, Agenda, and Map Activities as tabs and a persistent Action Bar
+ * Home, Agenda, and Map Activities as tabs
  */
-public class MainActivity extends MapActivity implements Handler.Callback
+public class MainActivity extends MapActivity implements
+		LoaderCallbacks<Cursor>, Handler.Callback
 {
 	/**
 	 * This is a helper class that implements the management of tabs and all
@@ -179,6 +190,43 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	 * Preferences name to load settings from
 	 */
 	private static final String PREF = "MyPrefs";
+
+	/**
+	 * Formats the given number of minutes into usable String. For <60 minutes,
+	 * returns "MMm", with no leading 0 (i.e., 6m or 15m). For >=60 minutes,
+	 * returns "HH:MMh" with no leading hour 0 (i.e., 1:04h or 11:15h)
+	 * 
+	 * @param leaveInMinutes
+	 *            the number of minutes to be formatted
+	 * @return a formatted string representing the given leaveInMinutes in "MMm"
+	 *         (<60) or "HH:MMh" (>=60)
+	 */
+	private static String formatWhenToLeave(final long leaveInMinutes)
+	{
+		final long hoursToGo = Math.abs(leaveInMinutes) / 60;
+		final long minutesToGo = Math.abs(leaveInMinutes) % 60;
+		final StringBuffer formattedTime = new StringBuffer();
+		if (hoursToGo > 0)
+		{
+			formattedTime.append(hoursToGo);
+			formattedTime.append(":");
+			if (minutesToGo < 10)
+				formattedTime.append("0");
+			formattedTime.append(minutesToGo);
+			formattedTime.append("h");
+		}
+		else
+		{
+			formattedTime.append(minutesToGo);
+			formattedTime.append("m");
+		}
+		return formattedTime.toString();
+	}
+
+	/**
+	 * Adapter to the retrieved data
+	 */
+	private CursorAdapter adapter;
 	/**
 	 * Current location of the device
 	 */
@@ -192,60 +240,20 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	 */
 	private ViewPager mViewPager;
 	/**
-	 * Connection to the persistent, authorized service
+	 * Connection to the persistent location service
 	 */
 	private final LocationServiceConnection service = new LocationServiceConnection(
-			new Handler(this), true, true);
-
-	/**
-	 * Handles a getNextEventWithLocation event from the AppService
-	 * 
-	 * @param nextEvent
-	 *            newly returned next event with a location
-	 */
-	private void handleGetNextEventWithLocation(final EventEntry nextEvent)
-	{
-		if (nextEvent == null)
-			return;
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
-		final String travelType = settings.getString("TransportPreference",
-				"driving");
-		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
-		setIndicatorTextAndColor(
-				nextEvent.getWhenToLeaveInMinutes(currentLocation, travelType),
-				notifyTimeInMin);
-	}
+			new Handler(this));
 
 	@Override
 	public boolean handleMessage(final Message msg)
 	{
-		switch (msg.what)
+		if (msg.what == LocationService.MSG_LOCATION_UPDATE && msg.obj != null)
 		{
-			case LocationService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
-				final EventEntry nextEvent = (EventEntry) msg.obj;
-				handleGetNextEventWithLocation(nextEvent);
-				return true;
-			case LocationService.MSG_LOCATION_UPDATE:
-				currentLocation = (Location) msg.obj;
-				handleRefreshData();
-				return true;
-			case LocationService.MSG_REFRESH_DATA:
-				handleRefreshData();
-				return true;
-			default:
-				return false;
+			currentLocation = (Location) msg.obj;
+			return true;
 		}
-	}
-
-	/**
-	 * Handles a refreshData event from the AppService
-	 */
-	private void handleRefreshData()
-	{
-		// Can't show WhenToLeave if we don't know where we are
-		if (currentLocation == null)
-			return;
-		service.requestNextEventWithLocation();
+		return false;
 	}
 
 	@Override
@@ -285,6 +293,25 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	}
 
 	@Override
+	public Loader<Cursor> onCreateLoader(final int id, final Bundle args)
+	{
+		final Calendar twoWeeksFromNow = Calendar.getInstance();
+		twoWeeksFromNow.add(Calendar.DATE, 14);
+		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
+				+ CalendarContract.Events.DTEND + "<? AND "
+				+ CalendarContract.Events.EVENT_LOCATION + " IS NOT NULL";
+		final String selectionArgs[] = {
+				Long.toString(Calendar.getInstance().getTimeInMillis()),
+				Long.toString(twoWeeksFromNow.getTimeInMillis()) };
+		final String[] projection = { BaseColumns._ID,
+				CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART,
+				CalendarContract.Events.EVENT_LOCATION };
+		return new CursorLoader(this, CalendarContract.Events.CONTENT_URI,
+				projection, selection, selectionArgs,
+				CalendarContract.Events.DTSTART);
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(final Menu menu)
 	{
 		getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -297,6 +324,21 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		super.onDestroy();
 		service.unregister();
 		unbindService(service);
+	}
+
+	@Override
+	public void onLoaderReset(final Loader<Cursor> loader)
+	{
+		adapter.swapCursor(null);
+	}
+
+	@Override
+	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data)
+	{
+		adapter.swapCursor(data);
+		if (!data.moveToFirst() || currentLocation == null)
+			return;
+		setIndicatorTextAndColor(data);
 	}
 
 	@Override
@@ -376,15 +418,25 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	/**
 	 * Sets the text and color of the Action Bar
 	 * 
-	 * @param leaveInMinutes
-	 *            time until the user must leave
-	 * @param notifyTimeInMin
-	 *            user preference on when to be notified, used to determine
-	 *            color
+	 * @param data
+	 *            cursor pointing to the event
 	 */
-	private void setIndicatorTextAndColor(final long leaveInMinutes,
-			final int notifyTimeInMin)
+	private void setIndicatorTextAndColor(final Cursor data)
 	{
+		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final String travelType = settings.getString("TransportPreference",
+				"driving");
+		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
+		final int locationColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.EVENT_LOCATION);
+		final String location = data.getString(locationColumnIndex);
+		final int startTimeColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.DTSTART);
+		final long startTime = data.getLong(startTimeColumnIndex);
+		final int travelTime = RouteInformation.getDuration(currentLocation,
+				location, travelType);
+		final long minutesUntilEvent = (startTime - new Date().getTime()) / 60000;
+		final long leaveInMinutes = minutesUntilEvent - travelTime;
 		final Button actionBarButton = (Button) findViewById(R.id.actionBar);
 		final Resources res = getResources();
 		if (leaveInMinutes < notifyTimeInMin * .33333)
@@ -396,8 +448,7 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		else
 			actionBarButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.custom_action_bar_green));
-		final String formattedTime = EventEntry
-				.formatWhenToLeave(leaveInMinutes);
+		final String formattedTime = formatWhenToLeave(leaveInMinutes);
 		actionBarButton.setText("Leave "
 				+ (leaveInMinutes > 0 ? "in " + formattedTime : "Now"));
 	}
