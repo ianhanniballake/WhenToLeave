@@ -62,20 +62,14 @@ public class HomeFragment extends Fragment implements LoaderCallbacks<Cursor>
 	@Override
 	public Loader<Cursor> onCreateLoader(final int id, final Bundle args)
 	{
-		// Create time window between midnight of this day and midnight
-		// of next day
-		final Calendar calendarToday = Calendar.getInstance();
-		calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
-				.getHours());
-		final Calendar calendarLaterToday = Calendar.getInstance();
-		calendarLaterToday.add(Calendar.HOUR_OF_DAY, 24 - calendarLaterToday
-				.getTime().getHours());
+		final Calendar twoWeeksFromNow = Calendar.getInstance();
+		twoWeeksFromNow.add(Calendar.DATE, 14);
 		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
 				+ CalendarContract.Events.DTEND + "<? AND "
 				+ CalendarContract.Events.EVENT_LOCATION + " IS NOT NULL";
 		final String selectionArgs[] = {
-				Long.toString(calendarToday.getTimeInMillis()),
-				Long.toString(calendarLaterToday.getTimeInMillis()) };
+				Long.toString(Calendar.getInstance().getTimeInMillis()),
+				Long.toString(twoWeeksFromNow.getTimeInMillis()) };
 		final String[] projection = { BaseColumns._ID,
 				CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART,
 				CalendarContract.Events.EVENT_LOCATION };
