@@ -126,7 +126,8 @@ public class HomeFragment extends Fragment implements LoaderCallbacks<Cursor>
 		// Set the title
 		final int titleColumnIndex = data
 				.getColumnIndex(CalendarContract.Events.TITLE);
-		data.getString(titleColumnIndex);
+		final String title = data.getString(titleColumnIndex);
+		eventName.setText(title);
 		final int locationColumnIndex = data
 				.getColumnIndex(CalendarContract.Events.EVENT_LOCATION);
 		final String location = data.getString(locationColumnIndex);

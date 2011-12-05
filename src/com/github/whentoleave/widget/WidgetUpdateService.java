@@ -1,23 +1,34 @@
 package com.github.whentoleave.widget;
 
+import java.util.Calendar;
+import java.util.Date;
+
+import android.app.LoaderManager.LoaderCallbacks;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.provider.BaseColumns;
+import android.provider.CalendarContract;
+import android.text.format.DateFormat;
 import android.util.Log;
+import android.widget.CursorAdapter;
 import android.widget.RemoteViews;
 
 import com.github.whentoleave.R;
 import com.github.whentoleave.maps.RouteInformation;
-import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.service.LocationService;
 import com.github.whentoleave.service.LocationServiceConnection;
 import com.github.whentoleave.ui.MainActivity;
@@ -25,7 +36,8 @@ import com.github.whentoleave.ui.MainActivity;
 /**
  * Service used to update all Widgets.
  */
-public class WidgetUpdateService extends Service implements Handler.Callback
+public class WidgetUpdateService extends Service implements
+		LoaderCallbacks<Cursor>, Handler.Callback
 {
 	/**
 	 * Preferences name to load settings from
@@ -35,6 +47,43 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 	 * Logging tag
 	 */
 	private static final String TAG = "WidgetUpdateService";
+
+	/**
+	 * Formats the given number of minutes into usable String. For <60 minutes,
+	 * returns "MMm", with no leading 0 (i.e., 6m or 15m). For >=60 minutes,
+	 * returns "HH:MMh" with no leading hour 0 (i.e., 1:04h or 11:15h)
+	 * 
+	 * @param leaveInMinutes
+	 *            the number of minutes to be formatted
+	 * @return a formatted string representing the given leaveInMinutes in "MMm"
+	 *         (<60) or "HH:MMh" (>=60)
+	 */
+	private static String formatWhenToLeave(final long leaveInMinutes)
+	{
+		final long hoursToGo = Math.abs(leaveInMinutes) / 60;
+		final long minutesToGo = Math.abs(leaveInMinutes) % 60;
+		final StringBuffer formattedTime = new StringBuffer();
+		if (hoursToGo > 0)
+		{
+			formattedTime.append(hoursToGo);
+			formattedTime.append(":");
+			if (minutesToGo < 10)
+				formattedTime.append("0");
+			formattedTime.append(minutesToGo);
+			formattedTime.append("h");
+		}
+		else
+		{
+			formattedTime.append(minutesToGo);
+			formattedTime.append("m");
+		}
+		return formattedTime.toString();
+	}
+
+	/**
+	 * Adapter to the retrieved data
+	 */
+	private CursorAdapter adapter;
 	/**
 	 * Current location of the device
 	 */
@@ -43,7 +92,7 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 	 * Connection to the AppService
 	 */
 	private final LocationServiceConnection service = new LocationServiceConnection(
-			new Handler(this), false, true);
+			new Handler(this));
 
 	/**
 	 * Gets a 'base' remote view as all widgets contain the same type of
@@ -66,59 +115,87 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 		return views;
 	}
 
-	/**
-	 * Handles an error from the AppService
-	 * 
-	 * @param errorMessage
-	 *            error message to display
-	 */
-	private void handleError(final String errorMessage)
-	{
-		final RemoteViews views = getBaseRemoteViews();
-		views.setTextViewText(R.id.widgetLeaveInText, "");
-		views.setTextViewText(R.id.widgetEventDetail,
-				"Error reading in next event");
-		views.setTextViewText(R.id.widgetEventTime, errorMessage);
-		updateAllWidgets(views);
-	}
-
 	@Override
 	public boolean handleMessage(final Message msg)
 	{
-		switch (msg.what)
+		if (msg.what == LocationService.MSG_LOCATION_UPDATE && msg.obj != null)
 		{
-			case LocationService.MSG_LOCATION_UPDATE:
-				final Location location = (Location) msg.obj;
-				currentLocation = location;
-				handleRefreshData();
-				return true;
-			case LocationService.MSG_REFRESH_DATA:
-				handleRefreshData();
-				return true;
-			case LocationService.MSG_GET_NEXT_EVENT_WITH_LOCATION:
-				final EventEntry nextEvent = (EventEntry) msg.obj;
-				handleNextEvent(nextEvent);
-				return true;
-			case LocationService.MSG_ERROR:
-				final String errorMessage = (String) msg.obj;
-				handleError(errorMessage);
-				return true;
-			default:
-				return false;
+			Log.d(TAG, "onLocationChanged");
+			currentLocation = (Location) msg.obj;
+			update();
+			return true;
 		}
+		return false;
+	}
+
+	@Override
+	public IBinder onBind(final Intent intent)
+	{
+		return null;
+	}
+
+	@Override
+	public Loader<Cursor> onCreateLoader(final int id, final Bundle args)
+	{
+		final Calendar twoWeeksFromNow = Calendar.getInstance();
+		twoWeeksFromNow.add(Calendar.DATE, 14);
+		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
+				+ CalendarContract.Events.DTEND + "<? AND "
+				+ CalendarContract.Events.EVENT_LOCATION + " IS NOT NULL";
+		final String selectionArgs[] = {
+				Long.toString(Calendar.getInstance().getTimeInMillis()),
+				Long.toString(twoWeeksFromNow.getTimeInMillis()) };
+		final String[] projection = { BaseColumns._ID,
+				CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART,
+				CalendarContract.Events.EVENT_LOCATION };
+		return new CursorLoader(this, CalendarContract.Events.CONTENT_URI,
+				projection, selection, selectionArgs,
+				CalendarContract.Events.DTSTART);
+	}
+
+	@Override
+	public void onDestroy()
+	{
+		Log.d(TAG, "onDestroy");
+		service.unregister();
+		unbindService(service);
+	}
+
+	@Override
+	public void onLoaderReset(final Loader<Cursor> loader)
+	{
+		adapter.swapCursor(null);
+	}
+
+	@Override
+	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data)
+	{
+		adapter.swapCursor(data);
+	}
+
+	@Override
+	public int onStartCommand(final Intent intent, final int flags,
+			final int startId)
+	{
+		if (!service.isConnected())
+		{
+			Log.d(TAG, "Connecting to AppService");
+			bindService(new Intent(this, LocationService.class), service,
+					Context.BIND_AUTO_CREATE);
+			// updateAppWidgets will be called by refreshData once we are
+			// connected
+		}
+		return START_STICKY;
 	}
 
 	/**
-	 * Handles an incoming next event from the AppService, updating all Widgets
-	 * with the new information
-	 * 
-	 * @param nextEvent
-	 *            newly returned next event
+	 * Build the RemoteViews with the most up to date information
 	 */
-	private void handleNextEvent(final EventEntry nextEvent)
+	private void update()
 	{
 		final RemoteViews views = getBaseRemoteViews();
-		if (nextEvent == null)
+		final Cursor data = adapter.getCursor();
+		if (data == null || !data.moveToFirst())
 		{
 			views.setTextViewText(R.id.widgetLeaveInText, "");
 			views.setTextViewText(R.id.widgetEventDetail, "No upcoming events");
@@ -134,8 +211,16 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 			final SharedPreferences settings = getSharedPreferences(PREF, 0);
 			final String travelType = settings.getString("TransportPreference",
 					"driving");
-			final long leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
-					currentLocation, travelType);
+			final int locationColumnIndex = data
+					.getColumnIndex(CalendarContract.Events.EVENT_LOCATION);
+			final String location = data.getString(locationColumnIndex);
+			final int startTimeColumnIndex = data
+					.getColumnIndex(CalendarContract.Events.DTSTART);
+			final long startTime = data.getLong(startTimeColumnIndex);
+			final int travelTime = RouteInformation.getDuration(
+					currentLocation, location, travelType);
+			final long minutesUntilEvent = (startTime - new Date().getTime()) / 60000;
+			final long leaveInMinutes = minutesUntilEvent - travelTime;
 			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
 			if (leaveInMinutes < notifyTimeInMin * .33333)
 				views.setInt(R.id.widgetBackgroudLayout,
@@ -152,66 +237,31 @@ public class WidgetUpdateService extends Service implements Handler.Callback
 			if (leaveInMinutes < 0)
 				leaveIn = "Leave now!";
 			else
-				leaveIn = "Leave in "
-						+ EventEntry.formatWhenToLeave(leaveInMinutes);
+				leaveIn = "Leave in " + formatWhenToLeave(leaveInMinutes);
 		}
-		final CharSequence eventTitle = nextEvent.title;
-		final String truncatedWhere = nextEvent.where.valueString.length() > 13 ? nextEvent.where.valueString
-				.substring(0, 10) + "..."
-				: nextEvent.where.valueString;
-		final CharSequence eventTime = android.text.format.DateFormat.format(
-				"hh:mma", nextEvent.when.startTime.value)
-				+ " @ "
-				+ truncatedWhere;
+		final int titleColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.TITLE);
+		final String title = data.getString(titleColumnIndex);
+		final int locationColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.EVENT_LOCATION);
+		final String location = data.getString(locationColumnIndex);
+		final String truncatedWhere = location.length() > 13 ? location
+				.substring(0, 10) + "..." : location;
+		final int startTimeColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.DTSTART);
+		final long startTime = data.getLong(startTimeColumnIndex);
+		final CharSequence eventTime = DateFormat.format("hh:mma", startTime)
+				+ " @ " + truncatedWhere;
 		views.setTextViewText(R.id.widgetLeaveInText, leaveIn);
-		views.setTextViewText(R.id.widgetEventDetail, eventTitle);
+		views.setTextViewText(R.id.widgetEventDetail, title);
 		views.setTextViewText(R.id.widgetEventTime, eventTime);
 		final Intent nav = new Intent(Intent.ACTION_VIEW,
 				Uri.parse("google.navigation:q="
-						+ RouteInformation
-								.formatAddress(nextEvent.where.valueString)));
+						+ RouteInformation.formatAddress(location)));
 		final PendingIntent launchNav = PendingIntent.getActivity(
 				getBaseContext(), 0, nav, 0);
 		views.setOnClickPendingIntent(R.id.widgetNavigationButton, launchNav);
 		updateAllWidgets(views);
-	}
-
-	/**
-	 * Handles a refreshData event from the AppService
-	 */
-	private void handleRefreshData()
-	{
-		service.requestNextEventWithLocation();
-	}
-
-	@Override
-	public IBinder onBind(final Intent intent)
-	{
-		return null;
-	}
-
-	@Override
-	public void onDestroy()
-	{
-		Log.d(TAG, "onDestroy");
-		unbindService(service);
-	}
-
-	@Override
-	public int onStartCommand(final Intent intent, final int flags,
-			final int startId)
-	{
-		if (!service.isConnected())
-		{
-			Log.d(TAG, "Connecting to AppService");
-			bindService(new Intent(this, LocationService.class), service,
-					Context.BIND_AUTO_CREATE);
-			// updateAppWidgets will be called by refreshData once we are
-			// connected
-		}
-		else
-			handleRefreshData();
-		return START_STICKY;
 	}
 
 	/**

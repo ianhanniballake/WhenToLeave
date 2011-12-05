@@ -1,7 +1,8 @@
 package com.github.whentoleave.service;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import android.app.AlarmManager;
 import android.app.NotificationManager;
@@ -10,6 +11,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -19,9 +21,11 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.provider.BaseColumns;
+import android.provider.CalendarContract;
 import android.util.Log;
 
-import com.github.whentoleave.model.EventEntry;
+import com.github.whentoleave.maps.RouteInformation;
 import com.github.whentoleave.utility.NotificationUtility;
 
 /**
@@ -79,10 +83,6 @@ public class LocationService extends Service implements LocationListener,
 	 */
 	private Location currentLocation = null;
 	/**
-	 * Whether the Google HttpTransport is authenticated or not
-	 */
-	private final boolean isAuthenticated = false;
-	/**
 	 * List of Messengers to notify of location changes
 	 */
 	private final ArrayList<Messenger> locationListenerList = new ArrayList<Messenger>();
@@ -108,32 +108,47 @@ public class LocationService extends Service implements LocationListener,
 		if (!settings.getBoolean("EnableNotifications", true))
 			return;
 		Log.d(TAG, "Checking for notification");
-		// Don't do anything until we are authenticated.
-		if (!isAuthenticated)
+		final Calendar twoWeeksFromNow = Calendar.getInstance();
+		twoWeeksFromNow.add(Calendar.DATE, 14);
+		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
+				+ CalendarContract.Events.DTEND + "<? AND "
+				+ CalendarContract.Events.EVENT_LOCATION + " IS NOT NULL";
+		final String selectionArgs[] = {
+				Long.toString(Calendar.getInstance().getTimeInMillis()),
+				Long.toString(twoWeeksFromNow.getTimeInMillis()) };
+		final String[] projection = { BaseColumns._ID,
+				CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART,
+				CalendarContract.Events.EVENT_LOCATION };
+		final Cursor data = getContentResolver().query(
+				CalendarContract.Events.CONTENT_URI, projection, selection,
+				selectionArgs, null);
+		// No next event = no notification needed
+		if (!data.moveToFirst())
 			return;
-		try
-		{
-			final EventEntry nextEvent = getNextEventWithLocation();
-			// No next event = no notification needed
-			if (nextEvent == null)
-				return;
-			// No current location = no when to leave
-			if (currentLocation == null)
-				return;
-			final String travelType = settings.getString("TransportPreference",
-					"driving");
-			final long leaveInMinutes = nextEvent.getWhenToLeaveInMinutes(
-					currentLocation, travelType);
-			Log.v(TAG, "Leave in " + leaveInMinutes + " minutes");
-			final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
-			Log.v(TAG, "Notification Pref:" + notifyTimeInMin);
-			if (leaveInMinutes <= notifyTimeInMin)
-				mNotificationUtility.createSimpleNotification(nextEvent.title,
-						nextEvent, leaveInMinutes, notifyTimeInMin);
-		} catch (final IOException e)
-		{
-			Log.e(TAG, "Error checking for notifications", e);
-		}
+		// No current location = no when to leave
+		if (currentLocation == null)
+			return;
+		final String travelType = settings.getString("TransportPreference",
+				"driving");
+		final int locationColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.EVENT_LOCATION);
+		final String location = data.getString(locationColumnIndex);
+		final int startTimeColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.DTSTART);
+		final long startTime = data.getLong(startTimeColumnIndex);
+		final int travelTime = RouteInformation.getDuration(currentLocation,
+				location, travelType);
+		final long minutesUntilEvent = (startTime - new Date().getTime()) / 60000;
+		final long leaveInMinutes = minutesUntilEvent - travelTime;
+		Log.v(TAG, "Leave in " + leaveInMinutes + " minutes");
+		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
+		Log.v(TAG, "Notification Pref:" + notifyTimeInMin);
+		final int titleColumnIndex = data
+				.getColumnIndex(CalendarContract.Events.TITLE);
+		final String title = data.getString(titleColumnIndex);
+		if (leaveInMinutes <= notifyTimeInMin)
+			mNotificationUtility.createSimpleNotification(title, startTime,
+					location, leaveInMinutes, notifyTimeInMin);
 	}
 
 	/**

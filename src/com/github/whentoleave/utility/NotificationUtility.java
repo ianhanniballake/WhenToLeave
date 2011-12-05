@@ -1,14 +1,16 @@
 package com.github.whentoleave.utility;
 
+import java.util.Date;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.github.whentoleave.R;
-import com.github.whentoleave.model.EventEntry;
 import com.github.whentoleave.ui.MainActivity;
 
 /**
@@ -64,20 +66,22 @@ public class NotificationUtility
 	 * Create a simple notification for the given message and Event, along with
 	 * pre-computed leaveInMinutes and notifyTimeInMin
 	 * 
-	 * @param message
-	 *            Notification tickerText to use
-	 * @param ee
-	 *            EventEntry to pull event information from
+	 * @param title
+	 *            Title of the event
+	 * @param startTime
+	 *            Start time of the event
+	 * @param location
+	 *            String representation of the location of the event
 	 * @param leaveInMinutes
 	 *            how many minutes until user needs to leave for this event
 	 * @param notifyTimeInMin
 	 *            user preference on when they would like to be notified
 	 */
-	public void createSimpleNotification(final String message,
-			final EventEntry ee, final long leaveInMinutes,
-			final int notifyTimeInMin)
+	public void createSimpleNotification(final String title,
+			final long startTime, final String location,
+			final long leaveInMinutes, final int notifyTimeInMin)
 	{
-		Log.d(TAG, "Creating Message: " + message);
+		Log.d(TAG, "Creating Message: " + title);
 		Notification notification = null;
 		NotificationUtility.COLOR notifcationColor = NotificationUtility.COLOR.GREEN;
 		if (leaveInMinutes < notifyTimeInMin * .33333)
@@ -88,35 +92,48 @@ public class NotificationUtility
 		{
 			case RED:
 				notification = new Notification(R.drawable.ic_red_arrow72,
-						message, System.currentTimeMillis());
+						title, System.currentTimeMillis());
 				break;
 			case ORANGE:
 				notification = new Notification(R.drawable.ic_orange_arrow72,
-						message, System.currentTimeMillis());
+						title, System.currentTimeMillis());
 				break;
 			case GREEN:
 				notification = new Notification(R.drawable.ic_green_arrow72,
-						message, System.currentTimeMillis());
+						title, System.currentTimeMillis());
 				break;
 			default:
 				notification = new Notification(R.drawable.ic_green_arrow72,
-						message, System.currentTimeMillis());
+						title, System.currentTimeMillis());
 				break;
 		}
 		// Auto cancels the notification when clicked
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
-		final CharSequence time = android.text.format.DateFormat.format(
-				"hh:mma", ee.when.startTime.value);
+		final CharSequence time = DateFormat.format("hh:mma", new Date(
+				startTime));
 		// Set the info for the views that show in the notification panel.
-		final String formattedTime = EventEntry
-				.formatWhenToLeave(leaveInMinutes);
-		notification
-				.setLatestEventInfo(myContext, ee.title,
-						"Leave "
-								+ (leaveInMinutes > 0 ? "in " + formattedTime
-										+ " - " : "Now -")
-								+ ee.where.valueString + " @" + time,
-						makeNotificationIntent());
+		final long hoursToGo = Math.abs(leaveInMinutes) / 60;
+		final long minutesToGo = Math.abs(leaveInMinutes) % 60;
+		final StringBuffer formattedTime = new StringBuffer();
+		if (hoursToGo > 0)
+		{
+			formattedTime.append(hoursToGo);
+			formattedTime.append(":");
+			if (minutesToGo < 10)
+				formattedTime.append("0");
+			formattedTime.append(minutesToGo);
+			formattedTime.append("h");
+		}
+		else
+		{
+			formattedTime.append(minutesToGo);
+			formattedTime.append("m");
+		}
+		notification.setLatestEventInfo(myContext, title,
+				"Leave "
+						+ (leaveInMinutes > 0 ? "in " + formattedTime + " - "
+								: "Now -") + location + " @" + time,
+				makeNotificationIntent());
 		// Send the notification.
 		mNotificationManager.notify(0, notification);
 	}
