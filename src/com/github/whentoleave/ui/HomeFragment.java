@@ -47,6 +47,7 @@ public class HomeFragment extends Fragment implements LoaderCallbacks<Cursor>
 			public void bindView(final View view, final Context context,
 					final Cursor cursor)
 			{
+				// Nothing to do
 			}
 
 			@Override

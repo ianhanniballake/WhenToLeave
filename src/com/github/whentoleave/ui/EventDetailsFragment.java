@@ -49,6 +49,7 @@ public class EventDetailsFragment extends Activity implements
 			public void bindView(final View view, final Context context,
 					final Cursor cursor)
 			{
+				// Nothing to do
 			}
 
 			@Override

@@ -274,7 +274,7 @@ public class EventMapFragment extends Fragment implements
 	{
 		if (msg.what == LocationService.MSG_LOCATION_UPDATE && msg.obj != null)
 		{
-			Log.d(TAG, "onLocationChanged");
+			Log.d(EventMapFragment.TAG, "onLocationChanged");
 			mGpsLocation = (Location) msg.obj;
 			final GeoPoint gpsLocationPoint = new GeoPoint(
 					(int) (mGpsLocation.getLatitude() * 1000000),
@@ -325,6 +325,7 @@ public class EventMapFragment extends Fragment implements
 			public void bindView(final View view, final Context context,
 					final Cursor cursor)
 			{
+				// Nothing to do
 			}
 
 			@Override
@@ -391,13 +392,14 @@ public class EventMapFragment extends Fragment implements
 	{
 		adapter.swapCursor(data);
 		final SharedPreferences settings = getActivity().getSharedPreferences(
-				PREF, 0);
+				EventMapFragment.PREF, 0);
 		final String travelType = settings.getString("TransportPreference",
 				"driving");
 		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
 		long nextEventWithLocationId = -1;
 		int h = 1;
-		Log.v(TAG, "refreshData: size of events = " + data.getCount());
+		Log.v(EventMapFragment.TAG,
+				"refreshData: size of events = " + data.getCount());
 		COLOR iconColor = COLOR.GREEN;
 		GeoPoint nextEventPoint = null;
 		eventOverlay.clearOverlay();
@@ -425,7 +427,8 @@ public class EventMapFragment extends Fragment implements
 					final long minutesUntilEvent = (startTime - new Date()
 							.getTime()) / 60000;
 					leaveInMinutes = minutesUntilEvent - travelTime;
-					Log.d(TAG, "getting leaveInMinutes: " + leaveInMinutes);
+					Log.d(EventMapFragment.TAG, "getting leaveInMinutes: "
+							+ leaveInMinutes);
 				}
 				if (leaveInMinutes < notifyTimeInMin * .33333)
 					iconColor = COLOR.RED;
@@ -433,7 +436,8 @@ public class EventMapFragment extends Fragment implements
 					iconColor = COLOR.ORANGE;
 				else
 					iconColor = COLOR.GREEN;
-				Log.d(TAG, "next event found - leavin: " + leaveInMinutes);
+				Log.d(EventMapFragment.TAG, "next event found - leavin: "
+						+ leaveInMinutes);
 			}
 			else
 				iconColor = COLOR.GREY;
@@ -472,7 +476,7 @@ public class EventMapFragment extends Fragment implements
 						plotEvent(data, greySquareDefault);
 						break;
 				}
-			Log.v(TAG, "refreshData: Plotting Event: " + h++);
+			Log.v(EventMapFragment.TAG, "refreshData: Plotting Event: " + h++);
 		}
 		if (nextEventPoint != null)
 			zoomTo(nextEventPoint);

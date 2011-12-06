@@ -15,6 +15,7 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.RadioButton;
 import android.widget.Spinner;
+
 import com.github.whentoleave.R;
 
 /**
@@ -31,7 +32,8 @@ public class Preferences extends Activity
 		public void onItemSelected(final AdapterView<?> parent, final View v,
 				final int pos, final long row)
 		{
-			final SharedPreferences settings = getSharedPreferences(PREF, 0);
+			final SharedPreferences settings = getSharedPreferences(
+					Preferences.PREF, 0);
 			final SharedPreferences.Editor editor = settings.edit();
 			final Resources r = getResources();
 			final int[] iValues = r.getIntArray(R.array.notify_time_values);
@@ -40,13 +42,15 @@ public class Preferences extends Activity
 				notifyTime = iValues[pos];
 			editor.putInt("NotifyTime", notifyTime);
 			editor.commit();
-			Log.v(TAG, "Clicked on: " + notifyTime);
-			Log.v(TAG, "Committed: " + settings.getInt("NotifyTime", 0));
+			Log.v(Preferences.TAG, "Clicked on: " + notifyTime);
+			Log.v(Preferences.TAG,
+					"Committed: " + settings.getInt("NotifyTime", 0));
 		}
 
 		@Override
 		public void onNothingSelected(final AdapterView<?> parent)
 		{
+			// Nothing to do
 		}
 	}
 
@@ -59,7 +63,8 @@ public class Preferences extends Activity
 		public void onItemSelected(final AdapterView<?> parent, final View v,
 				final int pos, final long row)
 		{
-			final SharedPreferences settings = getSharedPreferences(PREF, 0);
+			final SharedPreferences settings = getSharedPreferences(
+					Preferences.PREF, 0);
 			final SharedPreferences.Editor editor = settings.edit();
 			final Resources r = getResources();
 			final int[] iValues = r.getIntArray(R.array.interval_values);
@@ -68,13 +73,15 @@ public class Preferences extends Activity
 				interval = iValues[pos];
 			editor.putInt("RefreshInterval", interval);
 			editor.commit();
-			Log.v(TAG, "Clicked on: " + interval);
-			Log.v(TAG, "Committed: " + settings.getInt("RefreshInterval", 0));
+			Log.v(Preferences.TAG, "Clicked on: " + interval);
+			Log.v(Preferences.TAG,
+					"Committed: " + settings.getInt("RefreshInterval", 0));
 		}
 
 		@Override
 		public void onNothingSelected(final AdapterView<?> parent)
 		{
+			// Nothing to do
 		}
 	}
 
@@ -97,7 +104,8 @@ public class Preferences extends Activity
 		final int[] iValues = r.getIntArray(R.array.interval_values);
 		final int[] notifyValues = r.getIntArray(R.array.notify_time_values);
 		// Get current preferences
-		final SharedPreferences prefs = getSharedPreferences(PREF, 0);
+		final SharedPreferences prefs = getSharedPreferences(Preferences.PREF,
+				0);
 		final int interval = prefs.getInt("RefreshInterval", 60);
 		final int notifyTime = prefs.getInt("NotifyTime", 3600);
 		final boolean enableNotifications = prefs.getBoolean(
@@ -131,11 +139,12 @@ public class Preferences extends Activity
 			@Override
 			public void onClick(final View view)
 			{
-				final SharedPreferences settings = getSharedPreferences(PREF, 0);
+				final SharedPreferences settings = getSharedPreferences(
+						Preferences.PREF, 0);
 				final SharedPreferences.Editor editor = settings.edit();
 				editor.putString("ActionBarPreference", "EventDetails");
 				editor.commit();
-				Log.v(TAG,
+				Log.v(Preferences.TAG,
 						"Should have commit rbActionButtonPrefDetails: "
 								+ settings.getString("ActionBarPreference",
 										"EventDetails"));
@@ -147,12 +156,15 @@ public class Preferences extends Activity
 			@Override
 			public void onClick(final View view)
 			{
-				final SharedPreferences settings = getSharedPreferences(PREF, 0);
+				final SharedPreferences settings = getSharedPreferences(
+						Preferences.PREF, 0);
 				final SharedPreferences.Editor editor = settings.edit();
 				editor.putString("ActionBarPreference", "Map");
 				editor.commit();
-				Log.v(TAG, "Should have commit rbActionButtonPrefMap: "
-						+ settings.getString("ActionBarPreference", "Map"));
+				Log.v(Preferences.TAG,
+						"Should have commit rbActionButtonPrefMap: "
+								+ settings.getString("ActionBarPreference",
+										"Map"));
 			}
 		});
 		final RadioButton rbActionButtonPrefNav = (RadioButton) findViewById(R.id.rbActionButtonPrefNav);
@@ -161,12 +173,15 @@ public class Preferences extends Activity
 			@Override
 			public void onClick(final View view)
 			{
-				final SharedPreferences settings = getSharedPreferences(PREF, 0);
+				final SharedPreferences settings = getSharedPreferences(
+						Preferences.PREF, 0);
 				final SharedPreferences.Editor editor = settings.edit();
 				editor.putString("ActionBarPreference", "Navigate");
 				editor.commit();
-				Log.v(TAG, "Should have commit rbActionButtonPrefNav: "
-						+ settings.getString("ActionBarPreference", "Navigate"));
+				Log.v(Preferences.TAG,
+						"Should have commit rbActionButtonPrefNav: "
+								+ settings.getString("ActionBarPreference",
+										"Navigate"));
 			}
 		});
 		// Setup radio button initial configuration
@@ -190,19 +205,19 @@ public class Preferences extends Activity
 							final boolean isChecked)
 					{
 						final SharedPreferences settings = getSharedPreferences(
-								PREF, 0);
+								Preferences.PREF, 0);
 						final SharedPreferences.Editor editor = settings.edit();
 						editor.putBoolean("EnableNotifications", isChecked);
 						editor.commit();
-						Log.v(TAG,
+						Log.v(Preferences.TAG,
 								"Should have commit EnableNotifications: "
 										+ settings.getBoolean(
 												"EnableNotifications", true));
 					}
 				});
-		Log.v(TAG, "Creating Preferences Activity, and interval is: "
-				+ interval);
-		Log.v(TAG, "Creating Preferences Activity, and pref is: "
+		Log.v(Preferences.TAG,
+				"Creating Preferences Activity, and interval is: " + interval);
+		Log.v(Preferences.TAG, "Creating Preferences Activity, and pref is: "
 				+ actionBarPref);
 	}
 }

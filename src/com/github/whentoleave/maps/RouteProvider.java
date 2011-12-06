@@ -29,6 +29,32 @@ import com.google.android.maps.GeoPoint;
 class KMLHandler extends DefaultHandler
 {
 	/**
+	 * Formats and cleans up a description, removing select HTML elements.
+	 * 
+	 * @param value
+	 *            string to clean up
+	 * @return cleaned up string
+	 */
+	private static String cleanup(final String value)
+	{
+		String newValue = value;
+		String remove = "<br/>";
+		int index = newValue.indexOf(remove);
+		if (index != -1)
+			newValue = newValue.substring(0, index);
+		remove = "&#160;";
+		index = newValue.indexOf(remove);
+		final int len = remove.length();
+		while (index != -1)
+		{
+			newValue = newValue.substring(0, index).concat(
+					newValue.substring(index + len, newValue.length()));
+			index = newValue.indexOf(remove);
+		}
+		return newValue;
+	}
+
+	/**
 	 * Whether we are currently in a 'Placemark' tag
 	 */
 	private boolean isPlacemark;
@@ -53,32 +79,6 @@ class KMLHandler extends DefaultHandler
 		mElementContent = mElementContent.concat(chars);
 	}
 
-	/**
-	 * Formats and cleans up a description, removing select HTML elements.
-	 * 
-	 * @param value
-	 *            string to clean up
-	 * @return cleaned up string
-	 */
-	private String cleanup(final String value)
-	{
-		String newValue = value;
-		String remove = "<br/>";
-		int index = newValue.indexOf(remove);
-		if (index != -1)
-			newValue = newValue.substring(0, index);
-		remove = "&#160;";
-		index = newValue.indexOf(remove);
-		final int len = remove.length();
-		while (index != -1)
-		{
-			newValue = newValue.substring(0, index).concat(
-					newValue.substring(index + len, newValue.length()));
-			index = newValue.indexOf(remove);
-		}
-		return newValue;
-	}
-
 	@Override
 	public void endElement(final String uri, final String localName,
 			final String name) throws SAXException
@@ -93,7 +93,7 @@ class KMLHandler extends DefaultHandler
 			}
 			else if (localName.equalsIgnoreCase("description") && isPlacemark
 					&& isRoute)
-				mRoute.mDescription = cleanup(mElementContent);
+				mRoute.mDescription = KMLHandler.cleanup(mElementContent);
 			else if (localName.equalsIgnoreCase("coordinates") && isPlacemark
 					&& isRoute)
 			{
@@ -161,7 +161,7 @@ public class RouteProvider
 		urlString.append(RouteInformation.formatAddress(destination));
 		urlString.append("&ie=UTF8&0&om=0&output=kml");
 		final String url = urlString.toString();
-		Log.v(TAG, "URL: " + url);
+		Log.v(RouteProvider.TAG, "URL: " + url);
 		InputStream is = null;
 		try
 		{
@@ -169,11 +169,11 @@ public class RouteProvider
 			is = conn.getInputStream();
 		} catch (final MalformedURLException e)
 		{
-			Log.e(TAG, "getConnection: Invalid URL", e);
+			Log.e(RouteProvider.TAG, "getConnection: Invalid URL", e);
 			return null;
 		} catch (final IOException e)
 		{
-			Log.e(TAG, "getConnection: IO Error", e);
+			Log.e(RouteProvider.TAG, "getConnection: IO Error", e);
 			return null;
 		}
 		final KMLHandler handler = new KMLHandler();
@@ -184,15 +184,15 @@ public class RouteProvider
 			parser.parse(is, handler);
 		} catch (final ParserConfigurationException e)
 		{
-			Log.e(TAG, "SAX Configuration Error", e);
+			Log.e(RouteProvider.TAG, "SAX Configuration Error", e);
 			return null;
 		} catch (final SAXException e)
 		{
-			Log.e(TAG, "SAX Error", e);
+			Log.e(RouteProvider.TAG, "SAX Error", e);
 			return null;
 		} catch (final IOException e)
 		{
-			Log.e(TAG, "IO Error", e);
+			Log.e(RouteProvider.TAG, "IO Error", e);
 			return null;
 		} finally
 		{
@@ -201,7 +201,7 @@ public class RouteProvider
 				is.close();
 			} catch (final IOException e)
 			{
-				Log.w(TAG, "Error closing InputStream", e);
+				Log.w(RouteProvider.TAG, "Error closing InputStream", e);
 			}
 		}
 		return handler.mRoute;

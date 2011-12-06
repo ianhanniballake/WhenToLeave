@@ -153,11 +153,13 @@ public class MainActivity extends MapActivity implements
 		public void onPageScrolled(final int position,
 				final float positionOffset, final int positionOffsetPixels)
 		{
+			// Nothing to do
 		}
 
 		@Override
 		public void onPageScrollStateChanged(final int state)
 		{
+			// Nothing to do
 		}
 
 		@Override
@@ -169,6 +171,7 @@ public class MainActivity extends MapActivity implements
 		@Override
 		public void onTabReselected(final Tab tab, final FragmentTransaction ft)
 		{
+			// Nothing to do
 		}
 
 		@Override
@@ -183,6 +186,7 @@ public class MainActivity extends MapActivity implements
 		@Override
 		public void onTabUnselected(final Tab tab, final FragmentTransaction ft)
 		{
+			// Nothing to do
 		}
 	}
 
@@ -283,7 +287,8 @@ public class MainActivity extends MapActivity implements
 				EventMapFragment.class, null);
 		if (savedInstanceState != null)
 			bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final SharedPreferences settings = getSharedPreferences(
+				MainActivity.PREF, 0);
 		// If notifications are enabled, keep the service running after the
 		// program exits
 		if (settings.getBoolean("EnableNotifications", true))
@@ -361,7 +366,8 @@ public class MainActivity extends MapActivity implements
 	{
 		final MenuItem transportModeMenuItem = menu
 				.findItem(R.id.menu_transport_mode);
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final SharedPreferences settings = getSharedPreferences(
+				MainActivity.PREF, 0);
 		final String transportMode = settings.getString("TransportPreference",
 				"driving");
 		if (transportMode.equals("driving"))
@@ -406,7 +412,8 @@ public class MainActivity extends MapActivity implements
 			default:
 				return;
 		}
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final SharedPreferences settings = getSharedPreferences(
+				MainActivity.PREF, 0);
 		final SharedPreferences.Editor editor = settings.edit();
 		editor.putString("TransportPreference", newTransportMode);
 		editor.commit();
@@ -423,7 +430,8 @@ public class MainActivity extends MapActivity implements
 	 */
 	private void setIndicatorTextAndColor(final Cursor data)
 	{
-		final SharedPreferences settings = getSharedPreferences(PREF, 0);
+		final SharedPreferences settings = getSharedPreferences(
+				MainActivity.PREF, 0);
 		final String travelType = settings.getString("TransportPreference",
 				"driving");
 		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
@@ -448,7 +456,8 @@ public class MainActivity extends MapActivity implements
 		else
 			actionBarButton.setBackgroundDrawable(res
 					.getDrawable(R.drawable.custom_action_bar_green));
-		final String formattedTime = formatWhenToLeave(leaveInMinutes);
+		final String formattedTime = MainActivity
+				.formatWhenToLeave(leaveInMinutes);
 		actionBarButton.setText("Leave "
 				+ (leaveInMinutes > 0 ? "in " + formattedTime : "Now"));
 	}
