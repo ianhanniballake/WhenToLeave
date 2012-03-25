@@ -25,6 +25,7 @@ import android.provider.BaseColumns;
 import android.provider.CalendarContract;
 import android.util.Log;
 
+import com.github.whentoleave.BuildConfig;
 import com.github.whentoleave.maps.RouteInformation;
 import com.github.whentoleave.utility.NotificationUtility;
 
@@ -181,7 +182,8 @@ public class LocationService extends Service implements LocationListener,
 				LocationService.PREF, 0);
 		if (!settings.getBoolean("EnableNotifications", true))
 			return;
-		Log.d(LocationService.TAG, "Checking for notification");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationService.TAG, "Checking for notification");
 		final Calendar twoWeeksFromNow = Calendar.getInstance();
 		twoWeeksFromNow.add(Calendar.DATE, 14);
 		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
@@ -230,7 +232,8 @@ public class LocationService extends Service implements LocationListener,
 	 */
 	private void enableNetworkProviderLocationListening()
 	{
-		Log.d(LocationService.TAG, "enableNetworkProviderLocationListening");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationService.TAG, "enableNetworkProviderLocationListening");
 		final SharedPreferences settings = getSharedPreferences(
 				LocationService.PREF, 0);
 		int interval = settings.getInt("RefreshInterval", 600);
@@ -248,7 +251,9 @@ public class LocationService extends Service implements LocationListener,
 				registerLocationListener(msg.replyTo);
 				return true;
 			case MSG_SLEEP_GPS:
-				Log.d(LocationService.TAG, "Stopped listening for GPS Updates");
+				if (BuildConfig.DEBUG)
+					Log.d(LocationService.TAG,
+							"Stopped listening for GPS Updates");
 				locationManager.removeUpdates(this);
 				// Keep Network Provider updates running if there are location
 				// listeners remaining
@@ -283,7 +288,8 @@ public class LocationService extends Service implements LocationListener,
 	@Override
 	public IBinder onBind(final Intent intent)
 	{
-		Log.d(LocationService.TAG, "onBind");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationService.TAG, "onBind");
 		return messenger.getBinder();
 	}
 
@@ -295,7 +301,8 @@ public class LocationService extends Service implements LocationListener,
 	@Override
 	public void onCreate()
 	{
-		Log.d(LocationService.TAG, "onCreate");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationService.TAG, "onCreate");
 		locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		// Setup Notification Utility Manager
 		final NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -321,7 +328,8 @@ public class LocationService extends Service implements LocationListener,
 	@Override
 	public void onDestroy()
 	{
-		Log.d(LocationService.TAG, "onDestroy");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationService.TAG, "onDestroy");
 		locationManager.removeUpdates(this);
 		if (LocationService.alarmManager != null)
 			LocationService.alarmManager.cancel(LocationService.pendingIntent);
@@ -332,9 +340,11 @@ public class LocationService extends Service implements LocationListener,
 	{
 		if (LocationService.isBetterLocation(location, currentLocation))
 		{
-			Log.d(LocationService.TAG, "LOCATION CHANGED: + (Lat/Long): ("
-					+ location.getLatitude() + ", " + location.getLongitude()
-					+ ")");
+			if (BuildConfig.DEBUG)
+				Log.d(LocationService.TAG,
+						"LOCATION CHANGED: + (Lat/Long): ("
+								+ location.getLatitude() + ", "
+								+ location.getLongitude() + ")");
 			currentLocation = location;
 			checkNotifications();
 			final ArrayList<Messenger> listenersToRemove = new ArrayList<Messenger>();
@@ -374,7 +384,8 @@ public class LocationService extends Service implements LocationListener,
 	public int onStartCommand(final Intent intent, final int flags,
 			final int startId)
 	{
-		Log.d(LocationService.TAG, "onStart");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationService.TAG, "onStart");
 		if (intent != null
 				&& LocationService.NOTIFICATION_ACTION.equals(intent
 						.getAction()))
@@ -401,8 +412,9 @@ public class LocationService extends Service implements LocationListener,
 	{
 		locationListenerList.add(replyTo);
 		final int locationListenerSize = locationListenerList.size();
-		Log.d(LocationService.TAG, "Registering new Location Listener: "
-				+ locationListenerSize + " now listening");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationService.TAG, "Registering new Location Listener: "
+					+ locationListenerSize + " now listening");
 		// If this is the very first location listener, make sure we enable
 		// network provider listening as well
 		if (locationListenerSize == 1
@@ -438,8 +450,9 @@ public class LocationService extends Service implements LocationListener,
 	private void unregisterLocationListener(final Messenger replyTo)
 	{
 		locationListenerList.remove(replyTo);
-		Log.d(LocationService.TAG, "Unregistering Location Listener: "
-				+ locationListenerList.size() + " remaining.");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationService.TAG, "Unregistering Location Listener: "
+					+ locationListenerList.size() + " remaining.");
 		// Stop getting location if no one is listening for it
 		if (locationListenerList.isEmpty())
 			locationManager.removeUpdates(this);

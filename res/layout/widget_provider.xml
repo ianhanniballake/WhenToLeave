@@ -5,6 +5,7 @@
 	android:background="@drawable/widget_frame"
 	android:orientation="horizontal"
 	android:padding="10dp" >
+
 	<LinearLayout
 		android:id="@+id/widgetBackgroudLayout"
 		android:layout_width="wrap_content"
@@ -13,6 +14,7 @@
 		android:background="@drawable/custom_widget_background_green"
 		android:orientation="horizontal"
 		android:padding="5dp" >
+
 		<LinearLayout
 			android:id="@+id/widgetClickableLayout"
 			android:layout_width="wrap_content"
@@ -20,6 +22,7 @@
 			android:clickable="true"
 			android:focusable="true"
 			android:orientation="vertical" >
+
 			<TextView
 				android:id="@+id/widgetLeaveInText"
 				android:layout_width="170dp"
@@ -29,6 +32,7 @@
 				android:textSize="18sp"
 				android:textStyle="bold"
 				android:typeface="sans" />
+
 			<TextView
 				android:id="@+id/widgetEventDetail"
 				android:layout_width="170dp"
@@ -38,6 +42,7 @@
 				android:textSize="15sp"
 				android:textStyle="bold"
 				android:typeface="serif" />
+
 			<TextView
 				android:id="@+id/widgetEventTime"
 				android:layout_width="170dp"
@@ -48,18 +53,23 @@
 				android:textStyle="bold"
 				android:typeface="serif" />
 		</LinearLayout>
+
 		<ImageButton
 			android:id="@+id/widgetTransportButton"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
 			android:background="@null"
+			android:contentDescription="@string/transportation_mode"
 			android:src="@drawable/car_white72" />
 	</LinearLayout>
+
 	<ImageButton
 		android:id="@+id/widgetNavigationButton"
 		android:layout_width="wrap_content"
 		android:layout_height="48dp"
 		android:layout_gravity="center_vertical"
 		android:layout_marginLeft="7dp"
-		android:background="@drawable/custom_widget_nav_button" />
+		android:background="@drawable/custom_widget_nav_button"
+		android:contentDescription="@string/navigate" />
+
 </LinearLayout>

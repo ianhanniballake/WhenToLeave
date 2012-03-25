@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 
+import com.github.whentoleave.BuildConfig;
 import com.github.whentoleave.R;
 import com.github.whentoleave.maps.ItemizedOverlay;
 import com.github.whentoleave.maps.MapRouteOverlay;
@@ -274,7 +275,8 @@ public class EventMapFragment extends Fragment implements
 	{
 		if (msg.what == LocationService.MSG_LOCATION_UPDATE && msg.obj != null)
 		{
-			Log.d(EventMapFragment.TAG, "onLocationChanged");
+			if (BuildConfig.DEBUG)
+				Log.d(EventMapFragment.TAG, "onLocationChanged");
 			mGpsLocation = (Location) msg.obj;
 			final GeoPoint gpsLocationPoint = new GeoPoint(
 					(int) (mGpsLocation.getLatitude() * 1000000),
@@ -427,8 +429,9 @@ public class EventMapFragment extends Fragment implements
 					final long minutesUntilEvent = (startTime - new Date()
 							.getTime()) / 60000;
 					leaveInMinutes = minutesUntilEvent - travelTime;
-					Log.d(EventMapFragment.TAG, "getting leaveInMinutes: "
-							+ leaveInMinutes);
+					if (BuildConfig.DEBUG)
+						Log.d(EventMapFragment.TAG, "getting leaveInMinutes: "
+								+ leaveInMinutes);
 				}
 				if (leaveInMinutes < notifyTimeInMin * .33333)
 					iconColor = COLOR.RED;
@@ -436,8 +439,9 @@ public class EventMapFragment extends Fragment implements
 					iconColor = COLOR.ORANGE;
 				else
 					iconColor = COLOR.GREEN;
-				Log.d(EventMapFragment.TAG, "next event found - leavin: "
-						+ leaveInMinutes);
+				if (BuildConfig.DEBUG)
+					Log.d(EventMapFragment.TAG, "next event found - leavin: "
+							+ leaveInMinutes);
 			}
 			else
 				iconColor = COLOR.GREY;

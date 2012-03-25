@@ -27,6 +27,7 @@ import android.util.Log;
 import android.widget.CursorAdapter;
 import android.widget.RemoteViews;
 
+import com.github.whentoleave.BuildConfig;
 import com.github.whentoleave.R;
 import com.github.whentoleave.maps.RouteInformation;
 import com.github.whentoleave.service.LocationService;
@@ -120,7 +121,8 @@ public class WidgetUpdateService extends Service implements
 	{
 		if (msg.what == LocationService.MSG_LOCATION_UPDATE && msg.obj != null)
 		{
-			Log.d(TAG, "onLocationChanged");
+			if (BuildConfig.DEBUG)
+				Log.d(WidgetUpdateService.TAG, "onLocationChanged");
 			currentLocation = (Location) msg.obj;
 			update();
 			return true;
@@ -156,7 +158,8 @@ public class WidgetUpdateService extends Service implements
 	@Override
 	public void onDestroy()
 	{
-		Log.d(TAG, "onDestroy");
+		if (BuildConfig.DEBUG)
+			Log.d(WidgetUpdateService.TAG, "onDestroy");
 		service.unregister();
 		unbindService(service);
 	}
@@ -179,13 +182,14 @@ public class WidgetUpdateService extends Service implements
 	{
 		if (!service.isConnected())
 		{
-			Log.d(TAG, "Connecting to AppService");
+			if (BuildConfig.DEBUG)
+				Log.d(WidgetUpdateService.TAG, "Connecting to AppService");
 			bindService(new Intent(this, LocationService.class), service,
 					Context.BIND_AUTO_CREATE);
 			// updateAppWidgets will be called by refreshData once we are
 			// connected
 		}
-		return START_STICKY;
+		return Service.START_STICKY;
 	}
 
 	/**
@@ -208,7 +212,8 @@ public class WidgetUpdateService extends Service implements
 			leaveIn = "Needs GPS";
 		else
 		{
-			final SharedPreferences settings = getSharedPreferences(PREF, 0);
+			final SharedPreferences settings = getSharedPreferences(
+					WidgetUpdateService.PREF, 0);
 			final String travelType = settings.getString("TransportPreference",
 					"driving");
 			final int locationColumnIndex = data
@@ -237,7 +242,8 @@ public class WidgetUpdateService extends Service implements
 			if (leaveInMinutes < 0)
 				leaveIn = "Leave now!";
 			else
-				leaveIn = "Leave in " + formatWhenToLeave(leaveInMinutes);
+				leaveIn = "Leave in "
+						+ WidgetUpdateService.formatWhenToLeave(leaveInMinutes);
 		}
 		final int titleColumnIndex = data
 				.getColumnIndex(CalendarContract.Events.TITLE);

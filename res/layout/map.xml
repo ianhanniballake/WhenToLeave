@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/mainlayout"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:orientation="vertical" >
+
 	<TextView
 		android:id="@+id/mapdescription"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content" />
+
 	<FrameLayout
 		android:id="@+id/mapview_holder"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent" />
+
 </LinearLayout>

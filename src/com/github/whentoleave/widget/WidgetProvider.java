@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.github.whentoleave.BuildConfig;
+
 /**
  * WidgetProvider used to handle all Widget updates. Creates a
  * WidgetUpdateService to handle every minute updates to the widget(s) (as
@@ -38,9 +40,10 @@ public class WidgetProvider extends AppWidgetProvider
 	public void onDisabled(final Context context)
 	{
 		super.onDisabled(context);
-		Log.d(TAG, "onDisabled");
-		if (alarmManager != null)
-			alarmManager.cancel(pendingIntent);
+		if (BuildConfig.DEBUG)
+			Log.d(WidgetProvider.TAG, "onDisabled");
+		if (WidgetProvider.alarmManager != null)
+			WidgetProvider.alarmManager.cancel(WidgetProvider.pendingIntent);
 		context.stopService(new Intent(context, WidgetUpdateService.class));
 	}
 
@@ -48,14 +51,17 @@ public class WidgetProvider extends AppWidgetProvider
 	public void onEnabled(final Context context)
 	{
 		super.onEnabled(context);
-		Log.d(TAG, "onEnabled");
-		alarmManager = (AlarmManager) context
+		if (BuildConfig.DEBUG)
+			Log.d(WidgetProvider.TAG, "onEnabled");
+		WidgetProvider.alarmManager = (AlarmManager) context
 				.getSystemService(Context.ALARM_SERVICE);
-		final Intent alarmIntent = new Intent(WIDGET_UPDATE_ACTION);
-		pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, 0);
+		final Intent alarmIntent = new Intent(
+				WidgetProvider.WIDGET_UPDATE_ACTION);
+		WidgetProvider.pendingIntent = PendingIntent.getBroadcast(context, 0,
+				alarmIntent, 0);
 		// Set up the alarm to trigger every minute
-		alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, 60000,
-				pendingIntent);
+		WidgetProvider.alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME,
+				0, 60000, WidgetProvider.pendingIntent);
 	}
 
 	/**
@@ -66,9 +72,11 @@ public class WidgetProvider extends AppWidgetProvider
 	public void onReceive(final Context context, final Intent intent)
 	{
 		super.onReceive(context, intent);
-		if (WIDGET_UPDATE_ACTION.equals(intent.getAction()))
+		if (WidgetProvider.WIDGET_UPDATE_ACTION.equals(intent.getAction()))
 		{
-			Log.d(TAG, "onReceive " + WIDGET_UPDATE_ACTION);
+			if (BuildConfig.DEBUG)
+				Log.d(WidgetProvider.TAG, "onReceive "
+						+ WidgetProvider.WIDGET_UPDATE_ACTION);
 			final AppWidgetManager appWidgetManager = AppWidgetManager
 					.getInstance(context);
 			final ComponentName thisAppWidget = new ComponentName(
@@ -86,7 +94,8 @@ public class WidgetProvider extends AppWidgetProvider
 	public void onUpdate(final Context context,
 			final AppWidgetManager appWidgetManager, final int[] appWidgetIds)
 	{
-		Log.d(TAG, "onUpdate");
+		if (BuildConfig.DEBUG)
+			Log.d(WidgetProvider.TAG, "onUpdate");
 		context.startService(new Intent(context, WidgetUpdateService.class));
 	}
 }

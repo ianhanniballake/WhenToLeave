@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
 	<string name="app_name">WhenToLeave</string>
 	<string name="version">1.0</string>
-	<string name="menu_refresh">Refresh</string>
 	<string name="menu_transport_mode_car">By Car</string>
 	<string name="menu_transport_mode_bicycle">By Bicycle</string>
 	<string name="menu_transport_mode_walking">By Walking</string>
 	<string name="menu_view_calendars">View Calendars</string>
 	<string name="menu_preferences">Preferences</string>
-	<string name="menu_logout">Logout</string>
 	<string name="title_home">Home</string>
 	<string name="title_agenda">Agenda</string>
 	<string name="title_map">Map</string>
 	<string name="calendarsTitle">Calendars</string>
 	<string name="eventDetailsTitle">Event Details</string>
 	<string name="preferencesTitle">Preferences</string>
-	<string name="agenda_loading">Loading Events...</string>
+	<string name="agenda_loading">Loading Events…</string>
 	<string name="agenda_empty">No Upcoming Events</string>
 	<string name="event_no_location">No Location</string>
-	<string name="loginCanceled">Login Canceled</string>
-	<string name="eventLocation">35+Corporate+Dr+Burlington+MA</string>
+	<string name="event_loading">Loading Next Event…</string>
 	<string name="refresh_time">Refresh Time</string>
 	<string name="notify_time">Notify Me to Leave</string>
+	<string name="transportation_mode">Transportation Mode</string>
+	<string name="map">Map</string>
+	<string name="navigate">Navigate</string>
+
 </resources>

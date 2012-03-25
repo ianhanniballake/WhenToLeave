@@ -4,6 +4,7 @@
 	android:layout_height="wrap_content"
 	android:orientation="vertical"
 	android:padding="5dp" >
+
 	<TextView
 		android:id="@+id/eventDetailsName"
 		android:layout_width="fill_parent"
@@ -13,6 +14,7 @@
 		android:textSize="24sp"
 		android:textStyle="bold"
 		android:typeface="sans" />
+
 	<TextView
 		android:id="@+id/eventDetailsLocation"
 		android:layout_width="fill_parent"
@@ -22,6 +24,7 @@
 		android:textSize="17sp"
 		android:textStyle="bold"
 		android:typeface="sans" />
+
 	<TextView
 		android:id="@+id/eventDetailsWhen"
 		android:layout_width="fill_parent"
@@ -30,6 +33,7 @@
 		android:textColor="@color/white"
 		android:textSize="17sp"
 		android:typeface="serif" />
+
 	<TextView
 		android:id="@+id/eventDetailsDescription"
 		android:layout_width="fill_parent"
@@ -39,12 +43,14 @@
 		android:textColor="@color/grey3"
 		android:textSize="12sp"
 		android:typeface="serif" />
+
 	<LinearLayout
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
 		android:layout_marginTop="10dp"
 		android:orientation="horizontal"
 		android:padding="5dp" >
+
 		<Button
 			android:id="@+id/eventDetailsMapButton"
 			android:layout_width="wrap_content"
@@ -52,11 +58,12 @@
 			android:layout_marginRight="5dp"
 			android:layout_weight="1"
 			android:background="@drawable/custom_launcher_button"
-			android:text="Map"
+			android:text="@string/map"
 			android:textColor="@color/white"
 			android:textSize="21sp"
 			android:textStyle="bold"
 			android:typeface="sans" />
+
 		<Button
 			android:id="@+id/eventDetailsNavButton"
 			android:layout_width="wrap_content"
@@ -64,10 +71,11 @@
 			android:layout_marginLeft="5dp"
 			android:layout_weight="1"
 			android:background="@drawable/custom_launcher_button"
-			android:text="Navigate"
+			android:text="@string/navigate"
 			android:textColor="@color/white"
 			android:textSize="21sp"
 			android:textStyle="bold"
 			android:typeface="sans" />
 	</LinearLayout>
+
 </LinearLayout>

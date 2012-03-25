@@ -3,11 +3,13 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:orientation="vertical" >
+
 	<android.support.v4.view.ViewPager
 		android:id="@+id/pager"
 		android:layout_width="fill_parent"
 		android:layout_height="0dp"
 		android:layout_weight="1" />
+
 	<Button
 		android:id="@+id/actionBar"
 		android:layout_width="fill_parent"
@@ -15,9 +17,9 @@
 		android:layout_marginTop="1dp"
 		android:background="@drawable/custom_action_bar_green"
 		android:gravity="center"
-		android:text="Leave In 3:04h"
 		android:textColor="@color/white"
 		android:textSize="21sp"
 		android:textStyle="bold"
 		android:typeface="sans" />
+
 </LinearLayout>

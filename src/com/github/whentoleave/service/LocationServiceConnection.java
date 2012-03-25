@@ -9,6 +9,8 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.github.whentoleave.BuildConfig;
+
 /**
  * Serves as the primary connection to the AppService when an Activity or
  * Service wishes to bind to the AppService
@@ -54,7 +56,8 @@ public class LocationServiceConnection implements ServiceConnection
 	public void onServiceConnected(final ComponentName name,
 			final IBinder serviceBinder)
 	{
-		Log.d(TAG, "onServiceConnected: " + name);
+		if (BuildConfig.DEBUG)
+			Log.d(LocationServiceConnection.TAG, "onServiceConnected: " + name);
 		service = new Messenger(serviceBinder);
 		sendMessage(LocationService.MSG_REGISTER_LOCATION_LISTENER);
 	}
@@ -62,7 +65,8 @@ public class LocationServiceConnection implements ServiceConnection
 	@Override
 	public void onServiceDisconnected(final ComponentName name)
 	{
-		Log.d(TAG, "onServiceDisconnected");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationServiceConnection.TAG, "onServiceDisconnected");
 		service = null;
 	}
 
@@ -107,7 +111,8 @@ public class LocationServiceConnection implements ServiceConnection
 	 */
 	public void unregister()
 	{
-		Log.d(TAG, "unregister");
+		if (BuildConfig.DEBUG)
+			Log.d(LocationServiceConnection.TAG, "unregister");
 		sendMessage(LocationService.MSG_UNREGISTER_LOCATION_LISTENER);
 	}
 }

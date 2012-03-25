@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.text.format.DateFormat;
 import android.util.Log;
 
+import com.github.whentoleave.BuildConfig;
 import com.github.whentoleave.R;
 import com.github.whentoleave.ui.MainActivity;
 
@@ -81,7 +82,8 @@ public class NotificationUtility
 			final long startTime, final String location,
 			final long leaveInMinutes, final int notifyTimeInMin)
 	{
-		Log.d(TAG, "Creating Message: " + title);
+		if (BuildConfig.DEBUG)
+			Log.d(NotificationUtility.TAG, "Creating Message: " + title);
 		Notification notification = null;
 		NotificationUtility.COLOR notifcationColor = NotificationUtility.COLOR.GREEN;
 		if (leaveInMinutes < notifyTimeInMin * .33333)
