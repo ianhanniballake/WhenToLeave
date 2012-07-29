@@ -121,6 +121,8 @@ public class EventMapFragment extends Fragment implements
 	 * The Map View that constitutes this activity
 	 */
 	private MapView mapView;
+	
+	private ViewGroup mapContainer;
 	/**
 	 * Current location of the device
 	 */
@@ -306,11 +308,10 @@ public class EventMapFragment extends Fragment implements
 	public void onActivityCreated(final Bundle savedInstanceState)
 	{
 		super.onActivityCreated(savedInstanceState);
-		// Add the ability to zoom in and out on the map
-		mapView = new MapView(getActivity(),
-				"0ijjBgJzmghK_Je05X7DVwf53F2s2vUBtsqW2sw");
-		mapView.setClickable(true);
-		mapView.setBuiltInZoomControls(true);
+		
+		// Get MapView reference from Main Activity.  Do not create within fragment
+		mapView = ((MainActivity) getActivity()).getMapView();
+		
 		// Initialize overlay variables
 		final List<Overlay> mapOverlays = mapView.getOverlays();
 		generateDrawables();
@@ -321,6 +322,8 @@ public class EventMapFragment extends Fragment implements
 		mapOverlays.add(eventOverlay);
 		((ViewGroup) getView().findViewById(R.id.mapview_holder))
 				.addView(mapView);
+		
+		// Data adapter
 		adapter = new CursorAdapter(getActivity(), null, 0)
 		{
 			@Override
@@ -371,15 +374,32 @@ public class EventMapFragment extends Fragment implements
 	public View onCreateView(final LayoutInflater inflater,
 			final ViewGroup container, final Bundle savedInstanceState)
 	{
-		return inflater.inflate(R.layout.map, container, false);
+		View root =inflater.inflate(R.layout.map, container, false); 
+        mapContainer = (ViewGroup) root.findViewById(R.id.mapview_holder);
+
+		return root;
 	}
 
 	@Override
 	public void onDestroy()
-	{
+	{	
 		super.onDestroy();
 		service.unregister();
 		getActivity().unbindService(service);
+	}
+	
+	@Override
+	public void onDestroyView()
+	{
+	    super.onDestroyView();
+	    mapContainer.removeView(mapView);
+	}
+	
+	@Override
+	public void onPause()
+	{
+	    super.onPause();
+	    mapContainer.removeView(mapView);
 	}
 
 	@Override
@@ -534,7 +554,7 @@ public class EventMapFragment extends Fragment implements
 	 */
 	private void zoomTo(final GeoPoint geoPoint)
 	{
-		final MapController mapController = mapView.getController();
+		final MapController mapController = ((MainActivity)getActivity()).getMapView().getController();
 		mapController.animateTo(geoPoint);
 		mapController.setZoom(12);
 	}

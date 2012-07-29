@@ -1,5 +1,6 @@
 package com.github.whentoleave.ui;
 
+import android.R;
 import android.app.ListActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
@@ -20,39 +21,46 @@ public final class CalendarsActivity extends ListActivity implements
 	/**
 	 * Adapter to display the list's data
 	 */
-	private CursorAdapter adapter;
+	
+    private SimpleCursorAdapter mAdapter;
 
 	@Override
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		getListView().setTextFilterEnabled(true);
-		adapter = new SimpleCursorAdapter(this,
-				android.R.layout.simple_list_item_1, null,
-				new String[] { CalendarContract.Calendars.NAME },
-				new int[] { android.R.id.text1 }, 0);
-		setListAdapter(adapter);
 		getListView().setChoiceMode(AbsListView.CHOICE_MODE_NONE);
+		
+		mAdapter = new SimpleCursorAdapter(this,
+				android.R.layout.simple_list_item_1, null,
+				new String[] { CalendarContract.Calendars.CALENDAR_DISPLAY_NAME },
+				new int[] { android.R.id.text1 }, 0);
+		setListAdapter(mAdapter);
+		
 		getLoaderManager().initLoader(0, null, this);
 	}
 
 	@Override
 	public Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1)
 	{
-		final String[] projection = { CalendarContract.Calendars.NAME };
+		final String[] projection = { CalendarContract.Calendars._ID,
+			    CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+			    CalendarContract.Calendars.ACCOUNT_NAME
+				};
 		return new CursorLoader(this, CalendarContract.Calendars.CONTENT_URI,
-				projection, null, null, CalendarContract.Calendars.NAME);
+				//projection, null, null, null);
+				projection, null, null, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME);
 	}
 
 	@Override
 	public void onLoaderReset(final Loader<Cursor> loader)
 	{
-		adapter.swapCursor(null);
+		mAdapter.swapCursor(null);
 	}
 
 	@Override
 	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data)
 	{
-		adapter.swapCursor(data);
+		mAdapter.swapCursor(data);
 	}
 }

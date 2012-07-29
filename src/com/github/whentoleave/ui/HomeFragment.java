@@ -72,7 +72,9 @@ public class HomeFragment extends Fragment implements LoaderCallbacks<Cursor>
 				Long.toString(Calendar.getInstance().getTimeInMillis()),
 				Long.toString(twoWeeksFromNow.getTimeInMillis()) };
 		final String[] projection = { BaseColumns._ID,
-				CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART,
+				CalendarContract.Events.TITLE,
+				CalendarContract.Events.DESCRIPTION,
+				CalendarContract.Events.DTSTART,
 				CalendarContract.Events.EVENT_LOCATION };
 		return new CursorLoader(getActivity(),
 				CalendarContract.Events.CONTENT_URI, projection, selection,

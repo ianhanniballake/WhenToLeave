@@ -9,11 +9,8 @@ import android.app.ActionBar.Tab;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -25,23 +22,27 @@ import android.provider.BaseColumns;
 import android.provider.CalendarContract;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+/*import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;*/
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.Button;
-import android.widget.CursorAdapter;
 
 import com.github.whentoleave.R;
 import com.github.whentoleave.maps.RouteInformation;
 import com.github.whentoleave.service.LocationService;
 import com.github.whentoleave.service.LocationServiceConnection;
 import com.google.android.maps.MapActivity;
+import com.google.android.maps.MapView;
 
 /**
  * Activity which serves as the main hub of the application, containing the
  * Home, Agenda, and Map Activities as tabs
  */
-public class MainActivity extends MapActivity implements
-		LoaderCallbacks<Cursor>, Handler.Callback
+public class MainActivity extends MapActivity implements Handler.Callback
 {
 	/**
 	 * This is a helper class that implements the management of tabs and all
@@ -96,6 +97,7 @@ public class MainActivity extends MapActivity implements
 		 * Reference to the ViewPager
 		 */
 		private final ViewPager viewPager;
+
 
 		/**
 		 * Creates a new TabsAdapter, tying together the ActionBar's tabs and a
@@ -189,6 +191,21 @@ public class MainActivity extends MapActivity implements
 			// Nothing to do
 		}
 	}
+	
+	/**
+	 * The Map View that constitutes this activity
+	 */
+	private MapView mMapView;
+	
+	/**
+	 * Gets access to the app wide map view.
+	 * 
+	 * @return global instance of the mapview
+	 */
+	public MapView getMapView()
+	{
+		return mMapView;
+	}
 
 	/**
 	 * Preferences name to load settings from
@@ -227,10 +244,6 @@ public class MainActivity extends MapActivity implements
 		return formattedTime.toString();
 	}
 
-	/**
-	 * Adapter to the retrieved data
-	 */
-	private CursorAdapter adapter;
 	/**
 	 * Current location of the device
 	 */
@@ -272,11 +285,25 @@ public class MainActivity extends MapActivity implements
 	public void onCreate(final Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		
+		// The Action Bar is a window feature. The feature must be requested
+	    // before setting a content view. Normally this is set automatically
+	    // by your Activity's theme in your manifest. The provided system
+	    // theme Theme.WithActionBar enables this for you. Use it as you would
+	    // use Theme.NoTitleBar. You can add an Action Bar to your own themes
+	    // by adding the element <item name="android:windowActionBar">true</item>
+	    // to your style definition.
+		getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+		
 		setContentView(R.layout.tabbed_interface);
-		mViewPager = (ViewPager) findViewById(R.id.pager);
+		
+		// Setup Action Bar
 		final ActionBar bar = getActionBar();
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 		bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+		
+		// Setup Tabs for main activity switching
+		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mTabsAdapter = new TabsAdapter(this, mViewPager);
 		mTabsAdapter.addTab(bar.newTab().setText(getText(R.string.title_home)),
 				HomeFragment.class, null);
@@ -289,32 +316,28 @@ public class MainActivity extends MapActivity implements
 			bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
 		final SharedPreferences settings = getSharedPreferences(
 				MainActivity.PREF, 0);
+		
 		// If notifications are enabled, keep the service running after the
 		// program exits
 		if (settings.getBoolean("EnableNotifications", true))
 			startService(new Intent(this, LocationService.class));
 		bindService(new Intent(this, LocationService.class), service,
 				Context.BIND_AUTO_CREATE);
+		
+		// Create the Map and store it in the primary Activity.  This is to help prevent
+		// errors relating to creating two map views per activity.
+		// See: http://stackoverflow.com/questions/7818448/android-mapview-with-fragments-cant-be-added-twice
+		if (savedInstanceState == null)
+		{
+			mMapView = new MapView(this,
+			"0gsbXPHuuz3L2JCcY5w5ZhdicFM5nVK8q0OARCA");
+			mMapView.setClickable(true);
+			mMapView.setBuiltInZoomControls(true);
+			//getFragmentManager().beginTransaction().add(EventMapFragment.class, null);
+		}
 	}
 
-	@Override
-	public Loader<Cursor> onCreateLoader(final int id, final Bundle args)
-	{
-		final Calendar twoWeeksFromNow = Calendar.getInstance();
-		twoWeeksFromNow.add(Calendar.DATE, 14);
-		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
-				+ CalendarContract.Events.DTEND + "<? AND "
-				+ CalendarContract.Events.EVENT_LOCATION + " IS NOT NULL";
-		final String selectionArgs[] = {
-				Long.toString(Calendar.getInstance().getTimeInMillis()),
-				Long.toString(twoWeeksFromNow.getTimeInMillis()) };
-		final String[] projection = { BaseColumns._ID,
-				CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART,
-				CalendarContract.Events.EVENT_LOCATION };
-		return new CursorLoader(this, CalendarContract.Events.CONTENT_URI,
-				projection, selection, selectionArgs,
-				CalendarContract.Events.DTSTART);
-	}
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(final Menu menu)
@@ -329,21 +352,6 @@ public class MainActivity extends MapActivity implements
 		super.onDestroy();
 		service.unregister();
 		unbindService(service);
-	}
-
-	@Override
-	public void onLoaderReset(final Loader<Cursor> loader)
-	{
-		adapter.swapCursor(null);
-	}
-
-	@Override
-	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data)
-	{
-		adapter.swapCursor(data);
-		if (!data.moveToFirst() || currentLocation == null)
-			return;
-		setIndicatorTextAndColor(data);
 	}
 
 	@Override

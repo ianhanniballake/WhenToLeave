@@ -95,7 +95,10 @@ public class AgendaFragment extends ListFragment implements
 		public View newView(final Context context, final Cursor cursor,
 				final ViewGroup parent)
 		{
-			return inflater.inflate(R.layout.agenda_item, parent, false);
+			View root = inflater.inflate(R.layout.agenda_item, parent, false);
+			// TODO -SB
+			//setEmptyText(getText(R.string.agenda_loading));
+			return root;
 		}
 	}
 
@@ -108,7 +111,8 @@ public class AgendaFragment extends ListFragment implements
 	public void onActivityCreated(final Bundle savedInstanceState)
 	{
 		super.onActivityCreated(savedInstanceState);
-		setEmptyText(getText(R.string.agenda_loading));
+		// TODO -SB
+		//setEmptyText(getText(R.string.agenda_loading));
 		adapter = new AgendaCursorAdapter(getActivity(), null, 0);
 		setListAdapter(adapter);
 		getListView().setChoiceMode(AbsListView.CHOICE_MODE_NONE);
