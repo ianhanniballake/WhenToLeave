@@ -300,7 +300,7 @@ public class MainActivity extends MapActivity implements Handler.Callback
 		// Setup Action Bar
 		final ActionBar bar = getActionBar();
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-		bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+		bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE, ActionBar.DISPLAY_SHOW_TITLE);
 		
 		// Setup Tabs for main activity switching
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -436,10 +436,10 @@ public class MainActivity extends MapActivity implements Handler.Callback
 	 * @param data
 	 *            cursor pointing to the event
 	 */
-	private void setIndicatorTextAndColor(final Cursor data)
+	public void setIndicatorTextAndColor(final Cursor data)
 	{
 		final SharedPreferences settings = getSharedPreferences(
-				MainActivity.PREF, 0);
+		MainActivity.PREF, 0);
 		final String travelType = settings.getString("TransportPreference",
 				"driving");
 		final int notifyTimeInMin = settings.getInt("NotifyTime", 3600) / 60;
@@ -453,20 +453,22 @@ public class MainActivity extends MapActivity implements Handler.Callback
 				location, travelType);
 		final long minutesUntilEvent = (startTime - new Date().getTime()) / 60000;
 		final long leaveInMinutes = minutesUntilEvent - travelTime;
-		final Button actionBarButton = (Button) findViewById(R.id.actionBar);
+		
+		final ActionBar bar = getActionBar();
+		
 		final Resources res = getResources();
 		if (leaveInMinutes < notifyTimeInMin * .33333)
-			actionBarButton.setBackgroundDrawable(res
+			bar.setBackgroundDrawable(res
 					.getDrawable(R.drawable.custom_action_bar_red));
 		else if (leaveInMinutes < notifyTimeInMin * .6666)
-			actionBarButton.setBackgroundDrawable(res
+			bar.setBackgroundDrawable(res
 					.getDrawable(R.drawable.custom_action_bar_orange));
 		else
-			actionBarButton.setBackgroundDrawable(res
+			bar.setBackgroundDrawable(res
 					.getDrawable(R.drawable.custom_action_bar_green));
 		final String formattedTime = MainActivity
 				.formatWhenToLeave(leaveInMinutes);
-		actionBarButton.setText("Leave "
+		bar.setTitle("Leave "
 				+ (leaveInMinutes > 0 ? "in " + formattedTime : "Now"));
 	}
 }

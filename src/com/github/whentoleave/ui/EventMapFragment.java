@@ -311,6 +311,7 @@ public class EventMapFragment extends Fragment implements
 		
 		// Get MapView reference from Main Activity.  Do not create within fragment
 		mapView = ((MainActivity) getActivity()).getMapView();
+		((ViewGroup) getView().findViewById(R.id.mapview_holder)).addView(mapView);
 		
 		// Initialize overlay variables
 		final List<Overlay> mapOverlays = mapView.getOverlays();
@@ -320,8 +321,6 @@ public class EventMapFragment extends Fragment implements
 		mapOverlays.add(locationOverlay);
 		eventOverlay = new ItemizedOverlay(greySquareDefault, getActivity());
 		mapOverlays.add(eventOverlay);
-		((ViewGroup) getView().findViewById(R.id.mapview_holder))
-				.addView(mapView);
 		
 		// Data adapter
 		adapter = new CursorAdapter(getActivity(), null, 0)
@@ -352,11 +351,9 @@ public class EventMapFragment extends Fragment implements
 		// Create time window between midnight of this day and midnight
 		// of next day
 		final Calendar calendarToday = Calendar.getInstance();
-		calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.getTime()
-				.getHours());
+		calendarToday.add(Calendar.HOUR_OF_DAY, -calendarToday.get(Calendar.HOUR_OF_DAY));
 		final Calendar calendarLaterToday = Calendar.getInstance();
-		calendarLaterToday.add(Calendar.HOUR_OF_DAY, 24 - calendarLaterToday
-				.getTime().getHours());
+		calendarLaterToday.add(Calendar.HOUR_OF_DAY, 24 - calendarLaterToday.get((Calendar.HOUR_OF_DAY)));
 		final String selection = CalendarContract.Events.DTSTART + ">=? AND "
 				+ CalendarContract.Events.DTEND + "<?";
 		final String selectionArgs[] = {
@@ -374,6 +371,18 @@ public class EventMapFragment extends Fragment implements
 	public View onCreateView(final LayoutInflater inflater,
 			final ViewGroup container, final Bundle savedInstanceState)
 	{
+		// For rotation of the mapview, see:
+		//http://stackoverflow.com/questions/7818448/android-mapview-with-fragments-cant-be-added-twice
+		//if(mapView.getParent() != null)
+		//mapContainer.removeView(mapView);
+		
+		if (mapView == null)
+			mapView = ((MainActivity) getActivity()).getMapView();
+		
+		if (mapContainer != null && mapView != null)
+			mapContainer.removeView(mapView);
+		
+		
 		View root =inflater.inflate(R.layout.map, container, false); 
         mapContainer = (ViewGroup) root.findViewById(R.id.mapview_holder);
 
@@ -386,6 +395,7 @@ public class EventMapFragment extends Fragment implements
 		super.onDestroy();
 		service.unregister();
 		getActivity().unbindService(service);
+		mapContainer.removeView(mapView);
 	}
 	
 	@Override
@@ -399,7 +409,15 @@ public class EventMapFragment extends Fragment implements
 	public void onPause()
 	{
 	    super.onPause();
-	    mapContainer.removeView(mapView);
+	}
+	
+	@Override
+	public void onResume()
+	{
+		super.onResume();
+		// Get MapView reference from Main Activity.  Do not create within fragment
+		if (mapView == null)
+			mapView = ((MainActivity) getActivity()).getMapView();
 	}
 
 	@Override

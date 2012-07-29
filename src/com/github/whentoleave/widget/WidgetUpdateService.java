@@ -198,6 +198,16 @@ public class WidgetUpdateService extends Service implements
 	private void update()
 	{
 		final RemoteViews views = getBaseRemoteViews();
+		// TODO: adapter is not always present when main activity has been killed -SB
+		if (adapter == null)
+		{
+			views.setTextViewText(R.id.widgetLeaveInText, "00:00");
+			views.setTextViewText(R.id.widgetEventDetail, "Error");
+			views.setTextViewText(R.id.widgetEventTime, "Adapter currently null");
+			updateAllWidgets(views);
+			return;
+		}
+		
 		final Cursor data = adapter.getCursor();
 		if (data == null || !data.moveToFirst())
 		{
@@ -207,6 +217,7 @@ public class WidgetUpdateService extends Service implements
 			updateAllWidgets(views);
 			return;
 		}
+		
 		final CharSequence leaveIn;
 		if (currentLocation == null)
 			leaveIn = "Needs GPS";

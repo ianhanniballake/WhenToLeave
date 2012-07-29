@@ -23,5 +23,6 @@
 	<string name="transportation_mode">Transportation Mode</string>
 	<string name="map">Map</string>
 	<string name="navigate">Navigate</string>
+	<string name="info">More Info</string>
 
 </resources>

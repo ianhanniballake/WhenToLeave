@@ -182,5 +182,7 @@ public class HomeFragment extends Fragment implements LoaderCallbacks<Cursor>
 			}
 		});
 		navButton.setEnabled(true);
+		
+		((MainActivity)getActivity()).setIndicatorTextAndColor(data);
 	}
 }

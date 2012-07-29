@@ -2,26 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
-	android:background="@drawable/widget_frame"
 	android:orientation="horizontal"
 	android:padding="10dp" >
 
 	<LinearLayout
-		android:id="@+id/widgetBackgroudLayout"
-		android:layout_width="wrap_content"
-		android:layout_height="fill_parent"
-		android:layout_marginLeft="3dp"
-		android:background="@drawable/custom_widget_background_green"
-		android:orientation="horizontal"
-		android:padding="5dp" >
+	    android:id="@+id/widgetBackgroudLayout"
+	    style="@color/darkgrey1"
+	    android:layout_width="wrap_content"
+	    android:layout_height="fill_parent"
+	    android:layout_marginLeft="3dp"
+	    android:orientation="horizontal"
+	    android:padding="5dp" >
 
 		<LinearLayout
-			android:id="@+id/widgetClickableLayout"
-			android:layout_width="wrap_content"
-			android:layout_height="fill_parent"
-			android:clickable="true"
-			android:focusable="true"
-			android:orientation="vertical" >
+		    android:id="@+id/widgetClickableLayout"
+		    style="@color/darkgrey2"
+		    android:layout_width="wrap_content"
+		    android:layout_height="fill_parent"
+		    android:clickable="true"
+		    android:focusable="true"
+		    android:orientation="vertical" >
 
 			<TextView
 				android:id="@+id/widgetLeaveInText"

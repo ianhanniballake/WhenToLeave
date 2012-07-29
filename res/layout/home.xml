@@ -62,12 +62,9 @@
 			android:layout_height="wrap_content"
 			android:layout_marginRight="5dp"
 			android:layout_weight="1"
-			android:background="@drawable/custom_launcher_button"
 			android:text="@string/map"
 			android:textColor="@color/white"
-			android:textSize="21sp"
-			android:textStyle="bold"
-			android:typeface="sans" />
+			android:textSize="16sp" />
 
 		<Button
 			android:id="@+id/navButton"
@@ -75,12 +72,9 @@
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="5dp"
 			android:layout_weight="1"
-			android:background="@drawable/custom_launcher_button"
 			android:text="@string/navigate"
 			android:textColor="@color/white"
-			android:textSize="21sp"
-			android:textStyle="bold"
-			android:typeface="sans" />
+			android:textSize="16sp"/>
 	</LinearLayout>
 
 	<Button
@@ -89,11 +83,9 @@
 		android:layout_height="wrap_content"
 		android:layout_above="@id/eventBottomBar"
 		android:layout_margin="2dp"
-		android:background="@drawable/custom_launcher_button_grey"
-		android:text="More Info"
-		android:textColor="@color/grey3"
-		android:textSize="14sp"
-		android:textStyle="bold"
-		android:typeface="serif" />
+		android:text="@string/info"
+		android:textColor="@color/white"
+		android:textSize="21sp"
+		android:textStyle="bold"/>
 
 </RelativeLayout>

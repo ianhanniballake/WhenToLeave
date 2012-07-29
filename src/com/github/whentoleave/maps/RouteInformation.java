@@ -83,6 +83,10 @@ public class RouteInformation
 	 *            transportation mode to use
 	 * @return travel time to the destination in minutes
 	 */
+	
+	// TODO - Move Networking to its own thread, in 3.0 and later:
+	// android.os.NetworkOnMainThreadException is triggered if you're triggering network calls on the
+	// main thread
 	public static int getDuration(final Location location,
 			final String destination, final String travelType)
 	{
